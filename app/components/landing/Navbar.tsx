@@ -69,11 +69,11 @@ export function Navbar() {
         </nav>
 
         <div className="hidden md:flex items-center gap-4">
-          <Link href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+          <Link href="/login" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
             Sign In
           </Link>
           <Link
-            href="#"
+            href="/register"
             className="inline-flex items-center rounded-lg bg-accent text-accent-foreground px-4 py-2 text-sm font-medium shadow-sm hover:opacity-90 active:scale-[0.98] transition"
           >
             Get Started
