@@ -92,7 +92,7 @@ export function Hero() {
               className="mt-10 flex flex-col sm:flex-row items-center lg:justify-start justify-center gap-3"
             >
               <Link
-                href="#"
+                href="/build-resume"
                 className="group inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-accent to-fuchsia-600 text-white px-6 py-3 text-sm font-medium shadow-[0_10px_30px_-10px_oklch(0.62_0.19_262/0.6)] hover:shadow-[0_18px_40px_-10px_oklch(0.62_0.19_262/0.8)] hover:-translate-y-0.5 active:scale-[0.98] transition-all"
               >
                 <Wand2 className="h-4 w-4 group-hover:rotate-12 transition" />
