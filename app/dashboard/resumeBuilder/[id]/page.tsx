@@ -46,7 +46,7 @@ function createResumeFromTemplate(templateId: string): Resume {
         // Contact Section (Custom)
         {
           id: 'contact',
-          type: 'contact',
+          type: 'custom',
           title: 'Contact',
           items: [
             { label: 'phone', description: '+1 (555) 123-4567' },
