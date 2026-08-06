@@ -4,32 +4,17 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../../providers/auth-provider';
 import { FileText, Search, Sparkles, Star, Shield, Layers, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
-import {Sidebar} from '../../components/dashboard/Sidebar';
+import { Sidebar } from '../../components/layout/Sidebar';
 import DashboardHeader from '../../components/dashboard/DashboardHeader';
-
-const TEMPLATES = {
-  fresh: [
-    { id: 1, title: 'Minimal Executive Resume', date: 'Published yesterday', type: 'Executive' },
-    { id: 2, title: 'Minimal Executive Resume', date: 'Published yesterday', type: 'Executive' },
-    { id: 3, title: 'Minimal Executive Resume', date: 'Published yesterday', type: 'Executive' },
-  ],
-  aiGenerated: [
-    { id: 4, title: 'AI Generated Template 1', date: 'Published 2 days ago', type: 'Tech' },
-    { id: 5, title: 'AI Generated Template 2', date: 'Published 3 days ago', type: 'Creative' },
-  ],
-  popular: [
-    { id: 6, title: 'Modern Professional', date: 'Published 1 week ago', type: 'Professional' },
-    { id: 7, title: 'Creative Portfolio', date: 'Published 1 week ago', type: 'Creative' },
-  ],
-  ats: [
-    { id: 8, title: 'ATS Optimized Classic', date: 'Published 2 weeks ago', type: 'ATS' },
-    { id: 9, title: 'ATS Optimized Modern', date: 'Published 2 weeks ago', type: 'ATS' },
-  ],
-};
+import { templates } from '../../components/templates/templates';
 
 export default function TemplatesPage() {
   const { user } = useAuth();
   const router = useRouter();
+
+  const handleUseTemplate = (templateId: string) => {
+    router.push(`/dashboard/resumeBuilder/${templateId}`);
+  };
 
   return (
     <div className="flex min-h-screen bg-[#F8FAFC] dark:bg-[#0F172A]">
@@ -88,8 +73,12 @@ export default function TemplatesPage() {
                   </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {TEMPLATES.fresh.map((template) => (
-                    <TemplateCard key={template.id} template={template} />
+                  {templates.slice(0, 3).map((template) => (
+                    <TemplateCard 
+                      key={template.id} 
+                      template={template} 
+                      onUse={() => handleUseTemplate(template.id)}
+                    />
                   ))}
                 </div>
               </section>
@@ -103,8 +92,12 @@ export default function TemplatesPage() {
                   </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {TEMPLATES.aiGenerated.map((template) => (
-                    <TemplateCard key={template.id} template={template} />
+                  {templates.slice(3, 5).map((template) => (
+                    <TemplateCard 
+                      key={template.id} 
+                      template={template} 
+                      onUse={() => handleUseTemplate(template.id)}
+                    />
                   ))}
                 </div>
               </section>
@@ -121,8 +114,12 @@ export default function TemplatesPage() {
                   </button>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {TEMPLATES.popular.map((template) => (
-                    <TemplateCard key={template.id} template={template} />
+                  {templates.slice(0, 2).map((template) => (
+                    <TemplateCard 
+                      key={template.id} 
+                      template={template} 
+                      onUse={() => handleUseTemplate(template.id)}
+                    />
                   ))}
                 </div>
               </section>
@@ -136,8 +133,12 @@ export default function TemplatesPage() {
                   </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {TEMPLATES.ats.map((template) => (
-                    <TemplateCard key={template.id} template={template} />
+                  {templates.slice(0, 2).map((template) => (
+                    <TemplateCard 
+                      key={template.id} 
+                      template={template} 
+                      onUse={() => handleUseTemplate(template.id)}
+                    />
                   ))}
                 </div>
               </section>
@@ -150,7 +151,13 @@ export default function TemplatesPage() {
 }
 
 // Template Card Component
-function TemplateCard({ template }: { template: { id: number; title: string; date: string; type: string } }) {
+function TemplateCard({ 
+  template, 
+  onUse 
+}: { 
+  template: any; 
+  onUse: () => void;
+}) {
   return (
     <motion.div
       whileHover={{ y: -4 }}
@@ -160,13 +167,18 @@ function TemplateCard({ template }: { template: { id: number; title: string; dat
       <div className="aspect-[3/4] bg-gradient-to-br from-[#F1F5F9] to-[#E2E8F0] dark:from-[#1E293B] dark:to-[#334155] p-4 flex items-center justify-center">
         <div className="text-center">
           <FileText className="h-12 w-12 text-[#64748B] dark:text-[#94A3B8] mx-auto mb-2" />
-          <div className="text-xs font-medium text-[#64748B] dark:text-[#94A3B8]">{template.type}</div>
+          <div className="text-xs font-medium text-[#64748B] dark:text-[#94A3B8]">{template.category}</div>
         </div>
       </div>
       <div className="p-4">
-        <h3 className="font-medium text-[#0F172A] dark:text-white text-sm">{template.title}</h3>
-        <p className="text-xs text-[#64748B] dark:text-[#94A3B8] mt-1">{template.date}</p>
-        <button className="mt-3 w-full px-3 py-1.5 text-sm font-medium text-[#8B5CF6] bg-[#EDE9FE] dark:bg-[#4C1D95] dark:text-[#C4B5FD] rounded-lg hover:bg-[#DDD6FE] dark:hover:bg-[#5B21B6] transition-colors">
+        <h3 className="font-medium text-[#0F172A] dark:text-white text-sm">{template.name}</h3>
+        <p className="text-xs text-[#64748B] dark:text-[#94A3B8] mt-1">
+          {template.layout.replace('-', ' ')}
+        </p>
+        <button 
+          onClick={onUse}
+          className="mt-3 w-full px-3 py-1.5 text-sm font-medium text-[#8B5CF6] bg-[#EDE9FE] dark:bg-[#4C1D95] dark:text-[#C4B5FD] rounded-lg hover:bg-[#DDD6FE] dark:hover:bg-[#5B21B6] transition-colors"
+        >
           Use Template
         </button>
       </div>
