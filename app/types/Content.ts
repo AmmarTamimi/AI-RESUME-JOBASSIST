@@ -22,12 +22,18 @@ export interface ExperienceItem {
   end: string;
   bullets: string[];
 }
+export interface AchievementItems {
+  start?: string;
+  end?: string;
+  achievement: string;
+}
 
 export interface EducationItem {
   school: string;
   degree: string;
   start: string;
   end: string;
+  location?: string;
 }
 
 export interface CustomItem {
@@ -56,6 +62,8 @@ export type Section =
   | { id: string; type: "skills"; title: string; items: string[] }
   | { id: string; type: "ratedSkills"; title: string; items: RatedSkillItem[] }
   | { id: string; type: "references"; title: string; items: ReferenceItem[] }
+  | { id: string; type: "languages"; title: string; items: string[] }
+  | { id: string; type: "achievements"; title: string; items: AchievementItems[] }
   | { id: string; type: "custom"; title: string; items: CustomItem[] };
 
 export type SectionType = Section["type"];
@@ -84,6 +92,7 @@ export interface ResumeTheme {
 export interface TemplateProps {
   content: ResumeContent;
   theme: ResumeTheme;
+  layoutConfig?: TemplateLayoutConfig;
 }
 
 export type TemplateLayout = "sidebar-left" | "single-column" | "two-column" | "header-band";
@@ -97,6 +106,25 @@ export interface TemplateMeta {
   layout: TemplateLayout;
   defaultTheme: ResumeTheme;
   allowedFonts: string[];
+  layoutConfig?: TemplateLayoutConfig;
+}
+
+export interface TemplateLayoutConfig {
+  pageWidth: number;
+  pageHeight: number;
+
+  sectionLabelWidth: number;
+  contentWidth: number;
+
+  contentStartX: number;
+
+  sectionGap: number;
+
+  headingFont: string;
+  bodyFont: string;
+
+  headingSize: number;
+  bodySize: number;
 }
 
 export interface Resume {

@@ -24,26 +24,65 @@ export const templates: TemplateMeta[] = [
     },
     allowedFonts: ["Inter", "Poppins", "Roboto", "Merriweather"],
   },
-  {
-    id: "modern-02",
-    name: "Modern Photo",
-    category: "Modern",
-    thumbnail: "/thumbnails/modern-02.jpg",
-    component: "ModernPhotoTemplate",
-    layout: "sidebar-left",
-    defaultTheme: {
-      primaryColor: "#2B2B2B",
-      accentColor: "#F2A93B",
-      backgroundColor: "#FFFFFF",
-      textColor: "#2A2A2A",
-      mutedColor: "#8A8A8A",
-      headingFont: "Poppins",
-      bodyFont: "Inter",
-      fontScale: "md",
-      radius: "none",
-    },
-    allowedFonts: ["Inter", "Poppins", "Roboto"],
+ {
+  id: "modern-02",
+  name: "Modern Professional",
+  category: "Modern",
+  thumbnail: "/thumbnails/modern-02.jpg",
+  component: "ModernTemplate2",
+  layout: "sidebar-left",
+
+  defaultTheme: {
+    primaryColor: "#2E687D",
+    accentColor: "#2E687D",
+    backgroundColor: "#FFFFFF",
+    textColor: "#3F3F3F",
+    mutedColor: "#777777",
+
+    headingFont: "Roboto Slab",
+    bodyFont: "Roboto",
+
+    fontScale: "md",
+    radius: "none",
   },
+
+  allowedFonts: [
+    "Roboto",
+    "Roboto Slab",
+    "Poppins",
+    "Inter",
+  ],
+},
+
+{
+  id: "modern-03",
+  name: "Modern Timeline",
+  category: "Modern",
+  thumbnail: "/thumbnails/modern-03.jpg",
+  component: "ModernTemplate3",
+  layout: "sidebar-left",
+
+  defaultTheme: {
+    primaryColor: "#777674",
+    accentColor: "#7B2CFF",
+    backgroundColor: "#FFFFFF",
+    textColor: "#4A4A4A",
+    mutedColor: "#777777",
+
+    headingFont: "Arial",
+    bodyFont: "Arial",
+
+    fontScale: "md",
+    radius: "none",
+  },
+
+  allowedFonts: [
+    "Arial",
+    "Roboto",
+    "Poppins",
+    "Inter",
+  ],
+},
   {
     id: "minimal-02",
     name: "Minimal",
@@ -84,6 +123,52 @@ export const templates: TemplateMeta[] = [
     },
     allowedFonts: ["Merriweather", "Roboto", "Inter"],
   },
+ {
+  id: "minimal-03",
+  name: "Figma Minimal",
+  category: "Minimal",
+  thumbnail: "/thumbnails/figma-01.svg",
+  component: "MinimalTemplate3",
+
+  layout: "single-column",
+
+  defaultTheme: {
+      primaryColor: "#212121",
+      accentColor: "#212121",
+      backgroundColor: "#FFFFFF",
+      textColor: "#212121",
+      mutedColor: "#212121",
+      headingFont: "IBM Plex Sans",
+      bodyFont: "Hind",
+      fontScale: "md",
+      radius: "none",
+    },
+
+  allowedFonts: [
+    "IBM Plex Sans",
+    "Hind",
+    "Inter",
+    "Roboto",
+    "Poppins",
+  ],
+
+  layoutConfig: {
+    pageWidth: 595,
+    pageHeight: 842,
+
+    sectionLabelWidth: 140,
+    contentWidth: 375,
+    contentStartX: 180,
+
+    sectionGap: 28,
+
+    headingFont: "IBM Plex Sans",
+    bodyFont: "Hind",
+
+    headingSize: 13,
+    bodySize: 11,
+  },
+},
   {
     id: "business-04",
     name: "Business",

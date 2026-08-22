@@ -92,7 +92,12 @@ export default function PreviewPanel({ templateId, theme, content, onSwitchTempl
             transform: `scale(${scale * zoomLevel})`,
           }}
         >
-          <TemplateRenderer templateComponent={template.component} content={content} theme={theme} />
+          <TemplateRenderer
+  templateComponent={template.component}
+  content={content}
+  theme={theme}
+  layoutConfig={template.layoutConfig}
+/>
         </div>
       </div>
 

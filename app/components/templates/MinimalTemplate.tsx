@@ -1,117 +1,389 @@
 import React from "react";
 import type { TemplateProps } from "../../types/Content";
 
+// Simple SVG Icons
+const Icon = {
+  mail: (
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <rect x="2" y="4" width="20" height="16" rx="2" />
+      <path d="M22 7l-8.97 5.7a1.94 1.94 0 01-2.06 0L2 7" />
+    </svg>
+  ),
+  phone: (
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z" />
+    </svg>
+  ),
+  pin: (
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+      <circle cx="12" cy="10" r="3" />
+    </svg>
+  ),
+  user: (
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
+    </svg>
+  ),
+  briefcase: (
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+      <path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16" />
+    </svg>
+  ),
+  cap: (
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+      <path d="M6 12v5c0 1.5 2.7 3 6 3s6-1.5 6-3v-5" />
+    </svg>
+  ),
+  chart: (
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <path d="M12 20v-6M18 20V4M6 20v-4" />
+      <rect x="2" y="4" width="20" height="16" rx="2" />
+    </svg>
+  ),
+};
+
 export default function MinimalTemplate({ content, theme }: TemplateProps) {
   const { personalInfo, sections } = content;
   const t = theme;
 
-  const rootStyle = {
-    "--primary": t.primaryColor,
-    "--bg": t.backgroundColor,
-    "--text": t.textColor,
-    "--muted": t.mutedColor,
-    "--heading-font": t.headingFont,
-    "--body-font": t.bodyFont,
-  } as React.CSSProperties;
+  // Find sections
+  const experienceSection = sections.find((s) => s.type === "experience");
+  const educationSection = sections.find((s) => s.type === "education");
+  const skillsSection = sections.find((s) => s.type === "skills");
+  const ratedSkillsSection = sections.find((s) => s.type === "ratedSkills");
+  const aboutText = personalInfo.summary;
+
+  // Parse skills as tags if it's a string
+  const skillsTags = skillsSection?.items?.length && typeof skillsSection.items[0] === 'string'
+    ? skillsSection.items as string[]
+    : [];
+
+  // Use rated skills if available
+  const hasRatedSkills = ratedSkillsSection && ratedSkillsSection.items.length > 0;
+
+  // Get contact info from personalInfo - filtered to remove empty values
+  const contacts = [
+    personalInfo.email ? { icon: Icon.mail, label: personalInfo.email } : null,
+    personalInfo.phone ? { icon: Icon.phone, label: personalInfo.phone } : null,
+    personalInfo.location ? { icon: Icon.pin, label: personalInfo.location } : null,
+  ].filter((contact): contact is { icon: React.ReactElement; label: string } => contact !== null);
 
   return (
-    <div className="min-tpl" style={rootStyle}>
-      <header className="min-header">
-        <h1 className="min-name">{personalInfo.fullName}</h1>
-        <p className="min-title">{personalInfo.title}</p>
-        <div className="min-contact">
-          {[personalInfo.email, personalInfo.phone, personalInfo.location, personalInfo.website]
-            .filter(Boolean)
-            .join("   ·   ")}
-        </div>
-      </header>
+    <div className="minimal-template">
+      <div className="minimal-content">
+        {/* ===== HEADER ===== */}
+        <header className="minimal-header">
+          <h1 className="minimal-name">
+            {personalInfo.fullName || 'Alexandra Chen'}
+          </h1>
+          <p className="minimal-title">
+            {personalInfo.title || 'Product Designer'}
+          </p>
+          <div className="minimal-divider" />
+          <div className="minimal-contact">
+            {contacts.map((contact, i) => (
+              <span key={i} className="minimal-contact-item">
+                <span className="minimal-contact-icon">{contact.icon}</span>
+                {contact.label}
+              </span>
+            ))}
+          </div>
+        </header>
 
-      <hr className="min-rule" />
+        {/* ===== PROFILE / ABOUT ===== */}
+        {aboutText && (
+          <section className="minimal-section">
+            <h2 className="minimal-section-heading">Profile</h2>
+            <p className="minimal-profile-text">{aboutText}</p>
+          </section>
+        )}
 
-      {personalInfo.summary && <p className="min-summary">{personalInfo.summary}</p>}
-
-      {sections.map((section) => (
-        <section className="min-section" key={section.id}>
-          <h2 className="min-h2">{section.title}</h2>
-
-          {section.type === "experience" &&
-            section.items.map((item, i) => (
-              <div className="min-item" key={i}>
-                <div className="min-row">
-                  <span className="min-role">
-                    {item.role}, <span className="min-company">{item.company}</span>
-                  </span>
-                  <span className="min-date">
-                    {item.start} — {item.end}
-                  </span>
-                </div>
-                <ul>
-                  {item.bullets.map((b, bi) => (
-                    <li key={bi}>{b}</li>
-                  ))}
-                </ul>
+        {/* ===== EXPERIENCE ===== */}
+        {experienceSection && experienceSection.items.length > 0 && (
+          <section className="minimal-section">
+            <h2 className="minimal-section-heading">Experience</h2>
+            {experienceSection.items.map((job, i) => (
+              <div key={i} className="minimal-experience-item">
+                <h3 className="minimal-experience-role">{job.role || 'Role'}</h3>
+                <p className="minimal-experience-company">
+                  {job.company} — {job.start}–{job.end || 'Present'}
+                </p>
+                {job.bullets && job.bullets.length > 0 && (
+                  <p className="minimal-experience-desc">{job.bullets[0]}</p>
+                )}
               </div>
             ))}
+          </section>
+        )}
 
-          {section.type === "education" &&
-            section.items.map((item, i) => (
-              <div className="min-row min-item" key={i}>
-                <span>
-                  {item.degree}, <span className="min-company">{item.school}</span>
-                </span>
-                <span className="min-date">
-                  {item.start} — {item.end}
-                </span>
+        {/* ===== EDUCATION ===== */}
+        {educationSection && educationSection.items.length > 0 && (
+          <section className="minimal-section">
+            <h2 className="minimal-section-heading">Education</h2>
+            {educationSection.items.map((edu, i) => (
+              <div key={i} className="minimal-education-item">
+                <h3 className="minimal-education-degree">{edu.degree || 'Degree'}</h3>
+                <p className="minimal-education-school">
+                  {edu.school} — {edu.start}–{edu.end}
+                </p>
               </div>
             ))}
+          </section>
+        )}
 
-          {section.type === "skills" && (
-            <p className="min-skills">{section.items.join("  ·  ")}</p>
-          )}
-
-          {section.type === "custom" &&
-            section.items.map((item, i) => (
-              <div className="min-row min-item" key={i}>
-                <span>{item.label}</span>
-                <span className="min-date">{item.description}</span>
+        {/* ===== SKILLS ===== */}
+        {(hasRatedSkills || skillsTags.length > 0) && (
+          <section className="minimal-section">
+            <h2 className="minimal-section-heading">Skills</h2>
+            {hasRatedSkills ? (
+              <div className="minimal-skills-rated">
+                {ratedSkillsSection!.items.map((skill, i) => (
+                  <div key={i} className="minimal-skill-item">
+                    <span className="minimal-skill-name">{skill.name}</span>
+                    <div className="minimal-skill-bar">
+                      <div 
+                        className="minimal-skill-fill" 
+                        style={{ width: `${skill.level || 80}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-        </section>
-      ))}
+            ) : (
+              <p className="minimal-skills-text">
+                {skillsTags.join(' · ')}
+              </p>
+            )}
+          </section>
+        )}
+      </div>
 
-      <style>{`
-        .min-tpl {
-          background: var(--bg);
-          color: var(--text);
-          font-family: var(--body-font), sans-serif;
+      <style jsx>{`
+        .minimal-template {
+          width: 100%;
+          min-height: 100%;
+          background: ${t.backgroundColor || '#fdfdfd'};
+          font-family: ${t.bodyFont || 'Libre Franklin'}, sans-serif;
+          padding: 48px 32px;
+          display: flex;
+          justify-content: center;
+        }
+
+        .minimal-content {
+          max-width: 600px;
+          width: 100%;
+        }
+
+        /* ===== HEADER ===== */
+        .minimal-header {
+          margin-bottom: 40px;
+        }
+
+        .minimal-name {
+          font-family: ${t.headingFont || 'Cardo'}, serif;
+          font-weight: 700;
+          font-size: 42px;
+          color: ${t.textColor || '#1a1a1a'};
+          margin: 0;
+          letter-spacing: -0.5px;
+        }
+
+        .minimal-title {
           font-size: 13px;
-          padding: 44px 48px;
-          max-width: 720px;
-          margin: 0 auto;
+          text-transform: uppercase;
+          letter-spacing: 0.15rem;
+          color: ${t.mutedColor || '#555'};
+          margin: 4px 0 0 0;
+          font-weight: 400;
         }
-        .min-header { text-align: center; margin-bottom: 18px; }
-        .min-name {
-          font-family: var(--heading-font), serif;
-          font-weight: 500; font-size: 30px; letter-spacing: 0.01em;
-          margin: 0 0 4px; color: var(--primary);
+
+        .minimal-divider {
+          border-top: 1px solid ${t.primaryColor || '#1a1a1a'};
+          margin: 20px 0 16px 0;
         }
-        .min-title { font-size: 13px; color: var(--muted); margin: 0 0 10px; letter-spacing: 0.03em; }
-        .min-contact { font-size: 11px; color: var(--muted); }
-        .min-rule { border: none; border-top: 1px solid #ddd; margin: 22px 0; }
-        .min-summary { text-align: center; line-height: 1.7; color: var(--text); margin-bottom: 26px; font-size: 12.5px; }
-        .min-section { margin-bottom: 22px; }
-        .min-h2 {
-          font-family: var(--heading-font), serif;
-          font-size: 12px; text-transform: uppercase; letter-spacing: 0.14em;
-          color: var(--primary); margin: 0 0 12px; text-align: center;
+
+        .minimal-contact {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 16px 24px;
         }
-        .min-item { margin-bottom: 12px; }
-        .min-row { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
-        .min-role { font-weight: 600; }
-        .min-company { font-weight: 400; color: var(--muted); }
-        .min-date { font-size: 11px; color: var(--muted); white-space: nowrap; }
-        .min-item ul { margin: 6px 0 0; padding-left: 16px; line-height: 1.65; }
-        .min-skills { text-align: center; color: var(--text); }
+
+        .minimal-contact-item {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 14px;
+          color: ${t.textColor || '#333'};
+        }
+
+        .minimal-contact-icon {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: ${t.accentColor || '#666'};
+        }
+
+        .minimal-contact-icon svg {
+          width: 14px;
+          height: 14px;
+        }
+
+        /* ===== SECTIONS ===== */
+        .minimal-section {
+          margin-bottom: 40px;
+        }
+
+        .minimal-section:last-child {
+          margin-bottom: 0;
+        }
+
+        .minimal-section-heading {
+          font-size: 12px;
+          text-transform: uppercase;
+          letter-spacing: 0.12rem;
+          font-weight: 600;
+          color: ${t.primaryColor || '#1a1a1a'};
+          margin: 0 0 16px 0;
+        }
+
+        /* ===== PROFILE ===== */
+        .minimal-profile-text {
+          font-size: 15px;
+          line-height: 1.7;
+          color: ${t.textColor || '#333'};
+          margin: 0;
+        }
+
+        /* ===== EXPERIENCE ===== */
+        .minimal-experience-item {
+          margin-bottom: 24px;
+        }
+
+        .minimal-experience-item:last-child {
+          margin-bottom: 0;
+        }
+
+        .minimal-experience-role {
+          font-size: 16px;
+          font-weight: 600;
+          color: ${t.primaryColor || '#1a1a1a'};
+          margin: 0;
+        }
+
+        .minimal-experience-company {
+          font-size: 14px;
+          color: ${t.mutedColor || '#666'};
+          margin: 4px 0 0 0;
+        }
+
+        .minimal-experience-desc {
+          font-size: 15px;
+          line-height: 1.6;
+          color: ${t.textColor || '#333'};
+          margin: 8px 0 0 0;
+        }
+
+        /* ===== EDUCATION ===== */
+        .minimal-education-item {
+          margin-bottom: 16px;
+        }
+
+        .minimal-education-item:last-child {
+          margin-bottom: 0;
+        }
+
+        .minimal-education-degree {
+          font-size: 16px;
+          font-weight: 600;
+          color: ${t.primaryColor || '#1a1a1a'};
+          margin: 0;
+        }
+
+        .minimal-education-school {
+          font-size: 14px;
+          color: ${t.mutedColor || '#666'};
+          margin: 4px 0 0 0;
+        }
+
+        /* ===== SKILLS ===== */
+        .minimal-skills-text {
+          font-size: 15px;
+          line-height: 1.7;
+          color: ${t.textColor || '#333'};
+          margin: 0;
+        }
+
+        .minimal-skills-rated {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+
+        .minimal-skill-item {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+
+        .minimal-skill-name {
+          font-size: 14px;
+          font-weight: 500;
+          color: ${t.textColor || '#333'};
+        }
+
+        .minimal-skill-bar {
+          height: 4px;
+          background: #e8e8e8;
+          border-radius: 2px;
+          overflow: hidden;
+        }
+
+        .minimal-skill-fill {
+          height: 100%;
+          background: ${t.accentColor || '#1a1a1a'};
+          border-radius: 2px;
+          transition: width 0.6s ease;
+        }
+
+        @media (max-width: 640px) {
+          .minimal-template {
+            padding: 32px 20px;
+          }
+
+          .minimal-name {
+            font-size: 32px;
+          }
+
+          .minimal-contact {
+            gap: 8px 16px;
+          }
+
+          .minimal-contact-item {
+            font-size: 13px;
+          }
+
+          .minimal-experience-role {
+            font-size: 15px;
+          }
+
+          .minimal-experience-desc {
+            font-size: 14px;
+          }
+
+          .minimal-profile-text {
+            font-size: 14px;
+          }
+        }
+
+        @media print {
+          .minimal-template {
+            padding: 40px 30px;
+          }
+        }
       `}</style>
     </div>
   );

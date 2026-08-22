@@ -1,34 +1,33 @@
-import React from "react";
-import type { ComponentType } from "react";
-import ModernTemplate from "./ModernTemplate";
-import MinimalTemplate from "./MinimalTemplate";
-import ProfessionalTemplate from "./ProfessionalTemplate";
-import BusinessTemplate from "./BusinessTemplate";
-import type { TemplateProps } from "../../types/Content";
+'use client';
 
-export const TEMPLATE_REGISTRY: Record<string, ComponentType<TemplateProps>> = {
-  ModernTemplate,
-  MinimalTemplate,
-  ProfessionalTemplate,
-  BusinessTemplate,
-};
+import React from 'react';
+import type { ResumeContent, ResumeTheme, TemplateLayoutConfig } from '@/app/types/Content';
+import ModernTemplate from './ModernTemplate';
+import MinimalTemplate3 from './MinimalTemplate3';
 
-export type TemplateComponentKey = keyof typeof TEMPLATE_REGISTRY;
-
-interface TemplateRendererProps extends TemplateProps {
+interface TemplateRendererProps {
   templateComponent: string;
+  content: ResumeContent;
+  theme: ResumeTheme;
+  layoutConfig?: TemplateLayoutConfig;
 }
 
-/**
- * Single generic renderer used by:
- *  - the editor page's live preview (right panel)
- *  - PDF export (server-side render of the same component)
- *
- * Usage:
- *   <TemplateRenderer templateComponent={template.component} content={resume.content} theme={resume.theme} />
- */
+const TEMPLATE_COMPONENTS: Record<string, React.ComponentType<{ content: ResumeContent; theme: ResumeTheme }>> = {
+  'ModernTemplate': ModernTemplate,
+  'MinimalTemplate3': MinimalTemplate3,
+};
+
 export default function TemplateRenderer({ templateComponent, content, theme }: TemplateRendererProps) {
-  const Template = TEMPLATE_REGISTRY[templateComponent];
-  if (!Template) return null;
-  return <Template content={content} theme={theme} />;
+  const Component = TEMPLATE_COMPONENTS[templateComponent];
+  
+  if (!Component) {
+    return (
+      <div className="p-8 text-center text-gray-500">
+        <p>Template "{templateComponent}" not found.</p>
+        <p className="text-sm mt-2">Available templates: {Object.keys(TEMPLATE_COMPONENTS).join(', ')}</p>
+      </div>
+    );
+  }
+
+  return <Component content={content} theme={theme} />;
 }

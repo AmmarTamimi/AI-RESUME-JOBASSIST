@@ -1,0 +1,1407 @@
+import React from "react";
+import type { TemplateProps } from "../../types/Content";
+
+const phoneIcon = (
+  <svg
+    width="10"
+    height="10"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.2 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+  </svg>
+);
+
+const mailIcon = (
+  <svg
+    width="10"
+    height="10"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+  >
+    <rect x="2" y="4" width="20" height="16" rx="2" />
+    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+  </svg>
+);
+
+const locationIcon = (
+  <svg
+    width="10"
+    height="10"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+  >
+    <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0Z" />
+    <circle cx="12" cy="10" r="3" />
+  </svg>
+);
+
+const globeIcon = (
+  <svg
+    width="10"
+    height="10"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+  >
+    <circle cx="12" cy="12" r="10" />
+    <path d="M2 12h20" />
+    <path d="M12 2a15.3 15.3 0 0 1 0 20" />
+    <path d="M12 2a15.3 15.3 0 0 0 0 20" />
+  </svg>
+);
+
+function record(value: unknown): Record<string, any> {
+  if (
+    typeof value === "object" &&
+    value !== null
+  ) {
+    return value as Record<string, any>;
+  }
+
+  return {};
+}
+
+function value(
+  object: unknown,
+  key: string,
+): string {
+  const v = record(object)[key];
+
+  if (
+    v === undefined ||
+    v === null
+  ) {
+    return "";
+  }
+
+  return String(v);
+}
+
+function getSection(
+  sections: any[],
+  type: string,
+) {
+  return sections.find(
+    (section) =>
+      section.type === type,
+  );
+}
+
+function formatDate(
+  start?: string,
+  end?: string,
+) {
+  if (start && end) {
+    return `${start} - ${end}`;
+  }
+
+  if (start) {
+    return `${start} - Present`;
+  }
+
+  return end || "";
+}
+
+export default function ModernTemplate3({
+  content,
+  theme,
+}: TemplateProps) {
+  const {
+    personalInfo,
+    sections,
+  } = content;
+
+  const education =
+    getSection(
+      sections,
+      "education",
+    );
+
+  const experience =
+    getSection(
+      sections,
+      "experience",
+    );
+
+  const skills =
+    sections.find(
+      (section) =>
+        section.type === "skills" ||
+        section.type === "ratedSkills",
+    );
+
+  const languages =
+    sections.find(
+      (section) =>
+        section.type === "languages" ||
+        section.id === "languages",
+    );
+
+  const achievement =
+    sections.find(
+      (section) =>
+        section.type === "achievements"
+    );
+
+  const fullName =
+    personalInfo.fullName?.trim() ||
+    "JONATHAN PATTERSON";
+
+  const nameParts =
+    fullName.split(/\s+/);
+
+  const firstName =
+    nameParts.length > 1
+      ? nameParts
+          .slice(0, -1)
+          .join(" ")
+      : nameParts[0];
+
+  const lastName =
+    nameParts.length > 1
+      ? nameParts[
+          nameParts.length - 1
+        ]
+      : "";
+
+  const initials =
+    fullName
+      .split(/\s+/)
+      .map(
+        (name) =>
+          name.charAt(0),
+      )
+      .join("")
+      .slice(0, 2)
+      .toUpperCase();
+
+  const primary =
+    theme.primaryColor ||
+    "#777674";
+
+  const accent =
+    theme.accentColor ||
+    "#7B2CFF";
+
+  const text =
+    theme.textColor ||
+    "#444444";
+
+  return (
+    <div
+      className="modern3"
+      style={
+        {
+          "--m3-primary": primary,
+          "--m3-accent": accent,
+          "--m3-text": text,
+        } as React.CSSProperties
+      }
+    >
+      {/* ======================================================
+          HEADER
+      ======================================================= */}
+
+      <div className="m3-header">
+        <div className="m3-name">
+          <div className="m3-first-name">
+            {firstName}
+          </div>
+
+          {lastName && (
+            <div className="m3-last-name">
+              {lastName}
+            </div>
+          )}
+        </div>
+
+        <div className="m3-title">
+          {personalInfo.title ||
+            "Art Director"}
+        </div>
+      </div>
+
+      {/* ======================================================
+          LEFT SIDEBAR
+      ======================================================= */}
+
+      <aside className="m3-sidebar">
+
+        {/* PHOTO */}
+
+        <div className="m3-photo">
+          <div className="m3-photo-inner">
+            {personalInfo.photoUrl ? (
+              <img
+                src={
+                  personalInfo.photoUrl
+                }
+                alt={
+                  personalInfo.fullName ||
+                  "Profile"
+                }
+              />
+            ) : (
+              <div className="m3-initials">
+                {initials}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* EDUCATION */}
+
+        {education?.items?.length >
+          0 && (
+          <SidebarSection title="EDUCATION">
+            {education.items.map(
+              (
+                item: any,
+                index: number,
+              ) => {
+                const edu =
+                  record(item);
+
+                return (
+                  <div
+                    className="m3-education"
+                    key={index}
+                  >
+                    <div className="m3-edu-date">
+                      {formatDate(
+                        value(
+                          edu,
+                          "start",
+                        ),
+                        value(
+                          edu,
+                          "end",
+                        ),
+                      )}
+                    </div>
+
+                    <div className="m3-edu-degree">
+                      {value(
+                        edu,
+                        "degree",
+                      )}
+                    </div>
+
+                    <div className="m3-edu-school">
+                      {value(
+                        edu,
+                        "school",
+                      )}
+                    </div>
+
+                    {value(
+                      edu,
+                      "description",
+                    ) && (
+                      <div className="m3-edu-description">
+                        •{" "}
+                        {value(
+                          edu,
+                          "description",
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              },
+            )}
+          </SidebarSection>
+        )}
+
+        {/* SKILLS */}
+
+        {(skills?.items ?? []).length > 0 && (
+          <SidebarSection title="SKILLS">
+            <ul className="m3-bullet-list">
+              {skills?.items.map(
+                (
+                  item: any,
+                  index: number,
+                ) => {
+                  const skill =
+                    record(item);
+
+                  const name =
+                    value(
+                      skill,
+                      "name",
+                    ) ||
+                    value(
+                      skill,
+                      "label",
+                    );
+
+                  return (
+                    <li
+                      key={index}
+                    >
+                      {name}
+                    </li>
+                  );
+                },
+              )}
+            </ul>
+          </SidebarSection>
+        )}
+
+        {/* LANGUAGES */}
+
+        {(languages?.items ?? []).length > 0 && (
+          <SidebarSection title="LANGUAGES">
+            <ul className="m3-bullet-list">
+              {languages?.items.map(
+                (
+                  item: any,
+                  index: number,
+                ) => {
+                  const language =
+                    record(item);
+
+                  const name =
+                    value(
+                      language,
+                      "name",
+                    ) ||
+                    value(
+                      language,
+                      "label",
+                    );
+
+                  const level =
+                    value(
+                      language,
+                      "level",
+                    );
+
+                  return (
+                    <li
+                      key={index}
+                    >
+                      {name}
+                      {level
+                        ? ` (${level})`
+                        : ""}
+                    </li>
+                  );
+                },
+              )}
+            </ul>
+          </SidebarSection>
+        )}
+
+        {/* CONTACT */}
+
+        <SidebarSection title="CONTACT">
+          <div className="m3-contact">
+
+            {personalInfo.phone && (
+              <Contact
+                icon={phoneIcon}
+                value={
+                  personalInfo.phone
+                }
+              />
+            )}
+
+            {personalInfo.email && (
+              <Contact
+                icon={mailIcon}
+                value={
+                  personalInfo.email
+                }
+              />
+            )}
+
+            {personalInfo.location && (
+              <Contact
+                icon={locationIcon}
+                value={
+                  personalInfo.location
+                }
+              />
+            )}
+
+            {personalInfo.website && (
+              <Contact
+                icon={globeIcon}
+                value={
+                  personalInfo.website
+                }
+              />
+            )}
+
+          </div>
+        </SidebarSection>
+      </aside>
+
+      {/* ======================================================
+          MAIN
+      ======================================================= */}
+
+      <main className="m3-main">
+
+        {/* PROFILE INFO */}
+
+        {personalInfo.summary && (
+          <MainSection title="PROFILE INFO">
+            <p className="m3-profile">
+              {personalInfo.summary}
+            </p>
+          </MainSection>
+        )}
+
+        {/* EXPERIENCE */}
+
+        {experience?.items?.length >
+          0 && (
+          <MainSection title="EXPERIENCE">
+            <div className="m3-experience">
+
+              {experience.items.map(
+                (
+                  item: any,
+                  index: number,
+                ) => {
+                  const job =
+                    record(item);
+
+                  const bullets =
+                    Array.isArray(
+                      job.bullets,
+                    )
+                      ? job.bullets
+                      : [];
+
+                  return (
+                    <div
+                      className="m3-experience-item"
+                      key={index}
+                    >
+                      {/* TIMELINE */}
+
+                      <div className="m3-timeline">
+                        <span className="m3-circle" />
+
+                        {index <
+                          experience
+                            .items
+                            .length -
+                            1 && (
+                          <span className="m3-line" />
+                        )}
+                      </div>
+
+                      {/* JOB CONTENT */}
+
+                      <div className="m3-job">
+
+                        <div className="m3-job-header">
+                          <div>
+                            <div className="m3-role">
+                              {value(
+                                job,
+                                "role",
+                              )}
+                            </div>
+
+                            <div className="m3-company">
+                              {value(
+                                job,
+                                "company",
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="m3-date">
+                            {formatDate(
+                              value(
+                                job,
+                                "start",
+                              ),
+                              value(
+                                job,
+                                "end",
+                              ),
+                            )}
+                          </div>
+                        </div>
+
+                        {value(
+                          job,
+                          "description",
+                        ) && (
+                          <p className="m3-job-description">
+                            {value(
+                              job,
+                              "description",
+                            )}
+                          </p>
+                        )}
+
+                        {bullets.length >
+                          0 && (
+                          <ul className="m3-job-bullets">
+                            {bullets.map(
+                              (
+                                bullet: string,
+                                bulletIndex: number,
+                              ) => (
+                                <li
+                                  key={
+                                    bulletIndex
+                                  }
+                                >
+                                  {bullet}
+                                </li>
+                              ),
+                            )}
+                          </ul>
+                        )}
+
+                      </div>
+                    </div>
+                  );
+                },
+              )}
+
+            </div>
+          </MainSection>
+        )}
+
+        {/* ACHIEVEMENT */}
+
+        {(achievement?.items ?? []).length > 0&& (
+          <MainSection title="ACHIEVEMENT">
+            <div className="m3-achievements">
+              {achievement?.items.map(
+                (
+                  item: any,
+                  index: number,
+                ) => {
+                  const achievementItem =
+                    record(item);
+
+                  return (
+                    <div
+                      className="m3-achievement"
+                      key={index}
+                    >
+                      <span className="m3-achievement-dot">
+                        •
+                      </span>
+
+                      <div>
+                        <div className="m3-achievement-year">
+                          {value(
+                            achievementItem,
+                            "year",
+                          )}
+                        </div>
+
+                        {value(
+                          achievementItem,
+                          "title",
+                        ) && (
+                          <div className="m3-achievement-title">
+                            {value(
+                              achievementItem,
+                              "title",
+                            )}
+                          </div>
+                        )}
+
+                        {value(
+                          achievementItem,
+                          "description",
+                        ) && (
+                          <div className="m3-achievement-description">
+                            {value(
+                              achievementItem,
+                              "description",
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                },
+              )}
+            </div>
+          </MainSection>
+        )}
+      </main>
+
+      <style jsx>{`
+
+        /* ====================================================
+           BASE
+        ==================================================== */
+
+        .modern3 {
+          position: relative;
+          width: 100%;
+          min-height: 100%;
+          background: #ffffff;
+          color: #414141;
+          font-family: "Montserrat", Arial, sans-serif;
+          overflow: hidden;
+        }
+
+        .modern3 * {
+          box-sizing: border-box;
+        }
+
+        /* ====================================================
+           HEADER
+        ==================================================== */
+
+        .m3-header {
+          height: 181px;
+          width: 100%;
+          background: var(--m3-primary);
+          position: relative;
+
+          display: flex;
+          flex-direction: column;
+          align-items: flex-end;
+          justify-content: center;
+
+          padding-right: 27px;
+          padding-bottom: 19px;
+        }
+
+        .m3-name {
+          color: #ffffff;
+          text-align: right;
+          text-transform: uppercase;
+          font-family: "Montserrat", Arial, sans-serif;
+
+          font-size: 32px;
+          line-height: 0.92;
+          letter-spacing: 1.5px;
+        }
+
+        .m3-first-name {
+          font-weight: 300;
+        }
+
+        .m3-last-name {
+          font-weight: 700;
+          letter-spacing: 1px;
+        }
+
+        .m3-title {
+          margin-top: 15px;
+
+          color: #ffffff;
+
+          font-family: "Montserrat", Arial, sans-serif;
+          font-size: 13px;
+          font-weight: 500;
+
+          letter-spacing: 0.1px;
+        }
+
+        /* ====================================================
+           SIDEBAR
+        ==================================================== */
+
+        .m3-sidebar {
+          position: absolute;
+
+          left: 24px;
+          top: 26px;
+
+          width: 196px;
+
+          min-height: calc(100% - 26px);
+
+          background: #eeeeee;
+
+          border: 3px solid var(--m3-accent);
+
+          padding:
+            210px
+            20px
+            22px;
+
+          z-index: 10;
+        }
+
+        /* ====================================================
+           PHOTO
+        ==================================================== */
+
+        .m3-photo {
+          position: absolute;
+
+          left: 0;
+          top: 0;
+
+          width: 190px;
+          height: 190px;
+
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .m3-photo-inner {
+          width: 164px;
+          height: 164px;
+
+          border-radius: 50%;
+
+          background: #808080;
+
+          border: 12px solid #dedede;
+
+          overflow: hidden;
+
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .m3-photo-inner img {
+          width: 100%;
+          height: 100%;
+
+          object-fit: cover;
+
+          border-radius: 50%;
+
+          display: block;
+        }
+
+        .m3-initials {
+          width: 100%;
+          height: 100%;
+
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          color: #ffffff;
+
+          font-size: 28px;
+          font-weight: 700;
+        }
+
+        /* ====================================================
+           SIDEBAR SECTION
+        ==================================================== */
+
+        .m3-sidebar-section {
+          margin: 0 0 25px 0;
+        }
+
+        .m3-sidebar-heading {
+          display: flex;
+          align-items: center;
+
+          height: 14px;
+
+          margin-bottom: 11px;
+        }
+
+        .m3-sidebar-heading span {
+          flex: 0 0 auto;
+
+          color: #3d3d3d;
+
+          font-size: 11.5px;
+          font-weight: 800;
+
+          letter-spacing: 0.1px;
+        }
+
+        .m3-sidebar-heading::after {
+          content: "";
+
+          flex: 1;
+
+          height: 1px;
+
+          background: #a9a9a9;
+
+          margin-left: 12px;
+        }
+
+        /* ====================================================
+           EDUCATION
+        ==================================================== */
+
+        .m3-education {
+          margin-bottom: 12px;
+
+          font-family:
+            Arial,
+            sans-serif;
+
+          color: #4d4d4d;
+        }
+
+        .m3-edu-date {
+          font-size: 8.9px;
+          line-height: 1.25;
+
+          margin-bottom: 2px;
+        }
+
+        .m3-edu-degree {
+          font-size: 8.2px;
+          line-height: 1.25;
+
+          font-weight: 800;
+
+          text-transform: uppercase;
+        }
+
+        .m3-edu-school {
+          font-size: 8.2px;
+          line-height: 1.25;
+
+          font-weight: 800;
+
+          text-transform: uppercase;
+        }
+
+        .m3-edu-description {
+          margin-top: 4px;
+
+          font-size: 8.3px;
+          line-height: 1.35;
+
+          color: #646464;
+        }
+
+        /* ====================================================
+           BULLET LIST
+        ==================================================== */
+
+        .m3-bullet-list {
+          list-style: none;
+
+          margin: 0;
+          padding: 0;
+
+          font-family:
+            Arial,
+            sans-serif;
+
+          font-size: 8.8px;
+          line-height: 1.8;
+
+          color: #505050;
+        }
+
+        .m3-bullet-list li {
+          position: relative;
+
+          padding-left: 11px;
+        }
+
+        .m3-bullet-list li::before {
+          content: "•";
+
+          position: absolute;
+
+          left: 0;
+          top: 0;
+
+          color: #333333;
+        }
+
+        /* ====================================================
+           CONTACT
+        ==================================================== */
+
+        .m3-contact {
+          display: flex;
+
+          flex-direction: column;
+
+          gap: 6px;
+        }
+
+        .m3-contact-row {
+          display: grid;
+
+          grid-template-columns:
+            11px
+            minmax(0, 1fr);
+
+          column-gap: 4px;
+
+          color: #4d4d4d;
+
+          font-family:
+            Arial,
+            sans-serif;
+
+          font-size: 8.1px;
+
+          line-height: 1.35;
+        }
+
+        .m3-contact-icon {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .m3-contact-value {
+          overflow-wrap: anywhere;
+        }
+
+        /* ====================================================
+           MAIN
+        ==================================================== */
+
+        .m3-main {
+          width: 100%;
+
+          min-height: 550px;
+
+          padding:
+            19px
+            28px
+            30px
+            230px;
+
+          background: #ffffff;
+        }
+
+        /* ====================================================
+           MAIN SECTION HEADING
+           
+           IMPORTANT:
+           There is NO line before the heading.
+           The line starts ONLY after the heading.
+        ==================================================== */
+
+        .m3-main-section {
+          width: 100%;
+
+          margin-bottom: 28px;
+        }
+
+        .m3-main-heading {
+          display: flex;
+
+          align-items: center;
+
+          width: 100%;
+
+          height: 15px;
+
+          margin-bottom: 11px;
+        }
+
+        .m3-main-heading span {
+          flex: 0 0 auto;
+
+          color: #3b3b3b;
+
+          font-family:
+            "Montserrat",
+            Arial,
+            sans-serif;
+
+          font-size: 11.5px;
+
+          font-weight: 800;
+
+          letter-spacing: 0.1px;
+
+          white-space: nowrap;
+        }
+
+        .m3-main-heading::after {
+          content: "";
+
+          flex: 1;
+
+          height: 1px;
+
+          background: #aaaaaa;
+
+          margin-left: 20px;
+        }
+
+        /* ====================================================
+           PROFILE
+        ==================================================== */
+
+        .m3-profile {
+          margin: 0;
+
+          color: #5a5a5a;
+
+          font-family:
+            Arial,
+            sans-serif;
+
+          font-size: 8.8px;
+
+          line-height: 1.48;
+
+          text-align: left;
+        }
+
+        /* ====================================================
+           EXPERIENCE
+        ==================================================== */
+
+        .m3-experience {
+          width: 100%;
+        }
+
+        .m3-experience-item {
+          display: grid;
+
+          grid-template-columns:
+            20px
+            minmax(0, 1fr);
+
+          column-gap: 7px;
+
+          position: relative;
+
+          min-height: 83px;
+        }
+
+        /* ====================================================
+           TIMELINE
+        ==================================================== */
+
+        .m3-timeline {
+          position: relative;
+
+          width: 20px;
+
+          min-height: 100%;
+        }
+
+        .m3-circle {
+          position: absolute;
+
+          top: 0;
+          left: 0;
+
+          width: 14px;
+          height: 14px;
+
+          border:
+            1px solid
+            #333333;
+
+          border-radius: 50%;
+
+          background: #ffffff;
+
+          z-index: 2;
+        }
+
+        .m3-line {
+          position: absolute;
+
+          top: 13px;
+          bottom: -1px;
+
+          left: 6px;
+
+          width: 1px;
+
+          background: #444444;
+        }
+
+        /* ====================================================
+           JOB
+        ==================================================== */
+
+        .m3-job {
+          min-width: 0;
+
+          padding-bottom: 17px;
+        }
+
+        .m3-job-header {
+          width: 100%;
+
+          display: flex;
+
+          align-items: flex-start;
+
+          justify-content: space-between;
+
+          column-gap: 10px;
+        }
+
+        .m3-role {
+          color: #353535;
+
+          font-family:
+            Arial,
+            sans-serif;
+
+          font-size: 8.4px;
+
+          line-height: 1.2;
+
+          font-weight: 800;
+
+          text-transform: uppercase;
+        }
+
+        .m3-company {
+          margin-top: 1px;
+
+          color: #353535;
+
+          font-family:
+            Arial,
+            sans-serif;
+
+          font-size: 8.3px;
+
+          line-height: 1.2;
+
+          font-weight: 800;
+
+          text-transform: uppercase;
+        }
+
+        .m3-date {
+          flex-shrink: 0;
+
+          color: #676767;
+
+          font-family:
+            Arial,
+            sans-serif;
+
+          font-size: 8px;
+
+          line-height: 1.2;
+
+          white-space: nowrap;
+        }
+
+        .m3-job-description {
+          margin:
+            4px
+            0
+            0;
+
+          color: #5c5c5c;
+
+          font-family:
+            Arial,
+            sans-serif;
+
+          font-size: 8.3px;
+
+          line-height: 1.4;
+        }
+
+        .m3-job-bullets {
+          margin:
+            4px
+            0
+            0;
+
+          padding: 0;
+
+          list-style: none;
+
+          color: #5c5c5c;
+
+          font-family:
+            Arial,
+            sans-serif;
+
+          font-size: 8.3px;
+
+          line-height: 1.4;
+        }
+
+        .m3-job-bullets li {
+          margin: 0;
+        }
+
+        /* ====================================================
+           ACHIEVEMENTS
+        ==================================================== */
+
+        .m3-achievements {
+          display: grid;
+
+          grid-template-columns:
+            1fr
+            1fr;
+
+          column-gap: 27px;
+
+          width: 100%;
+        }
+
+        .m3-achievement {
+          display: grid;
+
+          grid-template-columns:
+            7px
+            minmax(0, 1fr);
+
+          column-gap: 4px;
+
+          font-family:
+            Arial,
+            sans-serif;
+        }
+
+        .m3-achievement-dot {
+          font-size: 10px;
+
+          line-height: 1.1;
+
+          color: #333333;
+        }
+
+        .m3-achievement-year {
+          color: #3b3b3b;
+
+          font-size: 8.2px;
+
+          line-height: 1.3;
+
+          font-weight: 800;
+        }
+
+        .m3-achievement-title {
+          color: #535353;
+
+          font-size: 8px;
+
+          line-height: 1.35;
+
+          margin-top: 1px;
+        }
+
+        .m3-achievement-description {
+          color: #626262;
+
+          font-size: 8px;
+
+          line-height: 1.35;
+
+          margin-top: 1px;
+        }
+
+        /* ====================================================
+           PRINT
+        ==================================================== */
+
+        @media print {
+          .modern3 {
+            width: 210mm;
+            min-height: 297mm;
+          }
+
+          .m3-header {
+            height: 181px;
+          }
+
+          .m3-sidebar {
+            min-height: calc(100% - 26px);
+          }
+        }
+
+      `}</style>
+    </div>
+  );
+}
+
+/* ==============================================================
+   SIDEBAR SECTION
+================================================================ */
+
+function SidebarSection({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="m3-sidebar-section">
+      <div className="m3-sidebar-heading">
+        <span>{title}</span>
+      </div>
+
+      {children}
+    </section>
+  );
+}
+
+/* ==============================================================
+   MAIN SECTION
+================================================================ */
+
+function MainSection({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="m3-main-section">
+      <div className="m3-main-heading">
+        <span>{title}</span>
+      </div>
+
+      {children}
+    </section>
+  );
+}
+
+/* ==============================================================
+   CONTACT
+================================================================ */
+
+function Contact({
+  icon,
+  value,
+}: {
+  icon: React.ReactNode;
+  value: string;
+}) {
+  return (
+    <div className="m3-contact-row">
+      <span className="m3-contact-icon">
+        {icon}
+      </span>
+
+      <span className="m3-contact-value">
+        {value}
+      </span>
+    </div>
+  );
+}
