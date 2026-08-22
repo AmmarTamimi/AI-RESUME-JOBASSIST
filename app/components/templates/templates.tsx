@@ -1,15 +1,23 @@
 import type { TemplateMeta } from "../../types/Content";
 
-// If you'd rather keep this as DB rows fetched at runtime, use templates.json
-// with this file's shape (TemplateMeta) as the row type instead of importing
-// this array directly.
+// Import the actual components
+import ModernTemplate from "./ModernTemplate";
+import ModernTemplate2 from "./ModernTemplate2";
+import ModernTemplate3 from "./ModernTemplate3";
+import ModernTemplate4 from "./ModernTemplate4";
+import MinimalTemplate from "./MinimalTemplate";
+import MinimalTemplate2 from "./MinimalTemplate2";
+import MinimalTemplate3 from "./MinimalTemplate3";
+import ProfessionalTemplate from "./ProfessionalTemplate";
+import BusinessTemplate from "./BusinessTemplate";
+
 export const templates: TemplateMeta[] = [
   {
     id: "modern-01",
     name: "Modern",
     category: "Modern",
     thumbnail: "/thumbnails/modern.svg",
-    component: "ModernTemplate",
+    component: "ModernTemplate", // String key that matches Registry
     layout: "sidebar-left",
     defaultTheme: {
       primaryColor: "#1F2A44",
@@ -24,67 +32,108 @@ export const templates: TemplateMeta[] = [
     },
     allowedFonts: ["Inter", "Poppins", "Roboto", "Merriweather"],
   },
- {
-  id: "modern-02",
-  name: "Modern Professional",
-  category: "Modern",
-  thumbnail: "/thumbnails/modern-02.jpg",
-  component: "ModernTemplate2",
-  layout: "sidebar-left",
-
-  defaultTheme: {
-    primaryColor: "#2E687D",
-    accentColor: "#2E687D",
-    backgroundColor: "#FFFFFF",
-    textColor: "#3F3F3F",
-    mutedColor: "#777777",
-
-    headingFont: "Roboto Slab",
-    bodyFont: "Roboto",
-
-    fontScale: "md",
-    radius: "none",
-  },
-
-  allowedFonts: [
-    "Roboto",
-    "Roboto Slab",
-    "Poppins",
-    "Inter",
-  ],
-},
-
-{
-  id: "modern-03",
-  name: "Modern Timeline",
-  category: "Modern",
-  thumbnail: "/thumbnails/modern-03.jpg",
-  component: "ModernTemplate3",
-  layout: "sidebar-left",
-
-  defaultTheme: {
-    primaryColor: "#777674",
-    accentColor: "#7B2CFF",
-    backgroundColor: "#FFFFFF",
-    textColor: "#4A4A4A",
-    mutedColor: "#777777",
-
-    headingFont: "Arial",
-    bodyFont: "Arial",
-
-    fontScale: "md",
-    radius: "none",
-  },
-
-  allowedFonts: [
-    "Arial",
-    "Roboto",
-    "Poppins",
-    "Inter",
-  ],
-},
   {
-    id: "minimal-02",
+    id: "modern-02",
+    name: "Modern Professional",
+    category: "Modern",
+    thumbnail: "/thumbnails/modern-02.jpg",
+    component: "ModernTemplate2",
+    layout: "sidebar-left",
+    defaultTheme: {
+      primaryColor: "#2E687D",
+      accentColor: "#2E687D",
+      backgroundColor: "#FFFFFF",
+      textColor: "#3F3F3F",
+      mutedColor: "#777777",
+      headingFont: "Roboto Slab",
+      bodyFont: "Roboto",
+      fontScale: "md",
+      radius: "none",
+    },
+    allowedFonts: ["Roboto", "Roboto Slab", "Poppins", "Inter"],
+  },
+  {
+    id: "modern-03",
+    name: "Modern Timeline",
+    category: "Modern",
+    thumbnail: "/thumbnails/modern-03.jpg",
+    component: "ModernTemplate3",
+    layout: "sidebar-left",
+    defaultTheme: {
+      primaryColor: "#777674",
+      accentColor: "#7B2CFF",
+      backgroundColor: "#FFFFFF",
+      textColor: "#4A4A4A",
+      mutedColor: "#777777",
+      headingFont: "Arial",
+      bodyFont: "Arial",
+      fontScale: "md",
+      radius: "none",
+    },
+    allowedFonts: ["Arial", "Roboto", "Poppins", "Inter"],
+  },
+  {
+    id: "modern-04", // New template
+    name: "Modern 4",
+    category: "Modern",
+    thumbnail: "/thumbnails/modern-04.svg",
+    component: "ModernTemplate4",
+    layout: "sidebar-left",
+    defaultTheme: {
+      primaryColor: "#2C3E50",
+      accentColor: "#B79355",
+      backgroundColor: "#FFFFFF",
+      textColor: "#2C3E50",
+      mutedColor: "#7F8C8D",
+      headingFont: "Poppins",
+      bodyFont: "Inter",
+      fontScale: "md",
+      radius: "md",
+    },
+    allowedFonts: ["Inter", "Poppins", "Roboto", "Open Sans"],
+  },
+  {
+    id: "modern-05", // New template
+    name: "Tech Modern",
+    category: "Modern",
+    thumbnail: "/thumbnails/modern-05.svg",
+    component: "ModernTemplate5",
+    layout: "sidebar-left",
+    defaultTheme: {
+      primaryColor: "#0D0F14",
+      accentColor: "#39E6C5",
+      backgroundColor: "#0D0F14",
+      textColor: "#D7DBE0",
+      mutedColor: "#6B7484",
+      headingFont: "Space Grotesk",
+      bodyFont: "Inter",
+      fontScale: "md",
+      radius: "md",
+    },
+    allowedFonts: ["Inter", "Space Grotesk", "JetBrains Mono", "Roboto"],
+  },
+  {
+    id: "modern-06", // New template
+    name: "Elegant",
+    category: "Modern",
+    thumbnail: "/thumbnails/modern-06.svg",
+    component: "ModernTemplate6",
+    layout: "sidebar-left",
+    defaultTheme: {
+      primaryColor: "#1F3D2B",
+      accentColor: "#C19A49",
+      backgroundColor: "#FBF9F3",
+      textColor: "#1F3D2B",
+      mutedColor: "#9A9484",
+      headingFont: "Cormorant Garamond",
+      bodyFont: "Karla",
+      fontScale: "md",
+      radius: "md",
+    },
+    allowedFonts: ["Karla", "Cormorant Garamond", "Inter", "Roboto"],
+  },
+  {
+    id: "minimal-01",
     name: "Minimal",
     category: "Minimal",
     thumbnail: "/thumbnails/minimal.svg",
@@ -104,7 +153,59 @@ export const templates: TemplateMeta[] = [
     allowedFonts: ["Inter", "Playfair Display", "Roboto"],
   },
   {
-    id: "professional-03",
+    id: "minimal-02",
+    name: "Minimal 2",
+    category: "Minimal",
+    thumbnail: "/thumbnails/figma-01.svg",
+    component: "MinimalTemplate2",
+    layout: "single-column",
+    defaultTheme: {
+      primaryColor: "#212121",
+      accentColor: "#212121",
+      backgroundColor: "#FFFFFF",
+      textColor: "#212121",
+      mutedColor: "#212121",
+      headingFont: "IBM Plex Sans",
+      bodyFont: "Hind",
+      fontScale: "md",
+      radius: "none",
+    },
+    allowedFonts: ["IBM Plex Sans", "Hind", "Inter", "Roboto", "Poppins"],
+    layoutConfig: {
+      pageWidth: 595,
+      pageHeight: 842,
+      sectionLabelWidth: 140,
+      contentWidth: 375,
+      contentStartX: 180,
+      sectionGap: 28,
+      headingFont: "IBM Plex Sans",
+      bodyFont: "Hind",
+      headingSize: 13,
+      bodySize: 11,
+    },
+  },
+  {
+    id: "minimal-03",
+    name: "Minimal 3",
+    category: "Minimal",
+    thumbnail: "/thumbnails/minimal-03.svg",
+    component: "MinimalTemplate3",
+    layout: "single-column",
+    defaultTheme: {
+      primaryColor: "#1A1A1A",
+      accentColor: "#1A1A1A",
+      backgroundColor: "#FAFAFA",
+      textColor: "#1A1A1A",
+      mutedColor: "#8A8A8A",
+      headingFont: "Inter",
+      bodyFont: "Inter",
+      fontScale: "md",
+      radius: "none",
+    },
+    allowedFonts: ["Inter", "Roboto", "Poppins"],
+  },
+  {
+    id: "professional-01",
     name: "Professional",
     category: "Professional",
     thumbnail: "/thumbnails/professional.svg",
@@ -123,52 +224,26 @@ export const templates: TemplateMeta[] = [
     },
     allowedFonts: ["Merriweather", "Roboto", "Inter"],
   },
- {
-  id: "minimal-03",
-  name: "Figma Minimal",
-  category: "Minimal",
-  thumbnail: "/thumbnails/figma-01.svg",
-  component: "MinimalTemplate3",
-
-  layout: "single-column",
-
-  defaultTheme: {
-      primaryColor: "#212121",
-      accentColor: "#212121",
+  {
+    id: "professional-02", // New template - Professional/Bold
+    name: "Bold Professional",
+    category: "Professional",
+    thumbnail: "/thumbnails/professional-02.svg",
+    component: "ProfessionalTemplate2",
+    layout: "sidebar-left",
+    defaultTheme: {
+      primaryColor: "#3B1F3D",
+      accentColor: "#CFE85C",
       backgroundColor: "#FFFFFF",
-      textColor: "#212121",
-      mutedColor: "#212121",
-      headingFont: "IBM Plex Sans",
-      bodyFont: "Hind",
+      textColor: "#241227",
+      mutedColor: "#6A6A6A",
+      headingFont: "Sora",
+      bodyFont: "Manrope",
       fontScale: "md",
-      radius: "none",
+      radius: "md",
     },
-
-  allowedFonts: [
-    "IBM Plex Sans",
-    "Hind",
-    "Inter",
-    "Roboto",
-    "Poppins",
-  ],
-
-  layoutConfig: {
-    pageWidth: 595,
-    pageHeight: 842,
-
-    sectionLabelWidth: 140,
-    contentWidth: 375,
-    contentStartX: 180,
-
-    sectionGap: 28,
-
-    headingFont: "IBM Plex Sans",
-    bodyFont: "Hind",
-
-    headingSize: 13,
-    bodySize: 11,
+    allowedFonts: ["Manrope", "Sora", "Inter", "Roboto"],
   },
-},
   {
     id: "business-04",
     name: "Business",
