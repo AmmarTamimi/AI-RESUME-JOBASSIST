@@ -164,10 +164,20 @@ function TemplateCard({
       transition={{ duration: 0.2 }}
       className="group bg-white dark:bg-[#1E293B] border border-[#E2E8F0] dark:border-[#334155] rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300"
     >
-      <div className="aspect-[3/4] bg-gradient-to-br from-[#F1F5F9] to-[#E2E8F0] dark:from-[#1E293B] dark:to-[#334155] p-4 flex items-center justify-center">
-        <div className="text-center">
-          <FileText className="h-12 w-12 text-[#64748B] dark:text-[#94A3B8] mx-auto mb-2" />
-          <div className="text-xs font-medium text-[#64748B] dark:text-[#94A3B8]">{template.category}</div>
+      <div 
+        className="aspect-[3/4] relative bg-gradient-to-br from-[#F1F5F9] to-[#E2E8F0] dark:from-[#1E293B] dark:to-[#334155] p-4 flex items-center justify-center"
+        style={{
+          backgroundImage: `url(${template.thumbnail})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+        {/* Overlay for better text readability */}
+        <div className="absolute inset-0 bg-black/30 dark:bg-black/50" />
+        
+        <div className="relative z-10 text-center">
+          <FileText className="h-12 w-12 text-white/80 mx-auto mb-2" />
+          <div className="text-xs font-medium text-white/90">{template.category}</div>
         </div>
       </div>
       <div className="p-4">

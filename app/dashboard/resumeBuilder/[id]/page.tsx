@@ -34,10 +34,10 @@ function createResumeFromTemplate(templateId: string): Resume {
       personalInfo: {
         fullName: 'Sarah Johnson',
         title: 'Senior Product Designer',
-        email: 'sarah.johnson@email.com',
-        phone: '+1 (555) 123-4567',
-        location: 'San Francisco, CA',
-        website: 'sarahdesigns.com',
+        // email: 'sarah.johnson@email.com',
+        // phone: '+1 (555) 123-4567',
+        // location: 'San Francisco, CA',
+        // website: 'sarahdesigns.com',
         summary: 'Creative and user-focused Product Designer with 7+ years of experience in designing digital products for startups and enterprise companies. Passionate about creating intuitive, accessible, and beautiful user experiences that solve real problems. Proven track record of leading design teams and delivering products that users love.',
         photoUrl: '/womenPic.jpg',
       },
@@ -298,6 +298,7 @@ export default function ResumeBuilderPage() {
           onAddSection={addSection}
           onRemoveSection={removeSection}
           onReorderSections={reorderSections}
+          onUpdateTemplate={switchTemplate}
         />
       </div>
 

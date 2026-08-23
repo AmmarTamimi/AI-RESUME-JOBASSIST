@@ -94,29 +94,19 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
   // Contact items - parse from the custom section
   const contactItems = contactSection?.items || [];
 
-  // Get initials for photo fallback
-  const initials = personalInfo.fullName
-    .split(" ")
-    .map(n => n[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-
   return (
     <div className="modern-template">
       {/* ================= SIDEBAR ================= */}
       <aside className="sidebar">
-        {/* Photo Section with Yellow Triangle */}
-        <div className="photoWrap">
-          <div className="photoTriangle" />
-          <div className="photoCircle">
-            {personalInfo.photoUrl ? (
+        {/* Photo Section */}
+        {personalInfo.photoUrl && (
+          <div className="photoWrap">
+            <div className="photoTriangle" />
+            <div className="photoCircle">
               <img src={personalInfo.photoUrl} alt={personalInfo.fullName} />
-            ) : (
-              <span className="photoFallback">{initials || "U"}</span>
-            )}
+            </div>
           </div>
-        </div>
+        ) }
 
         <div className="sidebarContent">
           {/* Contact Section */}
@@ -127,24 +117,23 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
           
           {contactItems.length > 0 && (
             <div className="contactList">
-  {contactItems.map((item, i) => {
-    // Type guard - only process if it's a CustomItem with label and description
-    if (typeof item === 'object' && item !== null && 'label' in item && 'description' in item) {
-      let icon = Icon.pin;
-      if (item.label === "phone") icon = Icon.phone;
-      else if (item.label === "email") icon = Icon.mail;
-      else if (item.label === "web") icon = Icon.globe;
-      
-      return (
-        <div className="contactItem" key={i}>
-          <span className="ic">{icon}</span>
-          <span>{item.description}</span>
-        </div>
-      );
-    }
-    return null;
-  })}
-</div>
+              {contactItems.map((item, i) => {
+                if (typeof item === 'object' && item !== null && 'label' in item && 'description' in item) {
+                  let icon = Icon.pin;
+                  if (item.label === "phone") icon = Icon.phone;
+                  else if (item.label === "email") icon = Icon.mail;
+                  else if (item.label === "web") icon = Icon.globe;
+                  
+                  return (
+                    <div className="contactItem" key={i}>
+                      <span className="ic">{icon}</span>
+                      <span>{item.description}</span>
+                    </div>
+                  );
+                }
+                return null;
+              })}
+            </div>
           )}
 
           {/* If no contact items, show default contact info from personalInfo */}
@@ -343,8 +332,6 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 60px;
-          color: #888;
           box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
 
@@ -354,17 +341,51 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
           object-fit: cover;
         }
 
-        .photoFallback {
-          color: #fff;
-          font-size: 40px;
-          font-weight: 700;
-          font-family: ${t.headingFont || 'Poppins'}, sans-serif;
+        /* Photo Placeholder - Solid design matching the theme */
+        .photoPlaceholder {
+          height: 180px;
           background: ${t.accentColor || '#f4a51c'};
-          width: 100%;
-          height: 100%;
+          clip-path: polygon(0 0, 100% 0, 100% 55%, 0 100%);
           display: flex;
           align-items: center;
           justify-content: center;
+          position: relative;
+        }
+
+        .photoPlaceholder::after {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%);
+          clip-path: polygon(0 0, 65% 0, 0 55%);
+        }
+
+        .placeholderContent {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 8px;
+          z-index: 1;
+          opacity: 0.7;
+        }
+
+        .placeholderIcon {
+          color: rgba(255,255,255,0.8);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .placeholderText {
+          color: rgba(255,255,255,0.8);
+          font-size: 13px;
+          font-weight: 600;
+          letter-spacing: 1px;
+          font-family: ${t.headingFont || 'Poppins'}, sans-serif;
+          text-transform: uppercase;
         }
 
         .sidebarContent {
@@ -512,9 +533,9 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
         .headerBlock::before {
           content: "";
           position: absolute;
-          left: 0;
-          top: 0;
-          bottom: 0;
+          left: 10;
+          top: 15px;
+          bottom: 15px;
           width: 6px;
           background: ${t.accentColor || '#f4a51c'};
         }
@@ -688,8 +709,8 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
             top: 35px;
             left: 20px;
           }
-          .photoFallback {
-            font-size: 32px;
+          .photoPlaceholder {
+            height: 150px;
           }
         }
 

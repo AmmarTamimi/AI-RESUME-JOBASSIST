@@ -66,16 +66,14 @@ export default function ElegantTemplate({ content, theme }: TemplateProps) {
     <div className="elegant-template">
       {/* ================= SIDEBAR ================= */}
       <aside className="sidebar">
-        <div className="photoWrap">
+        {personalInfo.photoUrl && <div className="photoWrap">
           <div className="photoCircle">
-            {personalInfo.photoUrl ? (
+           
               <img src={personalInfo.photoUrl} alt={personalInfo.fullName} />
-            ) : (
-              <span className="photoFallback">{initials || "U"}</span>
-            )}
+            
           </div>
         </div>
-
+}
         <div className="sidebarContent">
           <div className="sideHeading">
             <div className="iconBadge">{Icon.mail}</div>

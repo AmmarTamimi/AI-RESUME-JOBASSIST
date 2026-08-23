@@ -67,11 +67,9 @@ export default function BoldTemplate({ content, theme }: TemplateProps) {
       {/* ================= HEADER BAND ================= */}
       <div className="headerBand">
         <div className="headerInner">
-          {personalInfo.photoUrl ? (
+          {personalInfo.photoUrl && (
             <img className="photo" src={personalInfo.photoUrl} alt={personalInfo.fullName} />
-          ) : (
-            <div className="photoFallback">{initials || "U"}</div>
-          )}
+          ) }
           <div className="nameBlock">
             <div className="name">{personalInfo.fullName}</div>
             <div className="title">{personalInfo.title || "PROFESSIONAL"}</div>

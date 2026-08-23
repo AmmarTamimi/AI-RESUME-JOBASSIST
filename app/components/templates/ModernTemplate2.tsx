@@ -69,6 +69,7 @@ export default function ModernTemplate2({
   const contactSection = sections.find(
     (s) => s.type === "custom" && s.id === "contact",
   );
+  const contactItems = contactSection?.items || [];
 
   const educationSection = sections.find(
     (s) => s.type === "education",
@@ -82,7 +83,6 @@ export default function ModernTemplate2({
     (s) => s.type === "ratedSkills",
   );
 
-  const contactItems = contactSection?.items || [];
 
   const name = personalInfo.fullName?.trim() || "Your Name";
 
@@ -152,20 +152,17 @@ export default function ModernTemplate2({
         <aside className="leftColumn">
 
           {/* Profile image */}
-          <div className="profileArea">
+          {personalInfo.photoUrl && <div className="profileArea">
             <div className="profileImage">
-              {personalInfo.photoUrl ? (
+              {personalInfo.photoUrl && (
                 <img
                   src={personalInfo.photoUrl}
                   alt={personalInfo.fullName || "Profile"}
                 />
-              ) : (
-                <span className="profileFallback">
-                  {initials || "U"}
-                </span>
-              )}
+              ) }
             </div>
-          </div>
+          </div>}
+          
 
           {/* =====================================================
               SUMMARY

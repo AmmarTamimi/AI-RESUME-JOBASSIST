@@ -63,14 +63,12 @@ export default function TechTemplate({ content, theme }: TemplateProps) {
           <span className="promptSymbol">&gt;</span> whoami
         </div>
         <div className="headerRow">
-          {personalInfo.photoUrl ? (
+          {personalInfo.photoUrl && (
             <img className="photo" src={personalInfo.photoUrl} alt={personalInfo.fullName} />
-          ) : (
-            <div className="photoFallback">{initials || "U"}</div>
           )}
           <div>
             <div className="name">{personalInfo.fullName}</div>
-            <div className="title">// {personalInfo.title || "SOFTWARE ENGINEER"}</div>
+            <div className="title">{personalInfo.title || "SOFTWARE ENGINEER"}</div>
           </div>
         </div>
 

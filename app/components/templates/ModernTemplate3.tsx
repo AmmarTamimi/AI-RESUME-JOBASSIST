@@ -61,46 +61,177 @@ const globeIcon = (
 );
 
 function record(value: unknown): Record<string, any> {
-  if (
-    typeof value === "object" &&
-    value !== null
-  ) {
+  if (typeof value === "object" && value !== null) {
     return value as Record<string, any>;
   }
 
   return {};
 }
 
-function value(
-  object: unknown,
-  key: string,
-): string {
+const Icon = {
+  phone: (
+    <svg
+      viewBox="0 0 24 24"
+      width="14"
+      height="14"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
+      <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z" />
+    </svg>
+  ),
+  globe: (
+    <svg
+      viewBox="0 0 24 24"
+      width="14"
+      height="14"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
+      <circle cx="12" cy="12" r="10" />
+      <line x1="2" y1="12" x2="22" y2="12" />
+      <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
+    </svg>
+  ),
+  mail: (
+    <svg
+      viewBox="0 0 24 24"
+      width="14"
+      height="14"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
+      <rect x="2" y="4" width="20" height="16" rx="2" />
+      <path d="M22 7l-8.97 5.7a1.94 1.94 0 01-2.06 0L2 7" />
+    </svg>
+  ),
+  pin: (
+    <svg
+      viewBox="0 0 24 24"
+      width="14"
+      height="14"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
+      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+      <circle cx="12" cy="10" r="3" />
+    </svg>
+  ),
+  person: (
+    <svg
+      viewBox="0 0 24 24"
+      width="16"
+      height="16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
+      <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
+    </svg>
+  ),
+  cap: (
+    <svg
+      viewBox="0 0 24 24"
+      width="14"
+      height="14"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
+      <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+      <path d="M6 12v5c0 1.5 2.7 3 6 3s6-1.5 6-3v-5" />
+    </svg>
+  ),
+  users: (
+    <svg
+      viewBox="0 0 24 24"
+      width="14"
+      height="14"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
+      <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M23 21v-2a4 4 0 00-3-3.87" />
+      <path d="M16 3.13a4 4 0 010 7.75" />
+    </svg>
+  ),
+  info: (
+    <svg
+      viewBox="0 0 24 24"
+      width="14"
+      height="14"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
+      <circle cx="12" cy="12" r="10" />
+      <line x1="12" y1="16" x2="12" y2="12" />
+      <line x1="12" y1="8" x2="12.01" y2="8" />
+    </svg>
+  ),
+  briefcase: (
+    <svg
+      viewBox="0 0 24 24"
+      width="14"
+      height="14"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
+      <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+      <path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16" />
+    </svg>
+  ),
+  chart: (
+    <svg
+      viewBox="0 0 24 24"
+      width="14"
+      height="14"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
+      <path d="M12 20v-6M18 20V4M6 20v-4" />
+      <rect x="2" y="4" width="20" height="16" rx="2" />
+    </svg>
+  ),
+  award: (
+    <svg
+      viewBox="0 0 24 24"
+      width="14"
+      height="14"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
+      <circle cx="12" cy="8" r="6" />
+      <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11" />
+    </svg>
+  ),
+};
+
+function value(object: unknown, key: string): string {
   const v = record(object)[key];
 
-  if (
-    v === undefined ||
-    v === null
-  ) {
+  if (v === undefined || v === null) {
     return "";
   }
 
   return String(v);
 }
 
-function getSection(
-  sections: any[],
-  type: string,
-) {
-  return sections.find(
-    (section) =>
-      section.type === type,
-  );
+function getSection(sections: any[], type: string) {
+  return sections.find((section) => section.type === type);
 }
 
-function formatDate(
-  start?: string,
-  end?: string,
-) {
+function formatDate(start?: string, end?: string) {
   if (start && end) {
     return `${start} - ${end}`;
   }
@@ -112,90 +243,52 @@ function formatDate(
   return end || "";
 }
 
-export default function ModernTemplate3({
-  content,
-  theme,
-}: TemplateProps) {
-  const {
-    personalInfo,
-    sections,
-  } = content;
+export default function ModernTemplate3({ content, theme }: TemplateProps) {
+  const { personalInfo, sections } = content;
 
-  const education =
-    getSection(
-      sections,
-      "education",
-    );
+  const contactSection = sections.find(
+    (s) => s.type === "custom" && s.id === "contact",
+  );
 
-  const experience =
-    getSection(
-      sections,
-      "experience",
-    );
+  const contactItems = contactSection?.items || [];
 
-  const skills =
-    sections.find(
-      (section) =>
-        section.type === "skills" ||
-        section.type === "ratedSkills",
-    );
+  const education = getSection(sections, "education");
 
-  const languages =
-    sections.find(
-      (section) =>
-        section.type === "languages" ||
-        section.id === "languages",
-    );
+  const experience = getSection(sections, "experience");
 
-  const achievement =
-    sections.find(
-      (section) =>
-        section.type === "achievements"
-    );
+  const skills = sections.find(
+    (section) => section.type === "skills" || section.type === "ratedSkills",
+  );
 
-  const fullName =
-    personalInfo.fullName?.trim() ||
-    "JONATHAN PATTERSON";
+  const languages = sections.find(
+    (section) => section.type === "languages" || section.id === "languages",
+  );
 
-  const nameParts =
-    fullName.split(/\s+/);
+  const achievement = sections.find(
+    (section) => section.type === "achievements",
+  );
+
+  const fullName = personalInfo.fullName?.trim() || "JONATHAN PATTERSON";
+
+  const nameParts = fullName.split(/\s+/);
 
   const firstName =
-    nameParts.length > 1
-      ? nameParts
-          .slice(0, -1)
-          .join(" ")
-      : nameParts[0];
+    nameParts.length > 1 ? nameParts.slice(0, -1).join(" ") : nameParts[0];
 
-  const lastName =
-    nameParts.length > 1
-      ? nameParts[
-          nameParts.length - 1
-        ]
-      : "";
+  const lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : "";
 
-  const initials =
-    fullName
-      .split(/\s+/)
-      .map(
-        (name) =>
-          name.charAt(0),
-      )
-      .join("")
-      .slice(0, 2)
-      .toUpperCase();
+  const initials = fullName
+    .split(/\s+/)
+    .map((name) => name.charAt(0))
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 
-  const primary =
-    theme.primaryColor ||
-    "#777674";
+  const primary = theme.primaryColor || "#777674";
 
-  const accent =
-    theme.accentColor ||
-    "#7B2CFF";
+  const accent = theme.accentColor || "#7B2CFF";
 
-  const text =
-    theme.textColor ||
-    "#444444";
+  const text = theme.textColor || "#444444";
 
   return (
     <div
@@ -214,21 +307,12 @@ export default function ModernTemplate3({
 
       <div className="m3-header">
         <div className="m3-name">
-          <div className="m3-first-name">
-            {firstName}
-          </div>
+          <div className="m3-first-name">{firstName}</div>
 
-          {lastName && (
-            <div className="m3-last-name">
-              {lastName}
-            </div>
-          )}
+          {lastName && <div className="m3-last-name">{lastName}</div>}
         </div>
 
-        <div className="m3-title">
-          {personalInfo.title ||
-            "Art Director"}
-        </div>
+        <div className="m3-title">{personalInfo.title || "Art Director"}</div>
       </div>
 
       {/* ======================================================
@@ -236,90 +320,44 @@ export default function ModernTemplate3({
       ======================================================= */}
 
       <aside className="m3-sidebar">
-
         {/* PHOTO */}
 
-        <div className="m3-photo">
-          <div className="m3-photo-inner">
-            {personalInfo.photoUrl ? (
+        {personalInfo.photoUrl && (
+          <div className="m3-photo">
+            <div className="m3-photo-inner">
               <img
-                src={
-                  personalInfo.photoUrl
-                }
-                alt={
-                  personalInfo.fullName ||
-                  "Profile"
-                }
+                src={personalInfo.photoUrl}
+                alt={personalInfo.fullName || "Profile"}
               />
-            ) : (
-              <div className="m3-initials">
-                {initials}
-              </div>
-            )}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* EDUCATION */}
 
-        {education?.items?.length >
-          0 && (
+        {education?.items?.length > 0 && (
           <SidebarSection title="EDUCATION">
-            {education.items.map(
-              (
-                item: any,
-                index: number,
-              ) => {
-                const edu =
-                  record(item);
+            {education.items.map((item: any, index: number) => {
+              const edu = record(item);
 
-                return (
-                  <div
-                    className="m3-education"
-                    key={index}
-                  >
-                    <div className="m3-edu-date">
-                      {formatDate(
-                        value(
-                          edu,
-                          "start",
-                        ),
-                        value(
-                          edu,
-                          "end",
-                        ),
-                      )}
-                    </div>
-
-                    <div className="m3-edu-degree">
-                      {value(
-                        edu,
-                        "degree",
-                      )}
-                    </div>
-
-                    <div className="m3-edu-school">
-                      {value(
-                        edu,
-                        "school",
-                      )}
-                    </div>
-
-                    {value(
-                      edu,
-                      "description",
-                    ) && (
-                      <div className="m3-edu-description">
-                        •{" "}
-                        {value(
-                          edu,
-                          "description",
-                        )}
-                      </div>
-                    )}
+              return (
+                <div className="m3-education" key={index}>
+                  <div className="m3-edu-date">
+                    {formatDate(value(edu, "start"), value(edu, "end"))}
                   </div>
-                );
-              },
-            )}
+
+                  <div className="m3-edu-degree">{value(edu, "degree")}</div>
+
+                  <div className="m3-edu-school">{value(edu, "school")}</div>
+
+                  {value(edu, "description") && (
+                    <div className="m3-edu-description">
+                      • {value(edu, "description")}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </SidebarSection>
         )}
 
@@ -328,33 +366,13 @@ export default function ModernTemplate3({
         {(skills?.items ?? []).length > 0 && (
           <SidebarSection title="SKILLS">
             <ul className="m3-bullet-list">
-              {skills?.items.map(
-                (
-                  item: any,
-                  index: number,
-                ) => {
-                  const skill =
-                    record(item);
+              {skills?.items.map((item: any, index: number) => {
+                const skill = record(item);
 
-                  const name =
-                    value(
-                      skill,
-                      "name",
-                    ) ||
-                    value(
-                      skill,
-                      "label",
-                    );
+                const name = value(skill, "name") || value(skill, "label");
 
-                  return (
-                    <li
-                      key={index}
-                    >
-                      {name}
-                    </li>
-                  );
-                },
-              )}
+                return <li key={index}>{name}</li>;
+              })}
             </ul>
           </SidebarSection>
         )}
@@ -364,87 +382,52 @@ export default function ModernTemplate3({
         {(languages?.items ?? []).length > 0 && (
           <SidebarSection title="LANGUAGES">
             <ul className="m3-bullet-list">
-              {languages?.items.map(
-                (
-                  item: any,
-                  index: number,
-                ) => {
-                  const language =
-                    record(item);
+              {languages?.items.map((item: any, index: number) => {
+                const language = record(item);
 
-                  const name =
-                    value(
-                      language,
-                      "name",
-                    ) ||
-                    value(
-                      language,
-                      "label",
-                    );
+                const name =
+                  value(language, "name") || value(language, "label");
 
-                  const level =
-                    value(
-                      language,
-                      "level",
-                    );
+                const level = value(language, "level");
 
-                  return (
-                    <li
-                      key={index}
-                    >
-                      {name}
-                      {level
-                        ? ` (${level})`
-                        : ""}
-                    </li>
-                  );
-                },
-              )}
+                return (
+                  <li key={index}>
+                    {name}
+                    {level ? ` (${level})` : ""}
+                  </li>
+                );
+              })}
             </ul>
           </SidebarSection>
         )}
 
         {/* CONTACT */}
 
+        {/* CONTACT */}
+
         <SidebarSection title="CONTACT">
           <div className="m3-contact">
+            {contactItems.map((item, i) => {
+              if (
+                typeof item === "object" &&
+                item !== null &&
+                "label" in item &&
+                "description" in item
+              ) {
+                let icon = Icon.pin;
+                if (item.label === "phone") icon = Icon.phone;
+                else if (item.label === "email") icon = Icon.mail;
+                else if (item.label === "web") icon = Icon.globe;
 
-            {personalInfo.phone && (
-              <Contact
-                icon={phoneIcon}
-                value={
-                  personalInfo.phone
-                }
-              />
-            )}
-
-            {personalInfo.email && (
-              <Contact
-                icon={mailIcon}
-                value={
-                  personalInfo.email
-                }
-              />
-            )}
-
-            {personalInfo.location && (
-              <Contact
-                icon={locationIcon}
-                value={
-                  personalInfo.location
-                }
-              />
-            )}
-
-            {personalInfo.website && (
-              <Contact
-                icon={globeIcon}
-                value={
-                  personalInfo.website
-                }
-              />
-            )}
-
+                return (
+                  <div className="m3-contact-row" key={i}>
+                    <span className="m3-contact-icon">{icon}</span>
+                    <span className="m3-contact-value">{item.description}</span>
+                  </div>
+                );
+              }
+              return null;
+            })}
           </div>
         </SidebarSection>
       </aside>
@@ -454,200 +437,114 @@ export default function ModernTemplate3({
       ======================================================= */}
 
       <main className="m3-main">
-
         {/* PROFILE INFO */}
 
         {personalInfo.summary && (
           <MainSection title="PROFILE INFO">
-            <p className="m3-profile">
-              {personalInfo.summary}
-            </p>
+            <p className="m3-profile">{personalInfo.summary}</p>
           </MainSection>
         )}
 
         {/* EXPERIENCE */}
 
-        {experience?.items?.length >
-          0 && (
+        {experience?.items?.length > 0 && (
           <MainSection title="EXPERIENCE">
             <div className="m3-experience">
+              {experience.items.map((item: any, index: number) => {
+                const job = record(item);
 
-              {experience.items.map(
-                (
-                  item: any,
-                  index: number,
-                ) => {
-                  const job =
-                    record(item);
+                const bullets = Array.isArray(job.bullets) ? job.bullets : [];
 
-                  const bullets =
-                    Array.isArray(
-                      job.bullets,
-                    )
-                      ? job.bullets
-                      : [];
+                return (
+                  <div className="m3-experience-item" key={index}>
+                    {/* TIMELINE */}
 
-                  return (
-                    <div
-                      className="m3-experience-item"
-                      key={index}
-                    >
-                      {/* TIMELINE */}
+                    <div className="m3-timeline">
+                      <span className="m3-circle" />
 
-                      <div className="m3-timeline">
-                        <span className="m3-circle" />
+                      {index < experience.items.length - 1 && (
+                        <span className="m3-line" />
+                      )}
+                    </div>
 
-                        {index <
-                          experience
-                            .items
-                            .length -
-                            1 && (
-                          <span className="m3-line" />
-                        )}
-                      </div>
+                    {/* JOB CONTENT */}
 
-                      {/* JOB CONTENT */}
+                    <div className="m3-job">
+                      <div className="m3-job-header">
+                        <div>
+                          <div className="m3-role">{value(job, "role")}</div>
 
-                      <div className="m3-job">
-
-                        <div className="m3-job-header">
-                          <div>
-                            <div className="m3-role">
-                              {value(
-                                job,
-                                "role",
-                              )}
-                            </div>
-
-                            <div className="m3-company">
-                              {value(
-                                job,
-                                "company",
-                              )}
-                            </div>
-                          </div>
-
-                          <div className="m3-date">
-                            {formatDate(
-                              value(
-                                job,
-                                "start",
-                              ),
-                              value(
-                                job,
-                                "end",
-                              ),
-                            )}
+                          <div className="m3-company">
+                            {value(job, "company")}
                           </div>
                         </div>
 
-                        {value(
-                          job,
-                          "description",
-                        ) && (
-                          <p className="m3-job-description">
-                            {value(
-                              job,
-                              "description",
-                            )}
-                          </p>
-                        )}
-
-                        {bullets.length >
-                          0 && (
-                          <ul className="m3-job-bullets">
-                            {bullets.map(
-                              (
-                                bullet: string,
-                                bulletIndex: number,
-                              ) => (
-                                <li
-                                  key={
-                                    bulletIndex
-                                  }
-                                >
-                                  {bullet}
-                                </li>
-                              ),
-                            )}
-                          </ul>
-                        )}
-
+                        <div className="m3-date">
+                          {formatDate(value(job, "start"), value(job, "end"))}
+                        </div>
                       </div>
-                    </div>
-                  );
-                },
-              )}
 
+                      {value(job, "description") && (
+                        <p className="m3-job-description">
+                          {value(job, "description")}
+                        </p>
+                      )}
+
+                      {bullets.length > 0 && (
+                        <ul className="m3-job-bullets">
+                          {bullets.map(
+                            (bullet: string, bulletIndex: number) => (
+                              <li key={bulletIndex}>{bullet}</li>
+                            ),
+                          )}
+                        </ul>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </MainSection>
         )}
 
         {/* ACHIEVEMENT */}
 
-        {(achievement?.items ?? []).length > 0&& (
+        {(achievement?.items ?? []).length > 0 && (
           <MainSection title="ACHIEVEMENT">
             <div className="m3-achievements">
-              {achievement?.items.map(
-                (
-                  item: any,
-                  index: number,
-                ) => {
-                  const achievementItem =
-                    record(item);
+              {achievement?.items.map((item: any, index: number) => {
+                const achievementItem = record(item);
 
-                  return (
-                    <div
-                      className="m3-achievement"
-                      key={index}
-                    >
-                      <span className="m3-achievement-dot">
-                        •
-                      </span>
+                return (
+                  <div className="m3-achievement" key={index}>
+                    <span className="m3-achievement-dot">•</span>
 
-                      <div>
-                        <div className="m3-achievement-year">
-                          {value(
-                            achievementItem,
-                            "year",
-                          )}
-                        </div>
-
-                        {value(
-                          achievementItem,
-                          "title",
-                        ) && (
-                          <div className="m3-achievement-title">
-                            {value(
-                              achievementItem,
-                              "title",
-                            )}
-                          </div>
-                        )}
-
-                        {value(
-                          achievementItem,
-                          "description",
-                        ) && (
-                          <div className="m3-achievement-description">
-                            {value(
-                              achievementItem,
-                              "description",
-                            )}
-                          </div>
-                        )}
+                    <div>
+                      <div className="m3-achievement-year">
+                        {value(achievementItem, "year")}
                       </div>
+
+                      {value(achievementItem, "title") && (
+                        <div className="m3-achievement-title">
+                          {value(achievementItem, "title")}
+                        </div>
+                      )}
+
+                      {value(achievementItem, "description") && (
+                        <div className="m3-achievement-description">
+                          {value(achievementItem, "description")}
+                        </div>
+                      )}
                     </div>
-                  );
-                },
-              )}
+                  </div>
+                );
+              })}
             </div>
           </MainSection>
         )}
       </main>
 
       <style jsx>{`
-
         /* ====================================================
            BASE
         ==================================================== */
@@ -723,24 +620,17 @@ export default function ModernTemplate3({
 
         .m3-sidebar {
           position: absolute;
-
           left: 24px;
           top: 26px;
-
           width: 196px;
-
           min-height: calc(100% - 26px);
-
-          background: #eeeeee;
-
+          background: var(--m3-accent);
           border: 3px solid var(--m3-accent);
-
-          padding:
-            210px
-            20px
-            22px;
-
+          border-radius: 100px 100px 0 0;
+          padding: 210px 20px 22px;
           z-index: 10;
+          overflow: hidden; /* Add this to prevent content from overflowing */
+          word-wrap: break-word; /* Add this to wrap long words */
         }
 
         /* ====================================================
@@ -809,122 +699,110 @@ export default function ModernTemplate3({
 
         .m3-sidebar-section {
           margin: 0 0 25px 0;
+          width: 100%;
+          max-width: 100%;
+          overflow: hidden;
         }
 
         .m3-sidebar-heading {
           display: flex;
           align-items: center;
-
           height: 14px;
-
           margin-bottom: 11px;
+          width: 100%;
         }
 
         .m3-sidebar-heading span {
           flex: 0 0 auto;
-
           color: #3d3d3d;
-
           font-size: 11.5px;
           font-weight: 800;
-
           letter-spacing: 0.1px;
+          white-space: nowrap;
         }
 
         .m3-sidebar-heading::after {
           content: "";
-
           flex: 1;
-
           height: 1px;
-
           background: #a9a9a9;
-
           margin-left: 12px;
+          min-width: 10px;
         }
 
         /* ====================================================
-           EDUCATION
-        ==================================================== */
+   EDUCATION - Fix overflow
+==================================================== */
 
         .m3-education {
           margin-bottom: 12px;
-
-          font-family:
-            Arial,
-            sans-serif;
-
+          font-family: Arial, sans-serif;
           color: #4d4d4d;
+          width: 100%;
+          max-width: 100%;
+          overflow: hidden;
+          word-wrap: break-word;
         }
 
         .m3-edu-date {
           font-size: 8.9px;
           line-height: 1.25;
-
           margin-bottom: 2px;
         }
 
         .m3-edu-degree {
           font-size: 8.2px;
           line-height: 1.25;
-
           font-weight: 800;
-
           text-transform: uppercase;
+          word-wrap: break-word;
         }
 
         .m3-edu-school {
           font-size: 8.2px;
           line-height: 1.25;
-
           font-weight: 800;
-
           text-transform: uppercase;
+          word-wrap: break-word;
         }
 
         .m3-edu-description {
           margin-top: 4px;
-
           font-size: 8.3px;
           line-height: 1.35;
-
           color: #646464;
+          word-wrap: break-word;
         }
 
         /* ====================================================
-           BULLET LIST
-        ==================================================== */
+   BULLET LIST - Fix overflow
+==================================================== */
 
         .m3-bullet-list {
           list-style: none;
-
           margin: 0;
           padding: 0;
-
-          font-family:
-            Arial,
-            sans-serif;
-
+          font-family: Arial, sans-serif;
           font-size: 8.8px;
           line-height: 1.8;
-
           color: #505050;
+          width: 100%;
+          max-width: 100%;
+          overflow: hidden;
         }
 
         .m3-bullet-list li {
           position: relative;
-
           padding-left: 11px;
+          word-wrap: break-word;
+          overflow-wrap: anywhere;
         }
 
         .m3-bullet-list li::before {
           content: "•";
-
           position: absolute;
-
           left: 0;
           top: 0;
-
           color: #333333;
         }
 
@@ -934,40 +812,49 @@ export default function ModernTemplate3({
 
         .m3-contact {
           display: flex;
-
           flex-direction: column;
-
-          gap: 6px;
+          gap: 8px;
+          width: 100%; /* Ensure it takes full sidebar width */
+          max-width: 100%; /* Prevent overflow */
         }
 
         .m3-contact-row {
           display: grid;
-
-          grid-template-columns:
-            11px
-            minmax(0, 1fr);
-
-          column-gap: 4px;
-
+          grid-template-columns: 14px minmax(0, 1fr); /* Fixed icon width, content takes rest */
+          column-gap: 8px;
+          align-items: flex-start; /* Align items to top */
           color: #4d4d4d;
-
-          font-family:
-            Arial,
-            sans-serif;
-
+          font-family: Arial, sans-serif;
           font-size: 8.1px;
-
           line-height: 1.35;
+          width: 100%;
+          max-width: 100%;
+          overflow: hidden; /* Prevent overflow */
         }
 
         .m3-contact-icon {
           display: flex;
           align-items: center;
           justify-content: center;
+          flex-shrink: 0; /* Prevent icon from shrinking */
+          width: 14px;
+          height: 14px;
+          color: #4d4d4d;
+          margin-top: 1px;
+        }
+
+        .m3-contact-icon svg {
+          width: 10px;
+          height: 10px;
+          display: block;
+          flex-shrink: 0;
         }
 
         .m3-contact-value {
-          overflow-wrap: anywhere;
+          overflow-wrap: anywhere; /* Break long words if needed */
+          word-break: break-word;
+          min-width: 0; /* Allow shrinking */
+          color: #4d4d4d;
         }
 
         /* ====================================================
@@ -979,11 +866,7 @@ export default function ModernTemplate3({
 
           min-height: 550px;
 
-          padding:
-            19px
-            28px
-            30px
-            230px;
+          padding: 19px 28px 30px 230px;
 
           background: #ffffff;
         }
@@ -1019,10 +902,7 @@ export default function ModernTemplate3({
 
           color: #3b3b3b;
 
-          font-family:
-            "Montserrat",
-            Arial,
-            sans-serif;
+          font-family: "Montserrat", Arial, sans-serif;
 
           font-size: 11.5px;
 
@@ -1054,9 +934,7 @@ export default function ModernTemplate3({
 
           color: #5a5a5a;
 
-          font-family:
-            Arial,
-            sans-serif;
+          font-family: Arial, sans-serif;
 
           font-size: 8.8px;
 
@@ -1108,9 +986,7 @@ export default function ModernTemplate3({
           width: 14px;
           height: 14px;
 
-          border:
-            1px solid
-            #333333;
+          border: 1px solid #333333;
 
           border-radius: 50%;
 
@@ -1157,9 +1033,7 @@ export default function ModernTemplate3({
         .m3-role {
           color: #353535;
 
-          font-family:
-            Arial,
-            sans-serif;
+          font-family: Arial, sans-serif;
 
           font-size: 8.4px;
 
@@ -1175,9 +1049,7 @@ export default function ModernTemplate3({
 
           color: #353535;
 
-          font-family:
-            Arial,
-            sans-serif;
+          font-family: Arial, sans-serif;
 
           font-size: 8.3px;
 
@@ -1193,9 +1065,7 @@ export default function ModernTemplate3({
 
           color: #676767;
 
-          font-family:
-            Arial,
-            sans-serif;
+          font-family: Arial, sans-serif;
 
           font-size: 8px;
 
@@ -1205,16 +1075,11 @@ export default function ModernTemplate3({
         }
 
         .m3-job-description {
-          margin:
-            4px
-            0
-            0;
+          margin: 4px 0 0;
 
           color: #5c5c5c;
 
-          font-family:
-            Arial,
-            sans-serif;
+          font-family: Arial, sans-serif;
 
           font-size: 8.3px;
 
@@ -1222,10 +1087,7 @@ export default function ModernTemplate3({
         }
 
         .m3-job-bullets {
-          margin:
-            4px
-            0
-            0;
+          margin: 4px 0 0;
 
           padding: 0;
 
@@ -1233,9 +1095,7 @@ export default function ModernTemplate3({
 
           color: #5c5c5c;
 
-          font-family:
-            Arial,
-            sans-serif;
+          font-family: Arial, sans-serif;
 
           font-size: 8.3px;
 
@@ -1271,9 +1131,7 @@ export default function ModernTemplate3({
 
           column-gap: 4px;
 
-          font-family:
-            Arial,
-            sans-serif;
+          font-family: Arial, sans-serif;
         }
 
         .m3-achievement-dot {
@@ -1332,7 +1190,6 @@ export default function ModernTemplate3({
             min-height: calc(100% - 26px);
           }
         }
-
       `}</style>
     </div>
   );
@@ -1386,22 +1243,12 @@ function MainSection({
    CONTACT
 ================================================================ */
 
-function Contact({
-  icon,
-  value,
-}: {
-  icon: React.ReactNode;
-  value: string;
-}) {
+function Contact({ icon, value }: { icon: React.ReactNode; value: string }) {
   return (
     <div className="m3-contact-row">
-      <span className="m3-contact-icon">
-        {icon}
-      </span>
+      <span className="m3-contact-icon">{icon}</span>
 
-      <span className="m3-contact-value">
-        {value}
-      </span>
+      <span className="m3-contact-value">{value}</span>
     </div>
   );
 }

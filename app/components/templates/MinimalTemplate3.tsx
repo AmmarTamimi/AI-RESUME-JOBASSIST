@@ -89,14 +89,10 @@ export default function MinimalTemplate3({ content, theme }: TemplateProps) {
     >
       {/* ===== HEADER: photo + name/title (left) — contact block (right) ===== */}
       <header className="header">
-        <div className="avatar">
-          {personalInfo.photoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={personalInfo.photoUrl} alt={name} className="avatarImg" />
-          ) : (
-            <div className="avatarPlaceholder" />
-          )}
-        </div>
+       {personalInfo.photoUrl &&  <div className="avatar">
+         <img src={personalInfo.photoUrl} alt={name} className="avatarImg" />
+         
+        </div>}
 
         <div className="nameBlock">
           <div className="name">{name}</div>

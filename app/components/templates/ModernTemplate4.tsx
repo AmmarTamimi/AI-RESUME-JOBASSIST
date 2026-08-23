@@ -106,13 +106,12 @@ export default function ExecutiveTemplate({ content, theme }: TemplateProps) {
 
       {/* ================= SIDEBAR ================= */}
       <aside className="sidebar">
-        <div className="photoBlock">
-          {personalInfo.photoUrl ? (
+       {personalInfo.photoUrl &&  <div className="photoBlock">
+          
             <img src={personalInfo.photoUrl} alt={personalInfo.fullName} />
-          ) : (
-            <span className="photoFallback">{initials || "U"}</span>
-          )}
-        </div>
+          
+           
+        </div>}
 
         <div className="sideHeading">
           <div className="iconBadge">{Icon.mail}</div>
