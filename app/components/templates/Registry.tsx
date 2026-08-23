@@ -11,9 +11,14 @@ import ModernTemplate6 from './ModernTemplate6';
 import MinimalTemplate from './MinimalTemplate';
 import MinimalTemplate2 from './MinimalTemplate2';
 import MinimalTemplate3 from './MinimalTemplate3';
+import MinimalTemplate4 from './MinimalTemplate4';
+import MinimalTemplate5 from './MinimalTemplate5';
 import ProfessionalTemplate from './ProfessionalTemplate';
 import ProfessionalTemplate2 from './ProfessionalTemplate2';
+import ProfessionalTemplate3 from './ProfessionalTemplate3';
 import BusinessTemplate from './BusinessTemplate';
+import BusinessTemplate2 from './BusinessTemplate2';
+import BusinessTemplate3 from './BusinessTemplate3';
 
 interface TemplateRendererProps {
   templateComponent: string;
@@ -33,9 +38,14 @@ const TEMPLATE_COMPONENTS: Record<string, React.ComponentType<{ content: ResumeC
   'MinimalTemplate': MinimalTemplate,
   'MinimalTemplate2': MinimalTemplate2,
   'MinimalTemplate3': MinimalTemplate3,
+  'MinimalTemplate4': MinimalTemplate4,
+  'MinimalTemplate5': MinimalTemplate5,
   'ProfessionalTemplate': ProfessionalTemplate,
   'ProfessionalTemplate2': ProfessionalTemplate2,
+  'ProfessionalTemplate3': ProfessionalTemplate3,
   'BusinessTemplate': BusinessTemplate,
+  'BusinessTemplate2': BusinessTemplate2,
+  'BusinessTemplate3': BusinessTemplate3,
 };
 
 export default function TemplateRenderer({ templateComponent, content, theme }: TemplateRendererProps) {

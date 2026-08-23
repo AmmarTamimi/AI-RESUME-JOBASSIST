@@ -1,3 +1,299 @@
+// import type { TemplateMeta } from "../../types/Content";
+
+// // Import the actual components
+// import ModernTemplate from "./ModernTemplate";
+// import ModernTemplate2 from "./ModernTemplate2";
+// import ModernTemplate3 from "./ModernTemplate3";
+// import ModernTemplate4 from "./ModernTemplate4";
+// import MinimalTemplate from "./MinimalTemplate";
+// import MinimalTemplate2 from "./MinimalTemplate2";
+// import MinimalTemplate3 from "./MinimalTemplate3";
+// import ProfessionalTemplate from "./ProfessionalTemplate";
+// import BusinessTemplate from "./BusinessTemplate";
+
+// export const templates: TemplateMeta[] = [
+//   {
+//     id: "modern-01",
+//     name: "Modern",
+//     category: "Modern",
+//     thumbnail: "/thumbnails/modern1.jpg",
+//     component: "ModernTemplate", // String key that matches Registry
+//     layout: "sidebar-left",
+//     defaultTheme: {
+//       primaryColor: "#1F2A44",
+//       accentColor: "#C08A3E",
+//       backgroundColor: "#FFFFFF",
+//       textColor: "#1E1E1E",
+//       mutedColor: "#6B7280",
+//       headingFont: "Poppins",
+//       bodyFont: "Inter",
+//       fontScale: "md",
+//       radius: "md",
+//     },
+//     allowedFonts: ["Inter", "Poppins", "Roboto", "Merriweather"],
+//   },
+//   {
+//     id: "modern-02",
+//     name: "Modern Professional",
+//     category: "Modern",
+//     thumbnail: "/thumbnails/modern2.jpg",
+//     component: "ModernTemplate2",
+//     layout: "sidebar-left",
+//     defaultTheme: {
+//       primaryColor: "#2E687D",
+//       accentColor: "#2E687D",
+//       backgroundColor: "#FFFFFF",
+//       textColor: "#3F3F3F",
+//       mutedColor: "#777777",
+//       headingFont: "Roboto Slab",
+//       bodyFont: "Roboto",
+//       fontScale: "md",
+//       radius: "none",
+//     },
+//     allowedFonts: ["Roboto", "Roboto Slab", "Poppins", "Inter"],
+//   },
+//   {
+//     id: "modern-03",
+//     name: "Modern Timeline",
+//     category: "Modern",
+//     thumbnail: "/thumbnails/modern3.jpg",
+//     component: "ModernTemplate3",
+//     layout: "sidebar-left",
+//     defaultTheme: {
+//       primaryColor: "#777674",
+//       accentColor: "#7B2CFF",
+//       backgroundColor: "#FFFFFF",
+//       textColor: "#4A4A4A",
+//       mutedColor: "#777777",
+//       headingFont: "Arial",
+//       bodyFont: "Arial",
+//       fontScale: "md",
+//       radius: "none",
+//     },
+//     allowedFonts: ["Arial", "Roboto", "Poppins", "Inter"],
+//   },
+//   {
+//     id: "modern-04", // New template
+//     name: "Modern 4",
+//     category: "Modern",
+//     thumbnail: "/thumbnails/modern4.jpg",
+//     component: "ModernTemplate4",
+//     layout: "sidebar-left",
+//     defaultTheme: {
+//       primaryColor: "#2C3E50",
+//       accentColor: "#B79355",
+//       backgroundColor: "#FFFFFF",
+//       textColor: "#2C3E50",
+//       mutedColor: "#7F8C8D",
+//       headingFont: "Poppins",
+//       bodyFont: "Inter",
+//       fontScale: "md",
+//       radius: "md",
+//     },
+//     allowedFonts: ["Inter", "Poppins", "Roboto", "Open Sans"],
+//   },
+//   {
+//     id: "modern-05", // New template
+//     name: "Tech Modern",
+//     category: "Modern",
+//     thumbnail: "/thumbnails/modern5.jpg",
+//     component: "ModernTemplate5",
+//     layout: "sidebar-left",
+//     defaultTheme: {
+//       primaryColor: "#0D0F14",
+//       accentColor: "#39E6C5",
+//       backgroundColor: "#0D0F14",
+//       textColor: "#D7DBE0",
+//       mutedColor: "#6B7484",
+//       headingFont: "Space Grotesk",
+//       bodyFont: "Inter",
+//       fontScale: "md",
+//       radius: "md",
+//     },
+//     allowedFonts: ["Inter", "Space Grotesk", "JetBrains Mono", "Roboto"],
+//   },
+//   {
+//     id: "modern-06", // New template
+//     name: "Elegant",
+//     category: "Modern",
+//     thumbnail: "/thumbnails/modern6.jpg",
+//     component: "ModernTemplate6",
+//     layout: "sidebar-left",
+//     defaultTheme: {
+//       primaryColor: "#1F3D2B",
+//       accentColor: "#C19A49",
+//       backgroundColor: "#FBF9F3",
+//       textColor: "#1F3D2B",
+//       mutedColor: "#9A9484",
+//       headingFont: "Cormorant Garamond",
+//       bodyFont: "Karla",
+//       fontScale: "md",
+//       radius: "md",
+//     },
+//     allowedFonts: ["Karla", "Cormorant Garamond", "Inter", "Roboto"],
+//   },
+//   {
+//     id: "minimal-01",
+//     name: "Minimal",
+//     category: "Minimal",
+//     thumbnail: "/thumbnails/minimal1.jpg",
+//     component: "MinimalTemplate",
+//     layout: "single-column",
+//     defaultTheme: {
+//       primaryColor: "#111111",
+//       accentColor: "#111111",
+//       backgroundColor: "#FFFFFF",
+//       textColor: "#1A1A1A",
+//       mutedColor: "#8A8A8A",
+//       headingFont: "Playfair Display",
+//       bodyFont: "Inter",
+//       fontScale: "md",
+//       radius: "none",
+//     },
+//     allowedFonts: ["Inter", "Playfair Display", "Roboto"],
+//   },
+//   {
+//     id: "minimal-02",
+//     name: "Minimal 2",
+//     category: "Minimal",
+//     thumbnail: "/thumbnails/minimal2.jpg",
+//     component: "MinimalTemplate2",
+//     layout: "single-column",
+//     defaultTheme: {
+//       primaryColor: "#212121",
+//       accentColor: "#212121",
+//       backgroundColor: "#FFFFFF",
+//       textColor: "#212121",
+//       mutedColor: "#212121",
+//       headingFont: "IBM Plex Sans",
+//       bodyFont: "Hind",
+//       fontScale: "md",
+//       radius: "none",
+//     },
+//     allowedFonts: ["IBM Plex Sans", "Hind", "Inter", "Roboto", "Poppins"],
+//     layoutConfig: {
+//       pageWidth: 595,
+//       pageHeight: 842,
+//       sectionLabelWidth: 140,
+//       contentWidth: 375,
+//       contentStartX: 180,
+//       sectionGap: 28,
+//       headingFont: "IBM Plex Sans",
+//       bodyFont: "Hind",
+//       headingSize: 13,
+//       bodySize: 11,
+//     },
+//   },
+//   {
+//     id: "minimal-03",
+//     name: "Minimal 3",
+//     category: "Minimal",
+//     thumbnail: "/thumbnails/minimal3.jpg",
+//     component: "MinimalTemplate3",
+//     layout: "single-column",
+//     defaultTheme: {
+//       primaryColor: "#1A1A1A",
+//       accentColor: "#1A1A1A",
+//       backgroundColor: "#FAFAFA",
+//       textColor: "#1A1A1A",
+//       mutedColor: "#8A8A8A",
+//       headingFont: "Inter",
+//       bodyFont: "Inter",
+//       fontScale: "md",
+//       radius: "none",
+//     },
+//     allowedFonts: ["Inter", "Roboto", "Poppins"],
+//   },
+//   {
+//     id: "professional-01",
+//     name: "Professional",
+//     category: "Professional",
+//     thumbnail: "/thumbnails/professional1.jpg",
+//     component: "ProfessionalTemplate",
+//     layout: "two-column",
+//     defaultTheme: {
+//       primaryColor: "#0B3B5C",
+//       accentColor: "#A98A3E",
+//       backgroundColor: "#FDFCFA",
+//       textColor: "#20242A",
+//       mutedColor: "#5B6470",
+//       headingFont: "Merriweather",
+//       bodyFont: "Roboto",
+//       fontScale: "md",
+//       radius: "sm",
+//     },
+//     allowedFonts: ["Merriweather", "Roboto", "Inter"],
+//   },
+//   {
+//     id: "professional-02", // New template - Professional/Bold
+//     name: "Bold Professional",
+//     category: "Professional",
+//     thumbnail: "/thumbnails/professional2.jpg",
+//     component: "ProfessionalTemplate2",
+//     layout: "sidebar-left",
+//     defaultTheme: {
+//       primaryColor: "#3B1F3D",
+//       accentColor: "#CFE85C",
+//       backgroundColor: "#FFFFFF",
+//       textColor: "#241227",
+//       mutedColor: "#6A6A6A",
+//       headingFont: "Sora",
+//       bodyFont: "Manrope",
+//       fontScale: "md",
+//       radius: "md",
+//     },
+//     allowedFonts: ["Manrope", "Sora", "Inter", "Roboto"],
+//   },
+//   {
+//     id: "business-04",
+//     name: "Business",
+//     category: "Business",
+//     thumbnail: "/thumbnails/business4.jpg",
+//     component: "BusinessTemplate",
+//     layout: "header-band",
+//     defaultTheme: {
+//       primaryColor: "#7A1F2B",
+//       accentColor: "#7A1F2B",
+//       backgroundColor: "#FFFFFF",
+//       textColor: "#1E1E1E",
+//       mutedColor: "#6B7280",
+//       headingFont: "Roboto Condensed",
+//       bodyFont: "Inter",
+//       fontScale: "md",
+//       radius: "none",
+//     },
+//     allowedFonts: ["Roboto Condensed", "Inter", "Poppins"],
+//   },
+// ];
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import type { TemplateMeta } from "../../types/Content";
 
 // Import the actual components
@@ -73,7 +369,7 @@ export const templates: TemplateMeta[] = [
     allowedFonts: ["Arial", "Roboto", "Poppins", "Inter"],
   },
   {
-    id: "modern-04", // New template
+    id: "modern-04",
     name: "Modern 4",
     category: "Modern",
     thumbnail: "/thumbnails/modern4.jpg",
@@ -93,7 +389,7 @@ export const templates: TemplateMeta[] = [
     allowedFonts: ["Inter", "Poppins", "Roboto", "Open Sans"],
   },
   {
-    id: "modern-05", // New template
+    id: "modern-05",
     name: "Tech Modern",
     category: "Modern",
     thumbnail: "/thumbnails/modern5.jpg",
@@ -113,7 +409,7 @@ export const templates: TemplateMeta[] = [
     allowedFonts: ["Inter", "Space Grotesk", "JetBrains Mono", "Roboto"],
   },
   {
-    id: "modern-06", // New template
+    id: "modern-06",
     name: "Elegant",
     category: "Modern",
     thumbnail: "/thumbnails/modern6.jpg",
@@ -205,6 +501,46 @@ export const templates: TemplateMeta[] = [
     allowedFonts: ["Inter", "Roboto", "Poppins"],
   },
   {
+    id: "minimal-04",
+    name: "Minimal Timeline",
+    category: "Minimal",
+    thumbnail: "/thumbnails/minimal4.png",
+    component: "MinimalTemplate4",
+    layout: "single-column",
+    defaultTheme: {
+      primaryColor: "#1C1C1C",
+      accentColor: "#B8552F",
+      backgroundColor: "#FCFCFA",
+      textColor: "#1C1C1C",
+      mutedColor: "#8A8A8A",
+      headingFont: "Fraunces",
+      bodyFont: "Inter",
+      fontScale: "md",
+      radius: "none",
+    },
+    allowedFonts: ["Inter", "Fraunces", "Roboto", "Playfair Display"],
+  },
+  {
+    id: "minimal-05",
+    name: "Minimal Split",
+    category: "Minimal",
+    thumbnail: "/thumbnails/minimal5.png",
+    component: "MinimalTemplate5",
+    layout: "single-column",
+    defaultTheme: {
+      primaryColor: "#212121",
+      accentColor: "#3E5C4F",
+      backgroundColor: "#FFFFFF",
+      textColor: "#212121",
+      mutedColor: "#8A8A8A",
+      headingFont: "Work Sans",
+      bodyFont: "Work Sans",
+      fontScale: "md",
+      radius: "none",
+    },
+    allowedFonts: ["Work Sans", "Inter", "Roboto", "Poppins"],
+  },
+  {
     id: "professional-01",
     name: "Professional",
     category: "Professional",
@@ -245,10 +581,30 @@ export const templates: TemplateMeta[] = [
     allowedFonts: ["Manrope", "Sora", "Inter", "Roboto"],
   },
   {
-    id: "business-04",
+    id: "professional-03", // New template
+    name: "Professional Strip",
+    category: "Professional",
+    thumbnail: "/thumbnails/professional3.png",
+    component: "ProfessionalTemplate3",
+    layout: "two-column",
+    defaultTheme: {
+      primaryColor: "#1B1B1B",
+      accentColor: "#0F4C4C",
+      backgroundColor: "#FFFFFF",
+      textColor: "#1B1B1B",
+      mutedColor: "#999999",
+      headingFont: "Arial",
+      bodyFont: "Georgia",
+      fontScale: "md",
+      radius: "none",
+    },
+    allowedFonts: ["Georgia", "Arial", "Inter", "Roboto", "Merriweather"],
+  },
+  {
+    id: "business-01",
     name: "Business",
     category: "Business",
-    thumbnail: "/thumbnails/business4.jpg",
+    thumbnail: "/thumbnails/business1.jpg",
     component: "BusinessTemplate",
     layout: "header-band",
     defaultTheme: {
@@ -263,5 +619,45 @@ export const templates: TemplateMeta[] = [
       radius: "none",
     },
     allowedFonts: ["Roboto Condensed", "Inter", "Poppins"],
+  },
+  {
+    id: "business-02", // New template
+    name: "Business Carded",
+    category: "Business",
+    thumbnail: "/thumbnails/business2.png",
+    component: "BusinessTemplate2",
+    layout: "header-band",
+    defaultTheme: {
+      primaryColor: "#1B3A5C",
+      accentColor: "#E8A33D",
+      backgroundColor: "#F4F5F7",
+      textColor: "#22262B",
+      mutedColor: "#9AA1AB",
+      headingFont: "Inter",
+      bodyFont: "Inter",
+      fontScale: "md",
+      radius: "md",
+    },
+    allowedFonts: ["Inter", "Roboto", "Poppins", "Open Sans"],
+  },
+  {
+    id: "business-03", // New template
+    name: "Business Letterhead",
+    category: "Business",
+    thumbnail: "/thumbnails/business3.png",
+    component: "BusinessTemplate3",
+    layout: "header-band",
+    defaultTheme: {
+      primaryColor: "#26344B",
+      accentColor: "#8C1F28",
+      backgroundColor: "#FFFFFF",
+      textColor: "#232323",
+      mutedColor: "#999999",
+      headingFont: "Arial",
+      bodyFont: "Arial",
+      fontScale: "md",
+      radius: "none",
+    },
+    allowedFonts: ["Arial", "Inter", "Roboto", "Poppins"],
   },
 ];
