@@ -123,7 +123,7 @@ function createResumeFromTemplate(templateId: string): Resume {
         {
           id: 'skills',
           type: 'ratedSkills',
-          title: 'Skills',
+          title: 'Rated Skills',
           items: [
             { name: 'UI/UX Design', level: 95 },
             { name: 'Product Strategy', level: 88 },

@@ -39,15 +39,14 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { templates } from "../templates/templates";
-import { AnimatePresence,motion } from "framer-motion";
-
+import { AnimatePresence, motion } from "framer-motion";
 
 // Template Card Component - Add this after the imports
-function TemplateCard({ 
-  template, 
-  onUse 
-}: { 
-  template: any; 
+function TemplateCard({
+  template,
+  onUse,
+}: {
+  template: any;
   onUse: () => void;
 }) {
   return (
@@ -56,28 +55,32 @@ function TemplateCard({
       transition={{ duration: 0.2 }}
       className="group bg-white dark:bg-[#1E293B] border border-[#E2E8F0] dark:border-[#334155] rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300"
     >
-      <div 
+      <div
         className="aspect-[3/4] relative bg-gradient-to-br from-[#F1F5F9] to-[#E2E8F0] dark:from-[#1E293B] dark:to-[#334155] p-4 flex items-center justify-center"
         style={{
           backgroundImage: `url(${template.thumbnail})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
+          backgroundSize: "cover",
+          backgroundPosition: "center",
         }}
       >
         {/* Overlay for better text readability */}
         <div className="absolute inset-0 bg-black/30 dark:bg-black/50" />
-        
+
         <div className="relative z-10 text-center">
           <FileText className="h-12 w-12 text-white/80 mx-auto mb-2" />
-          <div className="text-xs font-medium text-white/90 capitalize">{template.category}</div>
+          <div className="text-xs font-medium text-white/90 capitalize">
+            {template.category}
+          </div>
         </div>
       </div>
       <div className="p-4">
-        <h3 className="font-medium text-[#0F172A] dark:text-white text-sm">{template.name}</h3>
+        <h3 className="font-medium text-[#0F172A] dark:text-white text-sm">
+          {template.name}
+        </h3>
         <p className="text-xs text-[#64748B] dark:text-[#94A3B8] mt-1">
-          {template.layout.replace('-', ' ')}
+          {template.layout.replace("-", " ")}
         </p>
-        <button 
+        <button
           onClick={onUse}
           className="mt-3 w-full px-3 py-1.5 text-sm font-medium text-[#8B5CF6] bg-[#EDE9FE] dark:bg-[#4C1D95] dark:text-[#C4B5FD] rounded-lg hover:bg-[#DDD6FE] dark:hover:bg-[#5B21B6] transition-colors"
         >
@@ -220,7 +223,7 @@ const loadGoogleFont = (fontName: string) => {
   document.head.appendChild(link);
 };
 
-const CATEGORIES = ['All', 'Modern', 'Professional', 'Minimal', 'Creative'];
+const CATEGORIES = ["All", "Modern", "Professional", "Minimal", "Creative"];
 export default function EditorPanel({
   personalInfo,
   sections,
@@ -242,7 +245,7 @@ export default function EditorPanel({
   const [isThemeExpanded, setIsThemeExpanded] = useState(true);
   const [isPersonalInfoExpanded, setIsPersonalInfoExpanded] = useState(true);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
-const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedCategory, setSelectedCategory] = useState("All");
 
   // Add this inside the EditorPanel component, after the useState declarations
   useEffect(() => {
@@ -301,116 +304,124 @@ const [selectedCategory, setSelectedCategory] = useState('All');
         } lg:relative lg:inset-auto`}
       >
         {/* Header */}
-       {/* Header */}
-<div className="sticky top-0 z-10 bg-white dark:bg-[#0F172A] border-b border-[#E2E8F0] dark:border-[#334155] px-4 sm:px-6 py-4">
-  <div className="flex items-center justify-between">
-    <div>
-      <h1 className="text-lg font-semibold text-[#0F172A] dark:text-white">
-        My Resume
-      </h1>
-      <div className="flex gap-1 items-center text-xs sm:text-sm text-slate-500 flex-wrap">
-        <Link href={"/dashboard"}>Dashboard</Link>
-        <p>/</p>
-        <Link href={"/dashboard/resumes"}>Resumes</Link>
-        <p>/</p>
-        <p>Resume</p>
-      </div>
-    </div>
-    <div className="flex items-center gap-2">
-      <button className="px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-medium text-[#64748B] dark:text-[#94A3B8] bg-[#F1F5F9] dark:bg-[#1E293B] rounded-lg hover:bg-[#E2E8F0] dark:hover:bg-[#334155] transition-colors">
-        Create
-      </button>
-      <button 
-        onClick={() => setIsTemplateModalOpen(true)}
-        className="px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-medium text-white bg-[#2563EB] rounded-lg hover:bg-[#1D4ED8] transition-colors"
-      >
-        Templates
-      </button>
-    </div>
-  </div>
-</div>
-
-{/* Templates Modal */}
-<AnimatePresence>
-  {isTemplateModalOpen && (
-    <>
-      {/* Backdrop */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        onClick={() => setIsTemplateModalOpen(false)}
-        className="fixed inset-0 bg-black/50 z-50"
-      />
-      
-      {/* Modal */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95, y: 20 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95, y: 20 }}
-        className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-[#0F172A] rounded-t-2xl shadow-2xl max-h-[80vh] overflow-hidden"
-        style={{ maxWidth: '100%' }}
-      >
-        <div className="p-4 sm:p-6 border-b border-[#E2E8F0] dark:border-[#334155] flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-semibold text-[#0F172A] dark:text-white">
-              Choose a Template
-            </h2>
-            <p className="text-sm text-[#64748B] dark:text-[#94A3B8]">
-              Select a template to customize your resume
-            </p>
-          </div>
-          <button
-            onClick={() => setIsTemplateModalOpen(false)}
-            className="p-2 hover:bg-[#F1F5F9] dark:hover:bg-[#1E293B] rounded-lg transition-colors"
-          >
-            <X className="h-5 w-5 text-[#64748B] dark:text-[#94A3B8]" />
-          </button>
-        </div>
-
-        {/* Categories */}
-        <div className="px-4 sm:px-6 py-3 border-b border-[#E2E8F0] dark:border-[#334155] overflow-x-auto">
-          <div className="flex gap-2">
-            {CATEGORIES.map((category) => (
-              <button
-                key={category}
-                onClick={() => setSelectedCategory(category)}
-                className={`px-3 py-1.5 text-sm font-medium rounded-lg whitespace-nowrap transition-colors ${
-                  selectedCategory === category
-                    ? 'bg-[#2563EB] text-white'
-                    : 'bg-[#F1F5F9] dark:bg-[#1E293B] text-[#64748B] dark:text-[#94A3B8] hover:bg-[#E2E8F0] dark:hover:bg-[#334155]'
-                }`}
-              >
-                {category}
+        {/* Header */}
+        <div className="sticky top-0 z-10 bg-white dark:bg-[#0F172A] border-b border-[#E2E8F0] dark:border-[#334155] px-4 sm:px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-lg font-semibold text-[#0F172A] dark:text-white">
+                My Resume
+              </h1>
+              <div className="flex gap-1 items-center text-xs sm:text-sm text-slate-500 flex-wrap">
+                <Link href={"/dashboard"}>Dashboard</Link>
+                <p>/</p>
+                <Link href={"/dashboard/resumes"}>Resumes</Link>
+                <p>/</p>
+                <p>Resume</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <button className="px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-medium text-[#64748B] dark:text-[#94A3B8] bg-[#F1F5F9] dark:bg-[#1E293B] rounded-lg hover:bg-[#E2E8F0] dark:hover:bg-[#334155] transition-colors">
+                Create
               </button>
-            ))}
+              <button
+                onClick={() => setIsTemplateModalOpen(true)}
+                className="px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-medium text-white bg-[#2563EB] rounded-lg hover:bg-[#1D4ED8] transition-colors"
+              >
+                Templates
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Templates Grid - Horizontal Scroll */}
-        <div className="p-4 sm:p-6 overflow-y-auto max-h-[55vh]">
-          <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-[#CBD5E1] dark:scrollbar-thumb-[#334155] scrollbar-track-transparent">
-            {templates
-              .filter(template => selectedCategory === 'All' || template.category.toLowerCase() === selectedCategory.toLowerCase())
-              .map((template) => (
-                <div key={template.id} className="min-w-[200px] max-w-[200px] flex-shrink-0">
-                  <TemplateCard 
-                    template={template} 
-                    onUse={() => {
-                      // Handle template selection
-                      console.log('Selected template:', template);
-                      setIsTemplateModalOpen(false);
-                      onUpdateTemplate(template.id);
-                    }} 
-                  />
+        {/* Templates Modal */}
+        <AnimatePresence>
+          {isTemplateModalOpen && (
+            <>
+              {/* Backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setIsTemplateModalOpen(false)}
+                className="fixed inset-0 bg-black/50 z-50"
+              />
+
+              {/* Modal */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-[#0F172A] rounded-t-2xl shadow-2xl max-h-[80vh] overflow-hidden"
+                style={{ maxWidth: "100%" }}
+              >
+                <div className="p-4 sm:p-6 border-b border-[#E2E8F0] dark:border-[#334155] flex items-center justify-between">
+                  <div>
+                    <h2 className="text-lg font-semibold text-[#0F172A] dark:text-white">
+                      Choose a Template
+                    </h2>
+                    <p className="text-sm text-[#64748B] dark:text-[#94A3B8]">
+                      Select a template to customize your resume
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setIsTemplateModalOpen(false)}
+                    className="p-2 hover:bg-[#F1F5F9] dark:hover:bg-[#1E293B] rounded-lg transition-colors"
+                  >
+                    <X className="h-5 w-5 text-[#64748B] dark:text-[#94A3B8]" />
+                  </button>
                 </div>
-              ))}
-          </div>
-        </div>
-      </motion.div>
-    </>
-  )}
-</AnimatePresence>
+
+                {/* Categories */}
+                <div className="px-4 sm:px-6 py-3 border-b border-[#E2E8F0] dark:border-[#334155] overflow-x-auto">
+                  <div className="flex gap-2">
+                    {CATEGORIES.map((category) => (
+                      <button
+                        key={category}
+                        onClick={() => setSelectedCategory(category)}
+                        className={`px-3 py-1.5 text-sm font-medium rounded-lg whitespace-nowrap transition-colors ${
+                          selectedCategory === category
+                            ? "bg-[#2563EB] text-white"
+                            : "bg-[#F1F5F9] dark:bg-[#1E293B] text-[#64748B] dark:text-[#94A3B8] hover:bg-[#E2E8F0] dark:hover:bg-[#334155]"
+                        }`}
+                      >
+                        {category}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Templates Grid - Horizontal Scroll */}
+                <div className="p-4 sm:p-6 overflow-y-auto max-h-[55vh]">
+                  <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-[#CBD5E1] dark:scrollbar-thumb-[#334155] scrollbar-track-transparent">
+                    {templates
+                      .filter(
+                        (template) =>
+                          selectedCategory === "All" ||
+                          template.category.toLowerCase() ===
+                            selectedCategory.toLowerCase(),
+                      )
+                      .map((template) => (
+                        <div
+                          key={template.id}
+                          className="min-w-[200px] max-w-[200px] flex-shrink-0"
+                        >
+                          <TemplateCard
+                            template={template}
+                            onUse={() => {
+                              // Handle template selection
+                              console.log("Selected template:", template);
+                              setIsTemplateModalOpen(false);
+                              onUpdateTemplate(template.id);
+                            }}
+                          />
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
 
         <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
           {/* Theme Editor - New Section */}
@@ -743,7 +754,7 @@ const [selectedCategory, setSelectedCategory] = useState('All');
                         ? "Experience"
                         : section.type === "education"
                           ? "Education"
-                          : section.type === "skills"
+                          : section.type === "ratedSkills"
                             ? "Skill"
                             : "Item"}
                     </button>
@@ -1117,7 +1128,7 @@ function ItemCard({
       }
 
       case "skills": {
-        if (typeof item === "string") {
+       
           return (
             <div>
               <label className="block text-xs font-medium text-[#64748B] dark:text-[#94A3B8] mb-1.5">
@@ -1133,48 +1144,39 @@ function ItemCard({
               />
             </div>
           );
-        } else if (item && typeof item === "object" && "name" in item) {
-          const skill = item as RatedSkillItem;
-          return (
-            <div className="space-y-3">
-              <div>
-                <label className="block text-xs font-medium text-[#64748B] dark:text-[#94A3B8] mb-1.5">
-                  Skill Name
-                </label>
-                <input
-                  type="text"
-                  value={skill.name}
-                  onChange={(e) =>
-                    onUpdateItem({ ...skill, name: e.target.value })
-                  }
-                  placeholder="Enter a skill (e.g., React)"
-                  autoFocus
-                  className="w-full px-3 py-2 text-sm bg-[#F8FAFC] dark:bg-[#1E293B] border border-[#E2E8F0] dark:border-[#334155] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2563EB] transition-all placeholder:text-[#94A3B8]"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-[#64748B] dark:text-[#94A3B8] mb-1.5">
-                  Skill Level
-                </label>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={skill.level || 50}
-                  onChange={(e) =>
-                    onUpdateItem({ ...skill, level: parseInt(e.target.value) })
-                  }
-                  className="w-full"
-                />
-                <span className="text-sm text-[#64748B] dark:text-[#94A3B8]">
-                  {skill.level || 50}%
-                </span>
+        }
+        case 'ratedSkills':
+        // For ratedSkills, item has name and level
+        const rated = item as RatedSkillItem;
+        return (
+          <div className="space-y-3">
+            <InputField 
+              label="Skill Name" 
+              value={rated.name || ''} 
+              onChange={(v) => onUpdateItem({ ...rated, name: v })}
+              placeholder="UI/UX Design"
+            />
+            <div>
+              <label className="block text-xs font-medium text-[#64748B] dark:text-[#94A3B8] mb-1.5">
+                Proficiency Level: {rated.level || 50}%
+              </label>
+              <input
+                type="range"
+                min={0}
+                max={100}
+                value={rated.level || 50}
+                onChange={(e) => onUpdateItem({ ...rated, level: Number(e.target.value) })}
+                className="w-full h-2 bg-[#E2E8F0] dark:bg-[#334155] rounded-lg appearance-none cursor-pointer accent-[#2563EB]"
+              />
+              <div className="flex justify-between text-xs text-[#64748B] dark:text-[#94A3B8] mt-1">
+                <span>0%</span>
+                <span>50%</span>
+                <span>100%</span>
               </div>
             </div>
-          );
-        }
-        return null;
-      }
+          </div>
+        );
+
 
       case "custom": {
         if (section.id === "contact") {
