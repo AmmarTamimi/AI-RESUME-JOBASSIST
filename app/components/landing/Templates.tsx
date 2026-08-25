@@ -40,32 +40,41 @@ export function Templates() {
 
         <div ref={ref} className="mt-14 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
           {TEMPLATES.map((t, i) => (
-            <motion.div
+            <Link
               key={i}
-              initial={{ opacity: 0, y: 30 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.5, delay: i * 0.08 }}
-              whileHover={{ y: -8, rotate: -1 }}
-              className="group relative cursor-pointer"
+              href="/dashboard/templates"
+              className="block group relative cursor-pointer"
             >
-              <div className="absolute -inset-1 bg-gradient-to-br from-accent/30 to-rose-500/20 rounded-2xl opacity-0 group-hover:opacity-100 blur-lg transition" />
-              <div className="relative">
-                <ResumeMockup variant={t.variant} layout={t.layout} />
-                <div className="absolute top-2 right-2 text-[9px] font-medium bg-white/95 text-slate-700 px-1.5 py-0.5 rounded shadow-sm ring-1 ring-black/5">
-                  {t.tag}
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={inView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.5, delay: i * 0.08 }}
+                whileHover={{ y: -8, rotate: -1 }}
+                className="relative"
+              >
+                <div className="absolute -inset-1 bg-gradient-to-br from-accent/30 to-rose-500/20 rounded-2xl opacity-0 group-hover:opacity-100 blur-lg transition" />
+                <div className="relative">
+                  <ResumeMockup variant={t.variant} layout={t.layout} />
+                  <div className="absolute top-2 right-2 text-[9px] font-medium bg-white/95 text-slate-700 px-1.5 py-0.5 rounded shadow-sm ring-1 ring-black/5">
+                    {t.tag}
+                  </div>
                 </div>
-              </div>
-              <div className="mt-3 flex items-center justify-between px-1">
-                <span className="text-sm font-medium text-foreground">{t.name}</span>
-                <Sparkles className="h-3.5 w-3.5 text-accent opacity-0 group-hover:opacity-100 transition" />
-              </div>
-            </motion.div>
+                <div className="mt-3 flex items-center justify-between px-1">
+                  <span className="text-sm font-medium text-foreground">{t.name}</span>
+                  <Sparkles className="h-3.5 w-3.5 text-accent opacity-0 group-hover:opacity-100 transition" />
+                </div>
+              </motion.div>
+            </Link>
           ))}
         </div>
 
         <div className="mt-14 flex items-center justify-center">
-          <Link href="#" className="inline-flex items-center gap-2 rounded-lg bg-foreground text-background px-6 py-3 text-sm font-medium hover:opacity-90 transition">
-            <Wand2 className="h-4 w-4" /> Generate my resume
+          <Link
+            href="/dashboard/templates"
+            className="inline-flex items-center gap-2 rounded-lg bg-foreground text-background px-6 py-3 text-sm font-medium hover:opacity-90 transition"
+          >
+            <Wand2 className="h-4 w-4" />
+            Browse All Templates
           </Link>
         </div>
       </div>
