@@ -13,12 +13,22 @@ import MinimalTemplate2 from './MinimalTemplate2';
 import MinimalTemplate3 from './MinimalTemplate3';
 import MinimalTemplate4 from './MinimalTemplate4';
 import MinimalTemplate5 from './MinimalTemplate5';
+import MinimalTemplate6 from './MinimalTemplate6';
 import ProfessionalTemplate from './ProfessionalTemplate';
 import ProfessionalTemplate2 from './ProfessionalTemplate2';
 import ProfessionalTemplate3 from './ProfessionalTemplate3';
+import ProfessionalTemplate4 from './ProfessionalTemplate4';
+import ProfessionalTemplate5 from './ProfessionalTemplate5';
 import BusinessTemplate from './BusinessTemplate';
 import BusinessTemplate2 from './BusinessTemplate2';
 import BusinessTemplate3 from './BusinessTemplate3';
+import BusinessTemplate4 from './BusinessTemplate4';
+import BusinessTemplate5 from './BusinessTemplate5';
+import ATSTemplate from './ATSTemplate';
+import ATSTemplate2 from './ATSTemplate2';
+import ATSTemplate3 from './ATSTemplate3';
+import ATSTemplate4 from './ATSTemplate4';
+import ATSTemplate5 from './ATSTemplate5';
 
 interface TemplateRendererProps {
   templateComponent: string;
@@ -40,12 +50,23 @@ const TEMPLATE_COMPONENTS: Record<string, React.ComponentType<{ content: ResumeC
   'MinimalTemplate3': MinimalTemplate3,
   'MinimalTemplate4': MinimalTemplate4,
   'MinimalTemplate5': MinimalTemplate5,
+  'MinimalTemplate6': MinimalTemplate6,
   'ProfessionalTemplate': ProfessionalTemplate,
   'ProfessionalTemplate2': ProfessionalTemplate2,
   'ProfessionalTemplate3': ProfessionalTemplate3,
+  'ProfessionalTemplate4': ProfessionalTemplate4,
+  'ProfessionalTemplate5': ProfessionalTemplate5,
   'BusinessTemplate': BusinessTemplate,
   'BusinessTemplate2': BusinessTemplate2,
   'BusinessTemplate3': BusinessTemplate3,
+  'BusinessTemplate4': BusinessTemplate4,
+  'BusinessTemplate5': BusinessTemplate5,
+  'ATSTemplate': ATSTemplate,
+  'ATSTemplate2': ATSTemplate2,
+  'ATSTemplate3': ATSTemplate3,
+  'ATSTemplate4': ATSTemplate4,
+  'ATSTemplate5': ATSTemplate5,
+
 };
 
 export default function TemplateRenderer({ templateComponent, content, theme }: TemplateRendererProps) {
