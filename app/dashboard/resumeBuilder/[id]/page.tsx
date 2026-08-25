@@ -7,10 +7,7 @@ import { createBlankSection, createBlankItem, makeId } from '../../../lib/sectio
 import EditorPanel from '../../../components/resumeBuilder/EditorPanel';
 import PreviewPanel from '../../../components/resumeBuilder/PreviewPanel';
 import { templates } from '../../../components/templates/templates';
-import womenPic from '../../../../public/womenPic.jpg'
 
-// Create a new resume from a template
-// Create a new resume from a template with realistic mock data
 function createResumeFromTemplate(templateId: string): Resume {
   const template = templates.find(t => t.id === templateId);
   console.log("template : ", template);
@@ -34,16 +31,15 @@ function createResumeFromTemplate(templateId: string): Resume {
       personalInfo: {
         fullName: 'Sarah Johnson',
         title: 'Senior Product Designer',
-        // email: 'sarah.johnson@email.com',
-        // phone: '+1 (555) 123-4567',
-        // location: 'San Francisco, CA',
-        // website: 'sarahdesigns.com',
+        email: 'sarah.johnson@email.com',
+        phone: '+1 (555) 123-4567',
+        location: 'San Francisco, CA',
+        website: 'sarahdesigns.com',
         summary: 'Creative and user-focused Product Designer with 7+ years of experience in designing digital products for startups and enterprise companies. Passionate about creating intuitive, accessible, and beautiful user experiences that solve real problems. Proven track record of leading design teams and delivering products that users love.',
         photoUrl: '/womenPic.jpg',
       },
-      sectionOrder: ['contact', 'exp', 'edu', 'skills', 'references'],
+      sectionOrder: ['contact', 'exp', 'edu', 'ratedSkills', 'references'],
       sections: [
-        // Contact Section (Custom)
         {
           id: 'contact',
           type: 'custom',
@@ -51,11 +47,10 @@ function createResumeFromTemplate(templateId: string): Resume {
           items: [
             { label: 'phone', description: '+1 (555) 123-4567' },
             { label: 'email', description: 'sarah.johnson@email.com' },
-            { label: 'web', description: 'sarahdesigns.com' },
+            { label: 'website', description: 'sarahdesigns.com' },
             { label: 'location', description: 'San Francisco, CA' },
           ],
         },
-        // Experience Section
         {
           id: 'exp',
           type: 'experience',
@@ -99,7 +94,6 @@ function createResumeFromTemplate(templateId: string): Resume {
             },
           ],
         },
-        // Education Section
         {
           id: 'edu',
           type: 'education',
@@ -119,11 +113,10 @@ function createResumeFromTemplate(templateId: string): Resume {
             },
           ],
         },
-        // Skills Section
         {
-          id: 'skills',
+          id: 'ratedSkills',
           type: 'ratedSkills',
-          title: 'Rated Skills',
+          title: 'Skills',
           items: [
             { name: 'UI/UX Design', level: 95 },
             { name: 'Product Strategy', level: 88 },
@@ -135,7 +128,6 @@ function createResumeFromTemplate(templateId: string): Resume {
             { name: 'Team Leadership', level: 82 },
           ],
         },
-        // References Section
         {
           id: 'references',
           type: 'references',
@@ -165,14 +157,12 @@ function createResumeFromTemplate(templateId: string): Resume {
 export default function ResumeBuilderPage() {
   const params = useParams();
   const templateId = params.id as string;
-  console.log("template id: ",templateId);
+  console.log("template id: ", templateId);
   
-  // Initialize resume from template
   const [resume, setResume] = useState<Resume>(() => {
     return createResumeFromTemplate(templateId);
   });
 
-  // ---- personal info ----
   const updatePersonalInfo = useCallback(<K extends keyof PersonalInfo>(field: K, value: PersonalInfo[K]) => {
     setResume((prev) => ({
       ...prev,
@@ -180,7 +170,6 @@ export default function ResumeBuilderPage() {
     }));
   }, []);
 
-  // ---- theme ----
   const updateTheme = useCallback(<K extends keyof ResumeTheme>(field: K, value: ResumeTheme[K]) => {
     setResume((prev) => ({ ...prev, theme: { ...prev.theme, [field]: value } }));
   }, []);
@@ -196,7 +185,6 @@ export default function ResumeBuilderPage() {
     }
   }, []);
 
-  // ---- sections ----
   const updateSection = useCallback((sectionId: string, updater: (section: Section) => Section) => {
     setResume((prev) => ({
       ...prev,
@@ -207,43 +195,38 @@ export default function ResumeBuilderPage() {
     }));
   }, []);
 
-  const updateSectionTitle = useCallback(
-    (sectionId: string, title: string) => {
-      updateSection(sectionId, (s) => ({ ...s, title }));
-    },
-    [updateSection]
-  );
+  const updateSectionTitle = useCallback((sectionId: string, title: string) => {
+    updateSection(sectionId, (s) => ({ ...s, title }));
+  }, [updateSection]);
 
-  const updateItem = useCallback(
-    (sectionId: string, index: number, value: unknown) => {
-      updateSection(sectionId, (s) => {
-        const items = [...(s.items as unknown[])];
-        items[index] = value;
-        return { ...s, items } as Section;
-      });
-    },
-    [updateSection]
-  );
+  const updateItem = useCallback((sectionId: string, index: number, value: unknown) => {
+    updateSection(sectionId, (s) => {
+      const items = [...(s.items as unknown[])];
+      items[index] = value;
+      return { ...s, items } as Section;
+    });
+  }, [updateSection]);
 
-  const addItem = useCallback(
-    (sectionId: string) => {
-      updateSection(sectionId, (s) => {
-        const blank = createBlankItem(s.type);
-        return { ...s, items: [...(s.items as unknown[]), blank] } as Section;
-      });
-    },
-    [updateSection]
-  );
+  const addItem = useCallback((sectionId: string) => {
+    updateSection(sectionId, (s) => {
+      let blankItem;
+      if (s.type === 'ratedSkills') {
+        blankItem = { name: '', level: 50 };
+      } else if (s.type === 'skills') {
+        blankItem = '';
+      } else {
+        blankItem = createBlankItem(s.type);
+      }
+      return { ...s, items: [...(s.items as unknown[]), blankItem] } as Section;
+    });
+  }, [updateSection]);
 
-  const removeItem = useCallback(
-    (sectionId: string, index: number) => {
-      updateSection(sectionId, (s) => {
-        const items = (s.items as unknown[]).filter((_, i) => i !== index);
-        return { ...s, items } as Section;
-      });
-    },
-    [updateSection]
-  );
+  const removeItem = useCallback((sectionId: string, index: number) => {
+    updateSection(sectionId, (s) => {
+      const items = (s.items as unknown[]).filter((_, i) => i !== index);
+      return { ...s, items } as Section;
+    });
+  }, [updateSection]);
 
   const addSection = useCallback((type: SectionType) => {
     setResume((prev) => {
@@ -274,7 +257,6 @@ export default function ResumeBuilderPage() {
     setResume((prev) => ({ ...prev, content: { ...prev.content, sectionOrder } }));
   }, []);
 
-  // Ordered sections for rendering
   const orderedSections = useMemo(() => {
     const bySectionId = new Map(resume.content.sections.map((s) => [s.id, s]));
     return resume.content.sectionOrder
