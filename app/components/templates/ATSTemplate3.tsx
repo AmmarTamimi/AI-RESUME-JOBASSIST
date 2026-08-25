@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import type { TemplateProps } from "../../types/Content";
 
 export default function ATSCompactTemplate({ content, theme }: TemplateProps) {
@@ -20,31 +20,31 @@ export default function ATSCompactTemplate({ content, theme }: TemplateProps) {
     : [personalInfo.phone, personalInfo.email, personalInfo.location, personalInfo.website].filter(Boolean) as string[];
 
   return (
-    <div className="atsx-template">
-      <div className="headerRow">
+    <div className="atsx-template data-resume-root">
+      <div className="headerRow data-resume-root">
         <span className="name">{personalInfo.fullName}</span>
         <span className="title">{personalInfo.title || "Professional"}</span>
       </div>
-      <div className="contactLine">{contactStrings.join("  |  ")}</div>
+      <div className="contactLine data-resume-root">{contactStrings.join("  |  ")}</div>
 
       {aboutText && (
-        <div className="section">
-          <div className="sectionTitle">SUMMARY:</div>
+        <div className="section data-resume-root">
+          <div className="sectionTitle data-resume-root">SUMMARY:</div>
           <p className="bodyText">{aboutText}</p>
         </div>
       )}
 
       {experienceSection && experienceSection.items.length > 0 && (
-        <div className="section">
-          <div className="sectionTitle">EXPERIENCE:</div>
+        <div className="section data-resume-root">
+          <div className="sectionTitle data-resume-root">{experienceSection.title || 'EXPERIENCE:'}</div>
           {experienceSection.items.map((job, i) => (
-            <div className="entry" key={i}>
+            <div className="entry data-resume-root" key={i}>
               <span className="entryRole">{job.role || "Position"}, {job.company}</span>
-              <span className="entryDate"> ({job.start} – {job.end || "Present"})</span>
+              <span className="entryDate"> ({job.start} â€“ {job.end || "Present"})</span>
               {job.bullets && job.bullets.length > 0 && (
-                <div className="bullets">
+                <div className="bullets data-resume-root">
                   {job.bullets.map((b, bi) => (
-                    <span className="bulletLine" key={bi}>• {b}  </span>
+                    <span className="bulletLine" key={bi}>â€¢ {b}  </span>
                   ))}
                 </div>
               )}
@@ -54,29 +54,29 @@ export default function ATSCompactTemplate({ content, theme }: TemplateProps) {
       )}
 
       {educationSection && educationSection.items.length > 0 && (
-        <div className="section">
-          <div className="sectionTitle">EDUCATION:</div>
+        <div className="section data-resume-root">
+          <div className="sectionTitle data-resume-root">{educationSection.title || 'EDUCATION:'}</div>
           {educationSection.items.map((edu, i) => (
-            <div className="entry" key={i}>
+            <div className="entry data-resume-root" key={i}>
               <span className="entryRole">{edu.degree}, {edu.school}</span>
-              <span className="entryDate"> ({edu.start} – {edu.end})</span>
+              <span className="entryDate"> ({edu.start} â€“ {edu.end})</span>
             </div>
           ))}
         </div>
       )}
 
       {ratedSkillsSection && ratedSkillsSection.items.length > 0 && (
-        <div className="section">
-          <div className="sectionTitle">SKILLS:</div>
+        <div className="section data-resume-root">
+          <div className="sectionTitle data-resume-root">{ratedSkillsSection.title || 'SKILLS:'}</div>
           <p className="bodyText">{ratedSkillsSection.items.map((s) => s.name).join(", ")}</p>
         </div>
       )}
 
       {referencesSection && referencesSection.items.length > 0 && (
-        <div className="section">
-          <div className="sectionTitle">REFERENCES:</div>
+        <div className="section data-resume-root">
+          <div className="sectionTitle data-resume-root">{referencesSection.title || 'REFERENCES:'}</div>
           {referencesSection.items.map((ref, i) => (
-            <div className="entry" key={i}>
+            <div className="entry data-resume-root" key={i}>
               <span className="entryRole">{ref.name}</span>
               <span className="entryDate">
                 {" "}({[ref.phone, ref.email].filter(Boolean).join(", ")})
@@ -174,3 +174,5 @@ export default function ATSCompactTemplate({ content, theme }: TemplateProps) {
     </div>
   );
 }
+
+

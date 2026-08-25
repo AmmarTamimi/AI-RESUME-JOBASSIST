@@ -41,6 +41,10 @@ export function createBlankItem(type: SectionType) {
       return { name: "", level: 50 };
     case "references":
       return { name: "", phone: "", email: "", address: "" };
+    case "achievements":
+      return { title: "", description: "", date: ""};
+    case "languages":
+      return { name: "", level: ""};
     case "custom":
       return { label: "", description: "" };
   }

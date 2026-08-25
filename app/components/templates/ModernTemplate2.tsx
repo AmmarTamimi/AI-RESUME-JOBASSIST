@@ -1,5 +1,11 @@
-import React from "react";
-import type { TemplateProps } from "../../types/Content";
+﻿import React from "react";
+import type {
+  AchievementItem,
+  CustomItem,
+  LanguageItem,
+  ReferenceItem,
+  TemplateProps,
+} from "../../types/Content";
 
 const Icon = {
   phone: (
@@ -57,57 +63,119 @@ const Icon = {
       <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
     </svg>
   ),
+  users: (
+    <svg
+      viewBox="0 0 24 24"
+      width="14"
+      height="14"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
+      <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M23 21v-2a4 4 0 00-3-3.87" />
+      <path d="M16 3.13a4 4 0 010 7.75" />
+    </svg>
+  ),
+  award: (
+    <svg
+      viewBox="0 0 24 24"
+      width="14"
+      height="14"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+    >
+      <circle cx="12" cy="8" r="6" />
+      <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11" />
+    </svg>
+  ),
+  flag: (
+    <svg
+      viewBox="0 0 24 24"
+      width="14"
+      height="14"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+    >
+      <path d="M4 21V4h16l-4 6 4 6H4z" />
+    </svg>
+  ),
+  star: (
+    <svg
+      viewBox="0 0 24 24"
+      width="14"
+      height="14"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+    >
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+    </svg>
+  ),
+  plus: (
+    <svg
+      viewBox="0 0 24 24"
+      width="14"
+      height="14"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+    >
+      <line x1="12" y1="5" x2="12" y2="19" />
+      <line x1="5" y1="12" x2="19" y2="12" />
+    </svg>
+  ),
 };
 
-export default function ModernTemplate2({
-  content,
-  theme,
-}: TemplateProps) {
+export default function ModernTemplate2({ content, theme }: TemplateProps) {
   const { personalInfo, sections } = content;
   const t = theme;
+  const skillsSection = sections.find((s) => s.type === "skills");
+  const languagesSection = sections.find((s) => s.type === "languages");
+  const achievementsSection = sections.find((s) => s.type === "achievements");
+  const otherCustomSections = sections.filter(
+    (s) => s.type === "custom" && s.id !== "contact",
+  );
+  const referencesSection = sections.find((s) => s.type === "references");
+
+  // Type guards
+  const isCustomItem = (item: any): item is CustomItem => {
+    return item && typeof item === "object" && "label" in item;
+  };
+
+  const isLanguageItem = (item: any): item is LanguageItem => {
+    return item && typeof item === "object" && "name" in item;
+  };
+
+  const isAchievementItem = (item: any): item is AchievementItem => {
+    return item && typeof item === "object" && "title" in item;
+  };
 
   const contactSection = sections.find(
     (s) => s.type === "custom" && s.id === "contact",
   );
   const contactItems = contactSection?.items || [];
 
-  const educationSection = sections.find(
-    (s) => s.type === "education",
-  );
+  const educationSection = sections.find((s) => s.type === "education");
 
-  const experienceSection = sections.find(
-    (s) => s.type === "experience",
-  );
+  const experienceSection = sections.find((s) => s.type === "experience");
 
-  const skillsSection = sections.find(
-    (s) => s.type === "ratedSkills",
-  );
-
+  const ratedSkillsSection = sections.find((s) => s.type === "ratedSkills");
 
   const name = personalInfo.fullName?.trim() || "Your Name";
 
   const nameParts = name.split(/\s+/);
 
   const firstName = nameParts.slice(0, -1).join(" ");
-  const lastName =
-    nameParts.length > 1
-      ? nameParts[nameParts.length - 1]
-      : "";
-
-  const initials = nameParts
-    .map((part) => part.charAt(0))
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
+  const lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : "";
 
   const primaryColor = t.primaryColor || "#2b687d";
   const accentColor = t.accentColor || "#2b687d";
   const textColor = t.textColor || "#333333";
 
-  /*
-   * Some resume systems may not currently have these optional
-   * education fields. They are therefore accessed safely.
-   */
   const getOptionalEducationValue = (
     education: unknown,
     key:
@@ -120,217 +188,157 @@ export default function ModernTemplate2({
   ) => {
     if (!education || typeof education !== "object") return "";
 
-    return String(
-      (education as Record<string, unknown>)[key] || "",
-    );
+    return String((education as Record<string, unknown>)[key] || "");
   };
 
   return (
-    <div className="digital-marketing-template">
-      {/* =========================================================
-          TOP HEADER
-      ========================================================== */}
+    <div className="digital-marketing-template data-resume-root">
+      {/* TOP HEADER */}
       <header className="topHeader">
-        <div className="headerName">
+        <div className="headerName data-resume-root">
           {firstName && <span>{firstName} </span>}
           <span>{lastName || firstName}</span>
         </div>
 
-        <div className="headerTitle">
+        <div className="headerTitle data-resume-root">
           {personalInfo.title || "DIGITAL MARKETING SPECIALIST"}
         </div>
       </header>
 
-      {/* =========================================================
-          MAIN TWO-COLUMN AREA
-      ========================================================== */}
-      <div className="resumeBody">
-
-        {/* =======================================================
-            LEFT COLUMN
-        ======================================================== */}
+      {/* MAIN TWO-COLUMN AREA */}
+      <div className="resumeBody data-resume-root">
+        {/* LEFT COLUMN */}
         <aside className="leftColumn">
-
           {/* Profile image */}
-          {personalInfo.photoUrl && <div className="profileArea">
-            <div className="profileImage">
-              {personalInfo.photoUrl && (
-                <img
-                  src={personalInfo.photoUrl}
-                  alt={personalInfo.fullName || "Profile"}
-                />
-              ) }
+          {personalInfo.photoUrl && (
+            <div className="profileArea data-resume-root">
+              <div className="profileImage data-resume-root">
+                {personalInfo.photoUrl && (
+                  <img
+                    src={personalInfo.photoUrl}
+                    alt={personalInfo.fullName || "Profile"}
+                  />
+                )}
+              </div>
             </div>
-          </div>}
-          
+          )}
 
-          {/* =====================================================
-              SUMMARY
-          ====================================================== */}
+          {/* SUMMARY */}
           {personalInfo.summary && (
             <section className="leftSection summarySection">
               <SectionHeading title="SUMMARY" />
 
-              <p className="summaryText">
-                {personalInfo.summary}
-              </p>
+              <p className="summaryText">{personalInfo.summary}</p>
             </section>
           )}
 
-          {/* =====================================================
-              EDUCATION
-          ====================================================== */}
-          {educationSection &&
-            educationSection.items.length > 0 && (
-              <section className="leftSection educationSection">
-                <SectionHeading title="EDUCATION" />
+          {/* EDUCATION */}
+          {educationSection && educationSection.items.length > 0 && (
+            <section className="leftSection educationSection">
+              <SectionHeading title={educationSection.title || "EDUCATION"} />
 
-                {educationSection.items.map((edu, index) => {
-                  const honors = getOptionalEducationValue(
-                    edu,
-                    "honors",
-                  );
+              {educationSection.items.map((edu, index) => {
+                const honors = getOptionalEducationValue(edu, "honors");
 
-                  const coursework =
-                    getOptionalEducationValue(
-                      edu,
-                      "coursework",
-                    ) ||
-                    getOptionalEducationValue(
-                      edu,
-                      "relevantCoursework",
-                    );
+                const coursework =
+                  getOptionalEducationValue(edu, "coursework") ||
+                  getOptionalEducationValue(edu, "relevantCoursework");
 
-                  const awards =
-                    getOptionalEducationValue(
-                      edu,
-                      "awards",
-                    );
+                const awards = getOptionalEducationValue(edu, "awards");
 
-                  const activities =
-                    getOptionalEducationValue(
-                      edu,
-                      "activities",
-                    ) ||
-                    getOptionalEducationValue(
-                      edu,
-                      "extracurricularActivities",
-                    );
+                const activities =
+                  getOptionalEducationValue(edu, "activities") ||
+                  getOptionalEducationValue(edu, "extracurricularActivities");
 
-                  return (
-                    <div
-                      className="educationItem"
-                      key={index}
-                    >
-                      <div className="educationDate">
-                        {edu.start}
-                        {edu.start && edu.end ? " - " : ""}
-                        {edu.end}
-                      </div>
-
-                      <div className="educationDegree">
-                        {edu.degree}
-                      </div>
-
-                      {honors && (
-                        <div className="educationDetail">
-                          {honors}
-                        </div>
-                      )}
-
-                      <div className="educationSchool">
-                        {edu.school}
-                      </div>
-
-                      {coursework && (
-                        <div className="educationExtra">
-                          <span>Relevant Coursework</span>
-                          <span>{coursework}</span>
-                        </div>
-                      )}
-
-                      {awards && (
-                        <div className="educationExtra">
-                          <span>Awards and Honors</span>
-                          <span>{awards}</span>
-                        </div>
-                      )}
-
-                      {activities && (
-                        <div className="educationExtra">
-                          <span>
-                            Extracurricular Activities
-                          </span>
-                          <span>{activities}</span>
-                        </div>
-                      )}
+                return (
+                  <div className="educationItem data-resume-root" key={index}>
+                    <div className="educationDate data-resume-root">
+                      {edu.start}
+                      {edu.start && edu.end ? " - " : ""}
+                      {edu.end}
                     </div>
-                  );
-                })}
-              </section>
-            )}
 
-          {/* =====================================================
-              RELEVANT SKILLS
-          ====================================================== */}
-          {skillsSection &&
-            skillsSection.items.length > 0 && (
-              <section className="leftSection skillsSection">
-                <SectionHeading title="RELEVANT SKILLS" />
+                    <div className="educationDegree data-resume-root">
+                      {edu.degree}
+                    </div>
 
-                <div className="skillsList">
-                  {skillsSection.items.map(
-                    (skill, index) => (
-                      <div
-                        className="skillItem"
-                        key={index}
-                      >
-                        <div className="skillTop">
-                          <span className="skillName">
-                            {skill.name}
-                          </span>
-
-                          <span className="skillPercentage">
-                            {skill.level}%
-                          </span>
-                        </div>
-
-                        <div className="skillBar">
-                          <div
-                            className="skillProgress"
-                            style={{
-                              width: `${Math.min(
-                                Math.max(skill.level, 0),
-                                100,
-                              )}%`,
-                            }}
-                          />
-                        </div>
+                    {honors && (
+                      <div className="educationDetail data-resume-root">
+                        {honors}
                       </div>
-                    ),
-                  )}
-                </div>
-              </section>
-            )}
+                    )}
+
+                    <div className="educationSchool data-resume-root">
+                      {edu.school}
+                    </div>
+
+                    {coursework && (
+                      <div className="educationExtra data-resume-root">
+                        <span>Relevant Coursework</span>
+                        <span>{coursework}</span>
+                      </div>
+                    )}
+
+                    {awards && (
+                      <div className="educationExtra data-resume-root">
+                        <span>Awards and Honors</span>
+                        <span>{awards}</span>
+                      </div>
+                    )}
+
+                    {activities && (
+                      <div className="educationExtra data-resume-root">
+                        <span>Extracurricular Activities</span>
+                        <span>{activities}</span>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </section>
+          )}
+
+          {/* RELEVANT SKILLS (Rated) */}
+          {ratedSkillsSection && ratedSkillsSection.items.length > 0 && (
+            <section className="leftSection skillsSection">
+              <SectionHeading
+                title={ratedSkillsSection.title || "RELEVANT SKILLS"}
+              />
+
+              <div className="skillsList data-resume-root">
+                {ratedSkillsSection.items.map((skill, index) => (
+                  <div className="skillItem data-resume-root" key={index}>
+                    <div className="skillTop data-resume-root">
+                      <span className="skillName">{skill.name}</span>
+
+                      <span className="skillPercentage">{skill.level}%</span>
+                    </div>
+
+                    <div className="skillBar data-resume-root">
+                      <div
+                        className="skillProgress data-resume-root"
+                        style={{
+                          width: `${Math.min(Math.max(skill.level, 0), 100)}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
         </aside>
 
-        {/* =======================================================
-            VERTICAL DIVIDER
-        ======================================================== */}
-        <div className="verticalDivider" />
+        {/* VERTICAL DIVIDER */}
+        <div className="verticalDivider data-resume-root" />
 
-        {/* =======================================================
-            RIGHT COLUMN
-        ======================================================== */}
+        {/* RIGHT COLUMN */}
         <main className="rightColumn">
-
-          {/* =====================================================
-              CONTACT
-          ====================================================== */}
+          {/* CONTACT */}
           <section className="rightSection contactSection">
             <SectionHeading title="CONTACT" />
 
-            <div className="contactList">
+            <div className="contactList data-resume-root">
               {contactItems.length > 0 ? (
                 contactItems.map((item, index) => {
                   if (
@@ -342,13 +350,9 @@ export default function ModernTemplate2({
                     return null;
                   }
 
-                  const label = String(
-                    item.label || "",
-                  ).toLowerCase();
+                  const label = String(item.label || "").toLowerCase();
 
-                  const description = String(
-                    item.description || "",
-                  );
+                  const description = String(item.description || "");
 
                   let icon = Icon.pin;
 
@@ -356,57 +360,37 @@ export default function ModernTemplate2({
                     icon = Icon.phone;
                   } else if (label === "email") {
                     icon = Icon.mail;
-                  } else if (
-                    label === "web" ||
-                    label === "website"
-                  ) {
+                  } else if (label === "web" || label === "website") {
                     icon = Icon.globe;
                   }
 
                   return (
-                    <div
-                      className="contactRow"
-                      key={index}
-                    >
-                      <span className="contactLabel">
-                        {label}
-                      </span>
+                    <div className="contactRow data-resume-root" key={index}>
+                      <span className="contactLabel">{label}</span>
 
-                      <span className="contactValue">
-                        {description}
-                      </span>
+                      <span className="contactValue">{description}</span>
                     </div>
                   );
                 })
               ) : (
                 <>
                   {personalInfo.phone && (
-                    <div className="contactRow">
-                      <span className="contactLabel">
-                        phone
-                      </span>
-                      <span className="contactValue">
-                        {personalInfo.phone}
-                      </span>
+                    <div className="contactRow data-resume-root">
+                      <span className="contactLabel">phone</span>
+                      <span className="contactValue">{personalInfo.phone}</span>
                     </div>
                   )}
 
                   {personalInfo.email && (
-                    <div className="contactRow">
-                      <span className="contactLabel">
-                        email
-                      </span>
-                      <span className="contactValue">
-                        {personalInfo.email}
-                      </span>
+                    <div className="contactRow data-resume-root">
+                      <span className="contactLabel">email</span>
+                      <span className="contactValue">{personalInfo.email}</span>
                     </div>
                   )}
 
                   {personalInfo.location && (
-                    <div className="contactRow">
-                      <span className="contactLabel">
-                        address
-                      </span>
+                    <div className="contactRow data-resume-root">
+                      <span className="contactLabel">address</span>
                       <span className="contactValue">
                         {personalInfo.location}
                       </span>
@@ -414,10 +398,8 @@ export default function ModernTemplate2({
                   )}
 
                   {personalInfo.website && (
-                    <div className="contactRow">
-                      <span className="contactLabel">
-                        website
-                      </span>
+                    <div className="contactRow data-resume-root">
+                      <span className="contactLabel">website</span>
                       <span className="contactValue">
                         {personalInfo.website}
                       </span>
@@ -428,69 +410,188 @@ export default function ModernTemplate2({
             </div>
           </section>
 
-          {/* =====================================================
-              PROFESSIONAL EXPERIENCE
-          ====================================================== */}
-          {experienceSection &&
-            experienceSection.items.length > 0 && (
-              <section className="rightSection experienceSection">
-                <SectionHeading
-                  title="PROFESSIONAL EXPERIENCE"
-                />
+          {/* PROFESSIONAL EXPERIENCE */}
+          {experienceSection && experienceSection.items.length > 0 && (
+            <section className="rightSection experienceSection">
+              <SectionHeading
+                title={experienceSection.title || "PROFESSIONAL EXPERIENCE"}
+              />
 
-                <div className="experienceList">
-                  {experienceSection.items.map(
-                    (job, index) => (
-                      <article
-                        className="experienceItem"
-                        key={index}
-                      >
-                        <div className="experienceHeader">
-                          <div className="experienceDate">
-                            {formatDateRange(
-                              job.start,
-                              job.end,
-                            )}
+              <div className="experienceList data-resume-root">
+                {experienceSection.items.map((job, index) => (
+                  <article className="experienceItem" key={index}>
+                    <div className="experienceHeader data-resume-root">
+                      <div className="experienceDate data-resume-root">
+                        {formatDateRange(job.start, job.end)}
+                      </div>
+
+                      <h3 className="jobRole">{job.role || "Position"}</h3>
+
+                      <div className="jobCompany data-resume-root">
+                        {job.company}
+                        {job.location ? `, ${job.location}` : ""}
+                      </div>
+                    </div>
+
+                    {job.bullets && job.bullets.length > 0 && (
+                      <ul className="jobBullets">
+                        {job.bullets.map((bullet, bulletIndex) => (
+                          <li key={bulletIndex}>{bullet}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </article>
+                ))}
+              </div>
+            </section>
+          )}
+          {referencesSection && referencesSection.items.length > 0 && (
+            <section className="rightSection">
+              <SectionHeading title={referencesSection.title || "REFERENCES"} />
+              <div className="referencesList">
+                {referencesSection.items.map((ref: ReferenceItem, i) => (
+                  <div className="referenceItem" key={i}>
+                    <div className="referenceName">{ref.name}</div>
+                    {ref.address && (
+                      <div className="referenceDetail">{ref.address}</div>
+                    )}
+                    {ref.phone && (
+                      <div className="referenceDetail">Tel: {ref.phone}</div>
+                    )}
+                    {ref.email && (
+                      <div className="referenceDetail">Email: {ref.email}</div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* SKILLS (Tags) - Updated styling */}
+          {skillsSection && skillsSection.items.length > 0 && (
+            <section className="rightSection">
+              <SectionHeading
+                title={skillsSection.title || "TECHNICAL SKILLS"}
+              />
+              <div className="skillsTags">
+                {skillsSection.items.map((skill, i) => (
+                  <span key={i} className="skillTag">
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* LANGUAGES - Updated styling */}
+          {languagesSection && languagesSection.items.length > 0 && (
+            <section className="rightSection">
+              <SectionHeading title={languagesSection.title || "LANGUAGES"} />
+              <div className="languagesList">
+                {languagesSection.items.map((lang, i) => {
+                  if (isLanguageItem(lang)) {
+                    return (
+                      <div key={i} className="languageItem">
+                        <span className="languageName">{lang.name}</span>
+                        {lang.level && (
+                          <span className="languageLevel">{lang.level}</span>
+                        )}
+                      </div>
+                    );
+                  }
+                  return (
+                    <div key={i} className="languageItem">
+                      <span className="languageName">{String(lang)}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          )}
+
+          {/* ACHIEVEMENTS - Updated styling */}
+          {achievementsSection && achievementsSection.items.length > 0 && (
+            <section className="rightSection">
+              <SectionHeading
+                title={achievementsSection.title || "ACHIEVEMENTS"}
+              />
+              <div className="achievementsList">
+                {achievementsSection.items.map((achievement, i) => {
+                  if (isAchievementItem(achievement)) {
+                    return (
+                      <div key={i} className="achievementItem">
+                        <div className="achievementHeader">
+                          <div className="achievementTitle">
+                            {achievement.title}
                           </div>
-
-                          <h3 className="jobRole">
-                            {job.role || "Position"}
-                          </h3>
-
-                          <div className="jobCompany">
-                            {job.company}
-                            {job.location
-                              ? `, ${job.location}`
-                              : ""}
-                          </div>
-                        </div>
-
-                        {job.bullets &&
-                          job.bullets.length > 0 && (
-                            <ul className="jobBullets">
-                              {job.bullets.map(
-                                (bullet, bulletIndex) => (
-                                  <li
-                                    key={bulletIndex}
-                                  >
-                                    {bullet}
-                                  </li>
-                                ),
-                              )}
-                            </ul>
+                          {achievement.date && (
+                            <div className="achievementDate">
+                              {achievement.date}
+                            </div>
                           )}
-                      </article>
-                    ),
-                  )}
-                </div>
-              </section>
-            )}
+                        </div>
+                        {achievement.description && (
+                          <div className="achievementDescription">
+                            {achievement.description}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  }
+                  if (typeof achievement === "string") {
+                    return (
+                      <div key={i} className="achievementItem">
+                        <div className="achievementTitle">{achievement}</div>
+                      </div>
+                    );
+                  }
+                  return (
+                    <div key={i} className="achievementItem">
+                      <div className="achievementTitle">
+                        {String(achievement)}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          )}
+
+          {/* OTHER CUSTOM SECTIONS - Updated styling */}
+          {otherCustomSections.map((section) => (
+            <section key={section.id} className="rightSection">
+              <SectionHeading title={section.title || "Custom"} />
+              <div className="customItemsList">
+                {section.items.map((item, i) => {
+                  if (isCustomItem(item)) {
+                    return (
+                      <div key={i} className="customItem">
+                        {item.label && (
+                          <div className="customLabel">{item.label}</div>
+                        )}
+                        {item.description && (
+                          <div className="customDescription">
+                            {item.description}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  }
+                  return (
+                    <div key={i} className="customItem">
+                      <div className="customDescription">{String(item)}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          ))}
         </main>
       </div>
 
       <style jsx>{`
         /* =========================================================
-           ROOT
+          ROOT
         ========================================================== */
 
         .digital-marketing-template {
@@ -510,7 +611,7 @@ export default function ModernTemplate2({
         }
 
         /* =========================================================
-           HEADER
+          HEADER
         ========================================================== */
 
         .topHeader {
@@ -527,8 +628,7 @@ export default function ModernTemplate2({
         }
 
         .headerName {
-          font-family: ${t.headingFont ||
-          "'Georgia', serif"};
+          font-family: ${t.headingFont || "'Georgia', serif"};
           font-size: clamp(22px, 3.2vw, 30px);
           line-height: 1.1;
           letter-spacing: 5px;
@@ -548,7 +648,7 @@ export default function ModernTemplate2({
         }
 
         /* =========================================================
-           BODY
+          BODY
         ========================================================== */
 
         .resumeBody {
@@ -574,7 +674,7 @@ export default function ModernTemplate2({
         }
 
         /* =========================================================
-           PROFILE
+          PROFILE
         ========================================================== */
 
         .profileArea {
@@ -610,20 +710,8 @@ export default function ModernTemplate2({
           object-fit: cover;
         }
 
-        .profileFallback {
-          width: 100%;
-          height: 100%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: #eeeeee;
-          color: ${primaryColor};
-          font-size: 22px;
-          font-weight: 700;
-        }
-
         /* =========================================================
-           SECTION HEADING
+          SECTION HEADING
         ========================================================== */
 
         .leftSection,
@@ -636,7 +724,7 @@ export default function ModernTemplate2({
         }
 
         .rightSection {
-          margin-bottom: 31px;
+          margin-bottom: 28px;
         }
 
         .summarySection {
@@ -652,8 +740,7 @@ export default function ModernTemplate2({
 
         .sectionHeading h2 {
           margin: 0;
-          font-family: ${t.headingFont ||
-          "'Georgia', serif"};
+          font-family: ${t.headingFont || "'Georgia', serif"};
           color: ${primaryColor};
           font-size: 15px;
           line-height: 1;
@@ -689,9 +776,39 @@ export default function ModernTemplate2({
         .rightColumn .sectionHeading::after {
           display: none;
         }
+        /* =========================================================
+  REFERENCES - Consistent with template theme
+========================================================= */
+
+        .referencesList {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          padding-top: 2px;
+        }
+
+        .referenceItem {
+          padding: 0;
+          font-size: 10.5px;
+          line-height: 1.4;
+          color: #555555;
+        }
+
+        .referenceName {
+          font-weight: 700;
+          color: #3d3d3d;
+          font-size: 11px;
+          margin-bottom: 2px;
+        }
+
+        .referenceDetail {
+          color: #555555;
+          font-size: 10.5px;
+          line-height: 1.4;
+        }
 
         /* =========================================================
-           SUMMARY
+          SUMMARY
         ========================================================== */
 
         .summaryText {
@@ -705,7 +822,7 @@ export default function ModernTemplate2({
         }
 
         /* =========================================================
-           EDUCATION
+          EDUCATION
         ========================================================== */
 
         .educationSection {
@@ -754,7 +871,7 @@ export default function ModernTemplate2({
         }
 
         /* =========================================================
-           SKILLS
+          SKILLS (Rated)
         ========================================================== */
 
         .skillsList {
@@ -809,7 +926,7 @@ export default function ModernTemplate2({
         }
 
         /* =========================================================
-           CONTACT
+          CONTACT
         ========================================================== */
 
         .contactSection {
@@ -843,7 +960,7 @@ export default function ModernTemplate2({
         }
 
         /* =========================================================
-           EXPERIENCE
+          EXPERIENCE
         ========================================================== */
 
         .experienceList {
@@ -906,7 +1023,129 @@ export default function ModernTemplate2({
         }
 
         /* =========================================================
-           RESPONSIVE
+          SKILLS TAGS - Updated consistent styling
+        ========================================================== */
+
+        .skillsTags {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+          padding-top: 2px;
+        }
+
+        .skillTag {
+          background: #f0f2f3;
+          color: #555555;
+          padding: 4px 10px;
+          font-size: 9px;
+          font-weight: 500;
+          letter-spacing: 0.3px;
+          text-transform: uppercase;
+          border-radius: 2px;
+        }
+
+        /* =========================================================
+          LANGUAGES - Updated consistent styling
+        ========================================================== */
+
+        .languagesList {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+          padding-top: 2px;
+        }
+
+        .languageItem {
+          display: flex;
+          justify-content: space-between;
+          align-items: baseline;
+          font-size: 10.5px;
+          line-height: 1.35;
+          color: #555555;
+        }
+
+        .languageName {
+          font-weight: 600;
+          color: #3d3d3d;
+        }
+
+        .languageLevel {
+          color: #777777;
+          font-size: 10px;
+        }
+
+        /* =========================================================
+          ACHIEVEMENTS - Updated consistent styling
+        ========================================================== */
+
+        .achievementsList {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          padding-top: 2px;
+        }
+
+        .achievementItem {
+          padding-left: 12px;
+          border-left: 2px solid ${primaryColor};
+        }
+
+        .achievementTitle {
+          font-size: 10.5px;
+          font-weight: 600;
+          color: #3d3d3d;
+          line-height: 1.35;
+        }
+
+        .achievementDescription {
+          font-size: 10px;
+          color: #777777;
+          line-height: 1.4;
+          margin-top: 2px;
+        }
+        .achievementDate {
+          font-size: 9.5px;
+          color: #777777;
+          font-weight: 400;
+          white-space: nowrap;
+          flex-shrink: 0;
+        }
+        .achievementHeader {
+          display: flex;
+          justify-content: space-between;
+          align-items: baseline;
+          gap: 10px;
+          flex-wrap: wrap;
+        }
+
+        /* =========================================================
+          CUSTOM ITEMS - Updated consistent styling
+        ========================================================== */
+
+        .customItemsList {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+          padding-top: 2px;
+        }
+
+        .customItem {
+          font-size: 10.5px;
+          line-height: 1.35;
+          color: #555555;
+        }
+
+        .customLabel {
+          font-weight: 600;
+          color: #3d3d3d;
+        }
+
+        .customDescription {
+          color: #555555;
+        }
+
+        /* =========================================================
+          RESPONSIVE
         ========================================================== */
 
         @media (max-width: 700px) {
@@ -956,7 +1195,10 @@ export default function ModernTemplate2({
           .skillName,
           .skillPercentage,
           .contactRow,
-          .jobBullets {
+          .jobBullets,
+          .languageItem,
+          .achievementTitle,
+          .customItem {
             font-size: 9px;
           }
 
@@ -979,10 +1221,15 @@ export default function ModernTemplate2({
             width: 5px;
             height: 5px;
           }
+
+          .skillTag {
+            font-size: 8px;
+            padding: 3px 8px;
+          }
         }
 
         /* =========================================================
-           PRINT
+          PRINT
         ========================================================== */
 
         @media print {
@@ -1012,29 +1259,22 @@ export default function ModernTemplate2({
 }
 
 /* ===============================================================
-   SECTION HEADING COMPONENT
+  SECTION HEADING COMPONENT
 ================================================================ */
 
-function SectionHeading({
-  title,
-}: {
-  title: string;
-}) {
+function SectionHeading({ title }: { title: string }) {
   return (
-    <div className="sectionHeading">
+    <div className="sectionHeading data-resume-root">
       <h2>{title}</h2>
     </div>
   );
 }
 
 /* ===============================================================
-   DATE FORMATTER
+  DATE FORMATTER
 ================================================================ */
 
-function formatDateRange(
-  start?: string,
-  end?: string,
-) {
+function formatDateRange(start?: string, end?: string) {
   if (!start && !end) return "";
 
   if (start && !end) {

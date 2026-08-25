@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import type { TemplateProps } from "../../types/Content";
 
 export default function MinimalSplitTemplate({ content, theme }: TemplateProps) {
@@ -22,61 +22,61 @@ export default function MinimalSplitTemplate({ content, theme }: TemplateProps) 
     .toUpperCase();
 
   return (
-    <div className="ms-template">
+    <div className="ms-template data-resume-root">
       {/* ================= FULL-WIDTH IDENTITY BAND ================= */}
-      <div className="identityBand">
-        <div className="identityLeft">
+      <div className="identityBand data-resume-root">
+        <div className="identityLeft data-resume-root">
           {personalInfo.photoUrl ? (
             <img className="photo" src={personalInfo.photoUrl} alt={personalInfo.fullName} />
           ) : (
-            <div className="photoFallback">{initials || "U"}</div>
+            <div className="photoFallback data-resume-root">{initials || "U"}</div>
           )}
           <div>
             <h1 className="name">{personalInfo.fullName}</h1>
-            <div className="title">{personalInfo.title || "PROFESSIONAL"}</div>
+            <div className="title data-resume-root">{personalInfo.title || "PROFESSIONAL"}</div>
           </div>
         </div>
-        <div className="identityRight">
+        <div className="identityRight data-resume-root">
           {contactItems.length > 0
             ? contactItems.map((item, i) => {
                 if (typeof item === "object" && item !== null && "description" in item) {
-                  return <div className="contactItem" key={i}>{item.description}</div>;
+                  return <div className="contactItem data-resume-root" key={i}>{item.description}</div>;
                 }
                 return null;
               })
             : (
               <>
-                {personalInfo.phone && <div className="contactItem">{personalInfo.phone}</div>}
-                {personalInfo.email && <div className="contactItem">{personalInfo.email}</div>}
-                {personalInfo.location && <div className="contactItem">{personalInfo.location}</div>}
-                {personalInfo.website && <div className="contactItem">{personalInfo.website}</div>}
+                {personalInfo.phone && <div className="contactItem data-resume-root">{personalInfo.phone}</div>}
+                {personalInfo.email && <div className="contactItem data-resume-root">{personalInfo.email}</div>}
+                {personalInfo.location && <div className="contactItem data-resume-root">{personalInfo.location}</div>}
+                {personalInfo.website && <div className="contactItem data-resume-root">{personalInfo.website}</div>}
               </>
             )}
         </div>
       </div>
 
-      <div className="fullRule" />
+      <div className="fullRule data-resume-root" />
 
       {/* ================= 50/50 SPLIT BODY ================= */}
-      <div className="splitBody">
-        <div className="colLeft">
+      <div className="splitBody data-resume-root">
+        <div className="colLeft data-resume-root">
           {aboutText && (
-            <div className="section">
+            <div className="section data-resume-root">
               <h2 className="sectionLabel">Profile</h2>
               <p className="aboutText">{aboutText}</p>
             </div>
           )}
 
           {experienceSection && experienceSection.items.length > 0 && (
-            <div className="section">
-              <h2 className="sectionLabel">Experience</h2>
+            <div className="section data-resume-root">
+              <h2 className="sectionLabel">{experienceSection.title || 'Experience'}</h2>
               {experienceSection.items.map((job, i) => (
-                <div className="job" key={i}>
-                  <div className="jobTop">
+                <div className="job data-resume-root" key={i}>
+                  <div className="jobTop data-resume-root">
                     <span className="jobTitle">{job.role || "Position"}</span>
-                    <span className="jobDate">{job.start} – {job.end || "Present"}</span>
+                    <span className="jobDate">{job.start} â€“ {job.end || "Present"}</span>
                   </div>
-                  <div className="jobSub">{job.company}{job.location ? `, ${job.location}` : ""}</div>
+                  <div className="jobSub data-resume-root">{job.company}{job.location ? `, ${job.location}` : ""}</div>
                   {job.bullets && job.bullets.length > 0 && <p className="jobDesc">{job.bullets[0]}</p>}
                 </div>
               ))}
@@ -84,30 +84,30 @@ export default function MinimalSplitTemplate({ content, theme }: TemplateProps) 
           )}
         </div>
 
-        <div className="verticalDivider" />
+        <div className="verticalDivider data-resume-root" />
 
-        <div className="colRight">
+        <div className="colRight data-resume-root">
           {educationSection && educationSection.items.length > 0 && (
-            <div className="section">
-              <h2 className="sectionLabel">Education</h2>
+            <div className="section data-resume-root">
+              <h2 className="sectionLabel">{educationSection.title || 'Education'}</h2>
               {educationSection.items.map((edu, i) => (
-                <div className="eduItem" key={i}>
-                  <div className="eduSchool">{edu.school}</div>
-                  <div className="eduDegree">{edu.degree}</div>
-                  <div className="eduDate">{edu.start} – {edu.end}</div>
+                <div className="eduItem data-resume-root" key={i}>
+                  <div className="eduSchool data-resume-root">{edu.school}</div>
+                  <div className="eduDegree data-resume-root">{edu.degree}</div>
+                  <div className="eduDate data-resume-root">{edu.start} â€“ {edu.end}</div>
                 </div>
               ))}
             </div>
           )}
 
           {ratedSkillsSection && ratedSkillsSection.items.length > 0 && (
-            <div className="section">
-              <h2 className="sectionLabel">Skills</h2>
-              <div className="skillList">
+            <div className="section data-resume-root">
+              <h2 className="sectionLabel">{ratedSkillsSection.title || 'Skills'}</h2>
+              <div className="skillList data-resume-root">
                 {ratedSkillsSection.items.map((skill, i) => (
-                  <div className="skillRow" key={i}>
+                  <div className="skillRow data-resume-root" key={i}>
                     <span className="skillName">{skill.name}</span>
-                    <div className="skillBar"><div className="skillFill" style={{ width: `${skill.level}%` }} /></div>
+                    <div className="skillBar data-resume-root"><div className="skillFill data-resume-root" style={{ width: `${skill.level}%` }} /></div>
                   </div>
                 ))}
               </div>
@@ -115,13 +115,13 @@ export default function MinimalSplitTemplate({ content, theme }: TemplateProps) 
           )}
 
           {referencesSection && referencesSection.items.length > 0 && (
-            <div className="section">
-              <h2 className="sectionLabel">References</h2>
+            <div className="section data-resume-root">
+              <h2 className="sectionLabel">{referencesSection.title || 'References'}</h2>
               {referencesSection.items.map((ref, i) => (
-                <div className="refItem" key={i}>
-                  <div className="refName">{ref.name}</div>
-                  {ref.phone && <div className="refLine">{ref.phone}</div>}
-                  {ref.email && <div className="refLine">{ref.email}</div>}
+                <div className="refItem data-resume-root" key={i}>
+                  <div className="refName data-resume-root">{ref.name}</div>
+                  {ref.phone && <div className="refLine data-resume-root">{ref.phone}</div>}
+                  {ref.email && <div className="refLine data-resume-root">{ref.email}</div>}
                 </div>
               ))}
             </div>
@@ -345,3 +345,5 @@ export default function MinimalSplitTemplate({ content, theme }: TemplateProps) 
     </div>
   );
 }
+
+

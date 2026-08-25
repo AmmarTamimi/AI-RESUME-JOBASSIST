@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import type { TemplateProps } from "../../types/Content";
 
 export default function MinimalTimelineTemplate({ content, theme }: TemplateProps) {
@@ -22,18 +22,18 @@ export default function MinimalTimelineTemplate({ content, theme }: TemplateProp
     .toUpperCase();
 
   return (
-    <div className="mt-template">
+    <div className="mt-template data-resume-root">
       {/* ================= HEADER ================= */}
       <header className="header">
         {personalInfo.photoUrl ? (
           <img className="photo" src={personalInfo.photoUrl} alt={personalInfo.fullName} />
         ) : (
-          <div className="photoFallback">{initials || "U"}</div>
+          <div className="photoFallback data-resume-root">{initials || "U"}</div>
         )}
         <h1 className="name">{personalInfo.fullName}</h1>
-        <div className="title">{personalInfo.title || "PROFESSIONAL"}</div>
+        <div className="title data-resume-root">{personalInfo.title || "PROFESSIONAL"}</div>
 
-        <div className="contactRow">
+        <div className="contactRow data-resume-root">
           {contactItems.length > 0
             ? contactItems.map((item, i) => {
                 if (typeof item === "object" && item !== null && "description" in item) {
@@ -58,39 +58,39 @@ export default function MinimalTimelineTemplate({ content, theme }: TemplateProp
 
       {/* ================= ABOUT ================= */}
       {aboutText && (
-        <div className="aboutBlock">
+        <div className="aboutBlock data-resume-root">
           <p className="aboutText">{aboutText}</p>
         </div>
       )}
 
       {/* ================= TIMELINE ================= */}
       {experienceSection && experienceSection.items.length > 0 && (
-        <div className="section">
-          <h2 className="sectionLabel centered">Experience</h2>
-          <div className="timeline">
+        <div className="section data-resume-root">
+          <h2 className="sectionLabel centered">{experienceSection.title || 'Experience'}</h2>
+          <div className="timeline data-resume-root">
             {experienceSection.items.map((job, i) => {
               const isLeft = i % 2 === 0;
               return (
-                <div className="timelineRow" key={i}>
+                <div className="timelineRow data-resume-root" key={i}>
                   <div className={`timelineCard ${isLeft ? "left" : "leftEmpty"}`}>
                     {isLeft && (
                       <>
-                        <div className="jobTitle">{job.role || "Position"}</div>
-                        <div className="jobSub">{job.company}{job.location ? `, ${job.location}` : ""}</div>
-                        <div className="jobDate">{job.start} – {job.end || "Present"}</div>
+                        <div className="jobTitle data-resume-root">{job.role || "Position"}</div>
+                        <div className="jobSub data-resume-root">{job.company}{job.location ? `, ${job.location}` : ""}</div>
+                        <div className="jobDate data-resume-root">{job.start} â€“ {job.end || "Present"}</div>
                         {job.bullets && job.bullets.length > 0 && <p className="jobDesc">{job.bullets[0]}</p>}
                       </>
                     )}
                   </div>
-                  <div className="timelineNode">
+                  <div className="timelineNode data-resume-root">
                     <span className="nodeDot" />
                   </div>
                   <div className={`timelineCard ${!isLeft ? "right" : "rightEmpty"}`}>
                     {!isLeft && (
                       <>
-                        <div className="jobTitle">{job.role || "Position"}</div>
-                        <div className="jobSub">{job.company}{job.location ? `, ${job.location}` : ""}</div>
-                        <div className="jobDate">{job.start} – {job.end || "Present"}</div>
+                        <div className="jobTitle data-resume-root">{job.role || "Position"}</div>
+                        <div className="jobSub data-resume-root">{job.company}{job.location ? `, ${job.location}` : ""}</div>
+                        <div className="jobDate data-resume-root">{job.start} â€“ {job.end || "Present"}</div>
                         {job.bullets && job.bullets.length > 0 && <p className="jobDesc">{job.bullets[0]}</p>}
                       </>
                     )}
@@ -103,34 +103,34 @@ export default function MinimalTimelineTemplate({ content, theme }: TemplateProp
       )}
 
       {/* ================= FOOTER GRID ================= */}
-      <div className="footerGrid">
+      <div className="footerGrid data-resume-root">
         {educationSection && educationSection.items.length > 0 && (
-          <div className="section footerCol">
-            <h2 className="sectionLabel">Education</h2>
+          <div className="section footerCol data-resume-root">
+            <h2 className="sectionLabel">{educationSection.title || 'Education'}</h2>
             {educationSection.items.map((edu, i) => (
-              <div className="eduItem" key={i}>
-                <div className="eduTop">
+              <div className="eduItem data-resume-root" key={i}>
+                <div className="eduTop data-resume-root">
                   <span className="eduSchool">{edu.school}</span>
-                  <span className="eduDate">{edu.start} – {edu.end}</span>
+                  <span className="eduDate">{edu.start} â€“ {edu.end}</span>
                 </div>
-                <div className="eduDegree">{edu.degree}</div>
+                <div className="eduDegree data-resume-root">{edu.degree}</div>
               </div>
             ))}
           </div>
         )}
 
         {ratedSkillsSection && ratedSkillsSection.items.length > 0 && (
-          <div className="section footerCol">
-            <h2 className="sectionLabel">Skills</h2>
-            <div className="skillsGrid">
+          <div className="section footerCol data-resume-root">
+            <h2 className="sectionLabel">{ratedSkillsSection.title || 'Skills'}</h2>
+            <div className="skillsGrid data-resume-root">
               {ratedSkillsSection.items.map((skill, i) => (
-                <div className="skillRow" key={i}>
-                  <div className="skillTop">
+                <div className="skillRow data-resume-root" key={i}>
+                  <div className="skillTop data-resume-root">
                     <span className="skillName">{skill.name}</span>
                     <span className="skillPct">{skill.level}%</span>
                   </div>
-                  <div className="skillBar">
-                    <div className="skillFill" style={{ width: `${skill.level}%` }} />
+                  <div className="skillBar data-resume-root">
+                    <div className="skillFill data-resume-root" style={{ width: `${skill.level}%` }} />
                   </div>
                 </div>
               ))}
@@ -139,13 +139,13 @@ export default function MinimalTimelineTemplate({ content, theme }: TemplateProp
         )}
 
         {referencesSection && referencesSection.items.length > 0 && (
-          <div className="section footerCol">
-            <h2 className="sectionLabel">References</h2>
+          <div className="section footerCol data-resume-root">
+            <h2 className="sectionLabel">{referencesSection.title || 'References'}</h2>
             {referencesSection.items.map((ref, i) => (
-              <div className="refItem" key={i}>
-                <div className="refName">{ref.name}</div>
-                {ref.phone && <div className="refLine">{ref.phone}</div>}
-                {ref.email && <div className="refLine">{ref.email}</div>}
+              <div className="refItem data-resume-root" key={i}>
+                <div className="refName data-resume-root">{ref.name}</div>
+                {ref.phone && <div className="refLine data-resume-root">{ref.phone}</div>}
+                {ref.email && <div className="refLine data-resume-root">{ref.email}</div>}
               </div>
             ))}
           </div>
@@ -219,7 +219,7 @@ export default function MinimalTimelineTemplate({ content, theme }: TemplateProp
         }
 
         .contactItem:not(:last-child)::after {
-          content: "·";
+          content: "Â·";
           margin-left: 16px;
           color: #bbb;
         }
@@ -427,3 +427,5 @@ export default function MinimalTimelineTemplate({ content, theme }: TemplateProp
     </div>
   );
 }
+
+

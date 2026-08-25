@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import type { TemplateProps } from "../../types/Content";
 
 const Icon = {
@@ -49,35 +49,35 @@ export default function ProfessionalStripTemplate({ content, theme }: TemplatePr
     .toUpperCase();
 
   return (
-    <div className="ps-template">
-      <div className="spine" />
+    <div className="ps-template data-resume-root">
+      <div className="spine data-resume-root" />
 
-      <div className="layout">
+      <div className="layout data-resume-root">
         {/* ================= MAIN ================= */}
-        <div className="main">
-          <div className="headerBlock">
-            <div className="name">{personalInfo.fullName}</div>
-            <div className="title">{personalInfo.title || "PROFESSIONAL"}</div>
+        <div className="main data-resume-root">
+          <div className="headerBlock data-resume-root">
+            <div className="name data-resume-root">{personalInfo.fullName}</div>
+            <div className="title data-resume-root">{personalInfo.title || "PROFESSIONAL"}</div>
           </div>
 
           {aboutText && (
-            <div className="section">
+            <div className="section data-resume-root">
               <h2 className="sectionTitle">Profile</h2>
               <p className="aboutText">{aboutText}</p>
             </div>
           )}
 
           {experienceSection && experienceSection.items.length > 0 && (
-            <div className="section">
-              <h2 className="sectionTitle">Experience</h2>
+            <div className="section data-resume-root">
+              <h2 className="sectionTitle">{experienceSection.title || 'Experience'}</h2>
               {experienceSection.items.map((job, i) => (
-                <div className="job" key={i}>
-                  <div className="jobTop">
+                <div className="job data-resume-root" key={i}>
+                  <div className="jobTop data-resume-root">
                     <span className="jobTitle">{job.role || "Position"}</span>
-                    <span className="jobDate">{job.start} – {job.end || "Present"}</span>
+                    <span className="jobDate">{job.start} â€“ {job.end || "Present"}</span>
                   </div>
-                  <div className="jobSub">{job.company}{job.location ? `, ${job.location}` : ""}</div>
-                  {job.bullets && job.bullets.length > 0 && <div className="jobDesc">{job.bullets[0]}</div>}
+                  <div className="jobSub data-resume-root">{job.company}{job.location ? `, ${job.location}` : ""}</div>
+                  {job.bullets && job.bullets.length > 0 && <div className="jobDesc data-resume-root">{job.bullets[0]}</div>}
                 </div>
               ))}
             </div>
@@ -85,16 +85,16 @@ export default function ProfessionalStripTemplate({ content, theme }: TemplatePr
         </div>
 
         {/* ================= PANEL ================= */}
-        <div className="panel">
+        <div className="panel data-resume-root">
           {personalInfo.photoUrl ? (
             <img className="photo" src={personalInfo.photoUrl} alt={personalInfo.fullName} />
           ) : (
-            <div className="photoFallback">{initials || "U"}</div>
+            <div className="photoFallback data-resume-root">{initials || "U"}</div>
           )}
 
-          <div className="panelSection">
+          <div className="panelSection data-resume-root">
             <h3 className="panelLabel">Contact</h3>
-            <div className="contactList">
+            <div className="contactList data-resume-root">
               {contactItems.length > 0
                 ? contactItems.map((item, i) => {
                     if (typeof item === "object" && item !== null && "label" in item && "description" in item) {
@@ -103,7 +103,7 @@ export default function ProfessionalStripTemplate({ content, theme }: TemplatePr
                       else if (item.label === "email") icon = Icon.mail;
                       else if (item.label === "web") icon = Icon.globe;
                       return (
-                        <div className="contactItem" key={i}>
+                        <div className="contactItem data-resume-root" key={i}>
                           <span className="ic">{icon}</span><span>{item.description}</span>
                         </div>
                       );
@@ -112,48 +112,48 @@ export default function ProfessionalStripTemplate({ content, theme }: TemplatePr
                   })
                 : (
                   <>
-                    {personalInfo.phone && <div className="contactItem"><span className="ic">{Icon.phone}</span><span>{personalInfo.phone}</span></div>}
-                    {personalInfo.email && <div className="contactItem"><span className="ic">{Icon.mail}</span><span>{personalInfo.email}</span></div>}
-                    {personalInfo.location && <div className="contactItem"><span className="ic">{Icon.pin}</span><span>{personalInfo.location}</span></div>}
-                    {personalInfo.website && <div className="contactItem"><span className="ic">{Icon.globe}</span><span>{personalInfo.website}</span></div>}
+                    {personalInfo.phone && <div className="contactItem data-resume-root"><span className="ic">{Icon.phone}</span><span>{personalInfo.phone}</span></div>}
+                    {personalInfo.email && <div className="contactItem data-resume-root"><span className="ic">{Icon.mail}</span><span>{personalInfo.email}</span></div>}
+                    {personalInfo.location && <div className="contactItem data-resume-root"><span className="ic">{Icon.pin}</span><span>{personalInfo.location}</span></div>}
+                    {personalInfo.website && <div className="contactItem data-resume-root"><span className="ic">{Icon.globe}</span><span>{personalInfo.website}</span></div>}
                   </>
                 )}
             </div>
           </div>
 
           {ratedSkillsSection && ratedSkillsSection.items.length > 0 && (
-            <div className="panelSection">
-              <h3 className="panelLabel">Skills</h3>
+            <div className="panelSection data-resume-root">
+              <h3 className="panelLabel">{ratedSkillsSection.title || 'Skills'}</h3>
               {ratedSkillsSection.items.map((skill, i) => (
-                <div className="skillRow" key={i}>
-                  <div className="skillName">{skill.name}</div>
-                  <div className="skillBar"><div className="skillFill" style={{ width: `${skill.level}%` }} /></div>
+                <div className="skillRow data-resume-root" key={i}>
+                  <div className="skillName data-resume-root">{skill.name}</div>
+                  <div className="skillBar data-resume-root"><div className="skillFill data-resume-root" style={{ width: `${skill.level}%` }} /></div>
                 </div>
               ))}
             </div>
           )}
 
           {educationSection && educationSection.items.length > 0 && (
-            <div className="panelSection">
-              <h3 className="panelLabel">Education</h3>
+            <div className="panelSection data-resume-root">
+              <h3 className="panelLabel">{educationSection.title || 'Education'}</h3>
               {educationSection.items.map((edu, i) => (
-                <div className="eduItem" key={i}>
-                  <div className="eduSchool">{edu.school}</div>
-                  <div className="eduDegree">{edu.degree}</div>
-                  <div className="eduDate">{edu.start} – {edu.end}</div>
+                <div className="eduItem data-resume-root" key={i}>
+                  <div className="eduSchool data-resume-root">{edu.school}</div>
+                  <div className="eduDegree data-resume-root">{edu.degree}</div>
+                  <div className="eduDate data-resume-root">{edu.start} â€“ {edu.end}</div>
                 </div>
               ))}
             </div>
           )}
 
           {referencesSection && referencesSection.items.length > 0 && (
-            <div className="panelSection">
-              <h3 className="panelLabel">References</h3>
+            <div className="panelSection data-resume-root">
+              <h3 className="panelLabel">{referencesSection.title || 'References'}</h3>
               {referencesSection.items.map((ref, i) => (
-                <div className="refItem" key={i}>
-                  <div className="refName">{ref.name}</div>
-                  {ref.phone && <div className="refLine">{ref.phone}</div>}
-                  {ref.email && <div className="refLine">{ref.email}</div>}
+                <div className="refItem data-resume-root" key={i}>
+                  <div className="refName data-resume-root">{ref.name}</div>
+                  {ref.phone && <div className="refLine data-resume-root">{ref.phone}</div>}
+                  {ref.email && <div className="refLine data-resume-root">{ref.email}</div>}
                 </div>
               ))}
             </div>
@@ -394,3 +394,5 @@ export default function ProfessionalStripTemplate({ content, theme }: TemplatePr
     </div>
   );
 }
+
+

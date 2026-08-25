@@ -216,6 +216,7 @@ export default function ResumeBuilderPage() {
         blankItem = '';
       } else {
         blankItem = createBlankItem(s.type);
+        console.log("blank item:" ,blankItem)
       }
       return { ...s, items: [...(s.items as unknown[]), blankItem] } as Section;
     });

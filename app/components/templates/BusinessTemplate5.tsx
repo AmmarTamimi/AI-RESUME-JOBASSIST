@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import type { TemplateProps } from "../../types/Content";
 
 export default function BusinessMonogramTemplate({ content, theme }: TemplateProps) {
@@ -24,14 +24,14 @@ export default function BusinessMonogramTemplate({ content, theme }: TemplatePro
   const dotsFor = (level: number) => Math.max(1, Math.min(5, Math.round(level / 20)));
 
   return (
-    <div className="bm-template">
+    <div className="bm-template data-resume-root">
       {/* ================= HEADER WITH MONOGRAM WATERMARK ================= */}
-      <div className="header">
-        <div className="monogram">{initials || "U"}</div>
-        <div className="headerContent">
-          <div className="name">{personalInfo.fullName}</div>
-          <div className="title">{personalInfo.title || "PROFESSIONAL"}</div>
-          <div className="contactRow">
+      <div className="header data-resume-root">
+        <div className="monogram data-resume-root">{initials || "U"}</div>
+        <div className="headerContent data-resume-root">
+          <div className="name data-resume-root">{personalInfo.fullName}</div>
+          <div className="title data-resume-root">{personalInfo.title || "PROFESSIONAL"}</div>
+          <div className="contactRow data-resume-root">
             {contactItems.length > 0
               ? contactItems.map((item, i) => {
                   if (typeof item === "object" && item !== null && "description" in item) {
@@ -51,43 +51,43 @@ export default function BusinessMonogramTemplate({ content, theme }: TemplatePro
         </div>
       </div>
 
-      <div className="rule" />
+      <div className="rule data-resume-root" />
 
       {/* ================= BODY ================= */}
-      <div className="body">
-        <div className="mainCol">
+      <div className="body data-resume-root">
+        <div className="mainCol data-resume-root">
           {aboutText && (
-            <div className="section">
+            <div className="section data-resume-root">
               <h2 className="sectionTitle">Summary</h2>
               <p className="aboutText">{aboutText}</p>
             </div>
           )}
 
           {experienceSection && experienceSection.items.length > 0 && (
-            <div className="section">
-              <h2 className="sectionTitle">Experience</h2>
+            <div className="section data-resume-root">
+              <h2 className="sectionTitle">{experienceSection.title || 'Experience'}</h2>
               {experienceSection.items.map((job, i) => (
-                <div className="job" key={i}>
-                  <div className="jobTop">
+                <div className="job data-resume-root" key={i}>
+                  <div className="jobTop data-resume-root">
                     <span className="jobTitle">{job.role || "Position"}</span>
-                    <span className="jobDate">{job.start} – {job.end || "Present"}</span>
+                    <span className="jobDate">{job.start} â€“ {job.end || "Present"}</span>
                   </div>
-                  <div className="jobSub">{job.company}{job.location ? `, ${job.location}` : ""}</div>
-                  {job.bullets && job.bullets.length > 0 && <div className="jobDesc">{job.bullets[0]}</div>}
+                  <div className="jobSub data-resume-root">{job.company}{job.location ? `, ${job.location}` : ""}</div>
+                  {job.bullets && job.bullets.length > 0 && <div className="jobDesc data-resume-root">{job.bullets[0]}</div>}
                 </div>
               ))}
             </div>
           )}
         </div>
 
-        <div className="sideCol">
+        <div className="sideCol data-resume-root">
           {ratedSkillsSection && ratedSkillsSection.items.length > 0 && (
-            <div className="section">
-              <h2 className="sectionTitle">Skills</h2>
+            <div className="section data-resume-root">
+              <h2 className="sectionTitle">{ratedSkillsSection.title || 'Skills'}</h2>
               {ratedSkillsSection.items.map((skill, i) => (
-                <div className="skillRow" key={i}>
+                <div className="skillRow data-resume-root" key={i}>
                   <span className="skillName">{skill.name}</span>
-                  <div className="dots">
+                  <div className="dots data-resume-root">
                     {Array.from({ length: 5 }).map((_, d) => (
                       <span key={d} className={`dot ${d < dotsFor(skill.level) ? "filled" : ""}`} />
                     ))}
@@ -98,26 +98,26 @@ export default function BusinessMonogramTemplate({ content, theme }: TemplatePro
           )}
 
           {educationSection && educationSection.items.length > 0 && (
-            <div className="section">
-              <h2 className="sectionTitle">Education</h2>
+            <div className="section data-resume-root">
+              <h2 className="sectionTitle">{educationSection.title || 'Education'}</h2>
               {educationSection.items.map((edu, i) => (
-                <div className="eduItem" key={i}>
-                  <div className="eduSchool">{edu.school}</div>
-                  <div className="eduDegree">{edu.degree}</div>
-                  <div className="eduDate">{edu.start} – {edu.end}</div>
+                <div className="eduItem data-resume-root" key={i}>
+                  <div className="eduSchool data-resume-root">{edu.school}</div>
+                  <div className="eduDegree data-resume-root">{edu.degree}</div>
+                  <div className="eduDate data-resume-root">{edu.start} â€“ {edu.end}</div>
                 </div>
               ))}
             </div>
           )}
 
           {referencesSection && referencesSection.items.length > 0 && (
-            <div className="section">
-              <h2 className="sectionTitle">References</h2>
+            <div className="section data-resume-root">
+              <h2 className="sectionTitle">{referencesSection.title || 'References'}</h2>
               {referencesSection.items.map((ref, i) => (
-                <div className="refItem" key={i}>
-                  <div className="refName">{ref.name}</div>
-                  {ref.phone && <div className="refLine">{ref.phone}</div>}
-                  {ref.email && <div className="refLine">{ref.email}</div>}
+                <div className="refItem data-resume-root" key={i}>
+                  <div className="refName data-resume-root">{ref.name}</div>
+                  {ref.phone && <div className="refLine data-resume-root">{ref.phone}</div>}
+                  {ref.email && <div className="refLine data-resume-root">{ref.email}</div>}
                 </div>
               ))}
             </div>
@@ -328,3 +328,5 @@ export default function BusinessMonogramTemplate({ content, theme }: TemplatePro
     </div>
   );
 }
+
+

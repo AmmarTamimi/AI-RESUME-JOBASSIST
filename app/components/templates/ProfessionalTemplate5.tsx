@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import type { TemplateProps } from "../../types/Content";
 
 export default function ProfessionalCompactTemplate({ content, theme }: TemplateProps) {
@@ -22,39 +22,39 @@ export default function ProfessionalCompactTemplate({ content, theme }: Template
     .toUpperCase();
 
   return (
-    <div className="pc-template">
+    <div className="pc-template data-resume-root">
       {/* ================= BANNER ================= */}
-      <div className="banner">
+      <div className="banner data-resume-root">
         {personalInfo.photoUrl ? (
           <img className="photo" src={personalInfo.photoUrl} alt={personalInfo.fullName} />
         ) : (
-          <div className="photoFallback">{initials || "U"}</div>
+          <div className="photoFallback data-resume-root">{initials || "U"}</div>
         )}
-        <div className="bannerText">
-          <div className="name">{personalInfo.fullName}</div>
-          <div className="title">{personalInfo.title || "PROFESSIONAL"}</div>
+        <div className="bannerText data-resume-root">
+          <div className="name data-resume-root">{personalInfo.fullName}</div>
+          <div className="title data-resume-root">{personalInfo.title || "PROFESSIONAL"}</div>
         </div>
       </div>
 
       {/* ================= FORM-STYLE INFO ROW ================= */}
-      <div className="infoRow">
+      <div className="infoRow data-resume-root">
         {personalInfo.phone && (
-          <div className="infoCell"><span className="infoLabel">Phone</span><span className="infoValue">{personalInfo.phone}</span></div>
+          <div className="infoCell data-resume-root"><span className="infoLabel">Phone</span><span className="infoValue">{personalInfo.phone}</span></div>
         )}
         {personalInfo.email && (
-          <div className="infoCell"><span className="infoLabel">Email</span><span className="infoValue">{personalInfo.email}</span></div>
+          <div className="infoCell data-resume-root"><span className="infoLabel">Email</span><span className="infoValue">{personalInfo.email}</span></div>
         )}
         {personalInfo.location && (
-          <div className="infoCell"><span className="infoLabel">Location</span><span className="infoValue">{personalInfo.location}</span></div>
+          <div className="infoCell data-resume-root"><span className="infoLabel">Location</span><span className="infoValue">{personalInfo.location}</span></div>
         )}
         {personalInfo.website && (
-          <div className="infoCell"><span className="infoLabel">Website</span><span className="infoValue">{personalInfo.website}</span></div>
+          <div className="infoCell data-resume-root"><span className="infoLabel">Website</span><span className="infoValue">{personalInfo.website}</span></div>
         )}
         {contactItems.length > 0 &&
           contactItems.map((item, i) => {
             if (typeof item === "object" && item !== null && "label" in item && "description" in item) {
               return (
-                <div className="infoCell" key={i}>
+                <div className="infoCell data-resume-root" key={i}>
                   <span className="infoLabel">{String(item.label)}</span>
                   <span className="infoValue">{item.description}</span>
                 </div>
@@ -65,64 +65,64 @@ export default function ProfessionalCompactTemplate({ content, theme }: Template
       </div>
 
       {/* ================= BODY ================= */}
-      <div className="body">
+      <div className="body data-resume-root">
         {aboutText && (
-          <div className="section">
+          <div className="section data-resume-root">
             <h2 className="sectionTitle">Profile</h2>
             <p className="aboutText">{aboutText}</p>
           </div>
         )}
 
         {experienceSection && experienceSection.items.length > 0 && (
-          <div className="section">
-            <h2 className="sectionTitle">Experience</h2>
+          <div className="section data-resume-root">
+            <h2 className="sectionTitle">{experienceSection.title || 'Experience'}</h2>
             {experienceSection.items.map((job, i) => (
-              <div className="job" key={i}>
-                <div className="jobTop">
+              <div className="job data-resume-root" key={i}>
+                <div className="jobTop data-resume-root">
                   <span className="jobTitle">{job.role || "Position"}</span>
-                  <span className="jobDate">{job.start} – {job.end || "Present"}</span>
+                  <span className="jobDate">{job.start} â€“ {job.end || "Present"}</span>
                 </div>
-                <div className="jobSub">{job.company}{job.location ? `, ${job.location}` : ""}</div>
-                {job.bullets && job.bullets.length > 0 && <div className="jobDesc">{job.bullets[0]}</div>}
+                <div className="jobSub data-resume-root">{job.company}{job.location ? `, ${job.location}` : ""}</div>
+                {job.bullets && job.bullets.length > 0 && <div className="jobDesc data-resume-root">{job.bullets[0]}</div>}
               </div>
             ))}
           </div>
         )}
 
-        <div className="footerCols">
+        <div className="footerCols data-resume-root">
           {educationSection && educationSection.items.length > 0 && (
-            <div className="section">
-              <h2 className="sectionTitle">Education</h2>
+            <div className="section data-resume-root">
+              <h2 className="sectionTitle">{educationSection.title || 'Education'}</h2>
               {educationSection.items.map((edu, i) => (
-                <div className="eduItem" key={i}>
-                  <div className="eduSchool">{edu.school}</div>
-                  <div className="eduDegree">{edu.degree}</div>
-                  <div className="eduDate">{edu.start} – {edu.end}</div>
+                <div className="eduItem data-resume-root" key={i}>
+                  <div className="eduSchool data-resume-root">{edu.school}</div>
+                  <div className="eduDegree data-resume-root">{edu.degree}</div>
+                  <div className="eduDate data-resume-root">{edu.start} â€“ {edu.end}</div>
                 </div>
               ))}
             </div>
           )}
 
           {ratedSkillsSection && ratedSkillsSection.items.length > 0 && (
-            <div className="section">
-              <h2 className="sectionTitle">Skills</h2>
+            <div className="section data-resume-root">
+              <h2 className="sectionTitle">{ratedSkillsSection.title || 'Skills'}</h2>
               {ratedSkillsSection.items.map((skill, i) => (
-                <div className="skillRow" key={i}>
+                <div className="skillRow data-resume-root" key={i}>
                   <span className="skillName">{skill.name}</span>
-                  <div className="skillBar"><div className="skillFill" style={{ width: `${skill.level}%` }} /></div>
+                  <div className="skillBar data-resume-root"><div className="skillFill data-resume-root" style={{ width: `${skill.level}%` }} /></div>
                 </div>
               ))}
             </div>
           )}
 
           {referencesSection && referencesSection.items.length > 0 && (
-            <div className="section">
-              <h2 className="sectionTitle">References</h2>
+            <div className="section data-resume-root">
+              <h2 className="sectionTitle">{referencesSection.title || 'References'}</h2>
               {referencesSection.items.map((ref, i) => (
-                <div className="refItem" key={i}>
-                  <div className="refName">{ref.name}</div>
-                  {ref.phone && <div className="refLine">{ref.phone}</div>}
-                  {ref.email && <div className="refLine">{ref.email}</div>}
+                <div className="refItem data-resume-root" key={i}>
+                  <div className="refName data-resume-root">{ref.name}</div>
+                  {ref.phone && <div className="refLine data-resume-root">{ref.phone}</div>}
+                  {ref.email && <div className="refLine data-resume-root">{ref.email}</div>}
                 </div>
               ))}
             </div>
@@ -345,3 +345,5 @@ export default function ProfessionalCompactTemplate({ content, theme }: Template
     </div>
   );
 }
+
+

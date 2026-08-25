@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import type { TemplateProps } from "../../types/Content";
 
 export default function BusinessLetterheadTemplate({ content, theme }: TemplateProps) {
@@ -15,12 +15,12 @@ export default function BusinessLetterheadTemplate({ content, theme }: TemplateP
   const contactItems = contactSection?.items || [];
 
   return (
-    <div className="bl-template">
+    <div className="bl-template data-resume-root">
       {/* ================= LETTERHEAD ================= */}
-      <div className="letterhead">
-        <div className="name">{personalInfo.fullName}</div>
-        <div className="title">{personalInfo.title || "PROFESSIONAL"}</div>
-        <div className="contactRow">
+      <div className="letterhead data-resume-root">
+        <div className="name data-resume-root">{personalInfo.fullName}</div>
+        <div className="title data-resume-root">{personalInfo.title || "PROFESSIONAL"}</div>
+        <div className="contactRow data-resume-root">
           {contactItems.length > 0
             ? contactItems.map((item, i) => {
                 if (typeof item === "object" && item !== null && "description" in item) {
@@ -39,37 +39,37 @@ export default function BusinessLetterheadTemplate({ content, theme }: TemplateP
         </div>
       </div>
 
-      <div className="doubleRule" />
+      <div className="doubleRule data-resume-root" />
 
       {/* ================= BODY ================= */}
-      <div className="body">
+      <div className="body data-resume-root">
         {aboutText && (
-          <div className="section">
-            <div className="sectionHead"><span className="bar" />Professional Summary</div>
+          <div className="section data-resume-root">
+            <div className="sectionHead data-resume-root"><span className="bar" />Professional Summary</div>
             <p className="aboutText">{aboutText}</p>
           </div>
         )}
 
         {experienceSection && experienceSection.items.length > 0 && (
-          <div className="section">
-            <div className="sectionHead"><span className="bar" />Work Experience</div>
+          <div className="section data-resume-root">
+            <div className="sectionHead data-resume-root"><span className="bar" />{experienceSection.title || 'Work Experience'}</div>
             {experienceSection.items.map((job, i) => (
-              <div className="job" key={i}>
-                <div className="jobTop">
+              <div className="job data-resume-root" key={i}>
+                <div className="jobTop data-resume-root">
                   <span className="jobTitle">{job.role || "Position"}</span>
-                  <span className="jobDate">{job.start} – {job.end || "Present"}</span>
+                  <span className="jobDate">{job.start} â€“ {job.end || "Present"}</span>
                 </div>
-                <div className="jobSub">{job.company}{job.location ? `, ${job.location}` : ""}</div>
-                {job.bullets && job.bullets.length > 0 && <div className="jobDesc">{job.bullets[0]}</div>}
+                <div className="jobSub data-resume-root">{job.company}{job.location ? `, ${job.location}` : ""}</div>
+                {job.bullets && job.bullets.length > 0 && <div className="jobDesc data-resume-root">{job.bullets[0]}</div>}
               </div>
             ))}
           </div>
         )}
 
         {ratedSkillsSection && ratedSkillsSection.items.length > 0 && (
-          <div className="section">
-            <div className="sectionHead"><span className="bar" />Core Skills</div>
-            <div className="pillRow">
+          <div className="section data-resume-root">
+            <div className="sectionHead data-resume-root"><span className="bar" />{ratedSkillsSection.title || 'Core Skills'}</div>
+            <div className="pillRow data-resume-root">
               {ratedSkillsSection.items.map((skill, i) => (
                 <span className="pill" key={i}>{skill.name}</span>
               ))}
@@ -77,27 +77,27 @@ export default function BusinessLetterheadTemplate({ content, theme }: TemplateP
           </div>
         )}
 
-        <div className="footerGrid">
+        <div className="footerGrid data-resume-root">
           {educationSection && educationSection.items.length > 0 && (
-            <div className="section">
-              <div className="sectionHead"><span className="bar" />Education</div>
+            <div className="section data-resume-root">
+              <div className="sectionHead data-resume-root"><span className="bar" />{educationSection.title || 'Education'}</div>
               {educationSection.items.map((edu, i) => (
-                <div className="eduItem" key={i}>
-                  <div className="eduTop">
+                <div className="eduItem data-resume-root" key={i}>
+                  <div className="eduTop data-resume-root">
                     <span className="eduSchool">{edu.school}</span>
-                    <span className="eduDate">{edu.start} – {edu.end}</span>
+                    <span className="eduDate">{edu.start} â€“ {edu.end}</span>
                   </div>
-                  <div className="eduDegree">{edu.degree}</div>
+                  <div className="eduDegree data-resume-root">{edu.degree}</div>
                 </div>
               ))}
             </div>
           )}
 
           {referencesSection && referencesSection.items.length > 0 && (
-            <div className="section">
-              <div className="sectionHead"><span className="bar" />References</div>
+            <div className="section data-resume-root">
+              <div className="sectionHead data-resume-root"><span className="bar" />{referencesSection.title || 'References'}</div>
               {referencesSection.items.map((ref, i) => (
-                <div className="refItem" key={i}>
+                <div className="refItem data-resume-root" key={i}>
                   <span className="refName">{ref.name}</span>
                   {ref.phone && <span className="refLine">{ref.phone}</span>}
                   {ref.email && <span className="refLine">{ref.email}</span>}
@@ -314,3 +314,5 @@ export default function BusinessLetterheadTemplate({ content, theme }: TemplateP
     </div>
   );
 }
+
+

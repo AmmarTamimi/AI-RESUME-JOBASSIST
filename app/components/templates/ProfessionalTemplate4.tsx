@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import type { TemplateProps } from "../../types/Content";
 
 export default function ProfessionalLedgerTemplate({ content, theme }: TemplateProps) {
@@ -22,12 +22,12 @@ export default function ProfessionalLedgerTemplate({ content, theme }: TemplateP
   if (referencesSection && referencesSection.items.length > 0) indexEntries.push("References");
 
   return (
-    <div className="pl-template">
-      <div className="mainArea">
+    <div className="pl-template data-resume-root">
+      <div className="mainArea data-resume-root">
         <header className="header">
-          <div className="name">{personalInfo.fullName}</div>
-          <div className="title">{personalInfo.title || "PROFESSIONAL"}</div>
-          <div className="contactRow">
+          <div className="name data-resume-root">{personalInfo.fullName}</div>
+          <div className="title data-resume-root">{personalInfo.title || "PROFESSIONAL"}</div>
+          <div className="contactRow data-resume-root">
             {contactItems.length > 0
               ? contactItems.map((item, i) => {
                   if (typeof item === "object" && item !== null && "description" in item) {
@@ -47,51 +47,51 @@ export default function ProfessionalLedgerTemplate({ content, theme }: TemplateP
         </header>
 
         {aboutText && (
-          <div className="section" id="sec-profile">
+          <div className="section data-resume-root" id="sec-profile">
             <h2 className="sectionTitle">Profile</h2>
             <p className="aboutText">{aboutText}</p>
           </div>
         )}
 
         {experienceSection && experienceSection.items.length > 0 && (
-          <div className="section" id="sec-experience">
-            <h2 className="sectionTitle">Experience</h2>
+          <div className="section data-resume-root" id="sec-experience">
+            <h2 className="sectionTitle">{experienceSection.title || 'Experience'}</h2>
             {experienceSection.items.map((job, i) => (
-              <div className="job" key={i}>
-                <div className="jobTop">
+              <div className="job data-resume-root" key={i}>
+                <div className="jobTop data-resume-root">
                   <span className="jobTitle">{job.role || "Position"}</span>
-                  <span className="jobDate">{job.start} – {job.end || "Present"}</span>
+                  <span className="jobDate">{job.start} â€“ {job.end || "Present"}</span>
                 </div>
-                <div className="jobSub">{job.company}{job.location ? `, ${job.location}` : ""}</div>
-                {job.bullets && job.bullets.length > 0 && <div className="jobDesc">{job.bullets[0]}</div>}
+                <div className="jobSub data-resume-root">{job.company}{job.location ? `, ${job.location}` : ""}</div>
+                {job.bullets && job.bullets.length > 0 && <div className="jobDesc data-resume-root">{job.bullets[0]}</div>}
               </div>
             ))}
           </div>
         )}
 
         {educationSection && educationSection.items.length > 0 && (
-          <div className="section" id="sec-education">
-            <h2 className="sectionTitle">Education</h2>
+          <div className="section data-resume-root" id="sec-education">
+            <h2 className="sectionTitle">{educationSection.title || 'Education'}</h2>
             {educationSection.items.map((edu, i) => (
-              <div className="eduItem" key={i}>
-                <div className="eduTop">
+              <div className="eduItem data-resume-root" key={i}>
+                <div className="eduTop data-resume-root">
                   <span className="eduSchool">{edu.school}</span>
-                  <span className="eduDate">{edu.start} – {edu.end}</span>
+                  <span className="eduDate">{edu.start} â€“ {edu.end}</span>
                 </div>
-                <div className="eduDegree">{edu.degree}</div>
+                <div className="eduDegree data-resume-root">{edu.degree}</div>
               </div>
             ))}
           </div>
         )}
 
         {ratedSkillsSection && ratedSkillsSection.items.length > 0 && (
-          <div className="section" id="sec-skills">
-            <h2 className="sectionTitle">Skills</h2>
-            <div className="skillsGrid">
+          <div className="section data-resume-root" id="sec-skills">
+            <h2 className="sectionTitle">{ratedSkillsSection.title || 'Skills'}</h2>
+            <div className="skillsGrid data-resume-root">
               {ratedSkillsSection.items.map((skill, i) => (
-                <div className="skillRow" key={i}>
+                <div className="skillRow data-resume-root" key={i}>
                   <span className="skillName">{skill.name}</span>
-                  <div className="skillBar"><div className="skillFill" style={{ width: `${skill.level}%` }} /></div>
+                  <div className="skillBar data-resume-root"><div className="skillFill data-resume-root" style={{ width: `${skill.level}%` }} /></div>
                 </div>
               ))}
             </div>
@@ -99,13 +99,13 @@ export default function ProfessionalLedgerTemplate({ content, theme }: TemplateP
         )}
 
         {referencesSection && referencesSection.items.length > 0 && (
-          <div className="section" id="sec-references">
-            <h2 className="sectionTitle">References</h2>
+          <div className="section data-resume-root" id="sec-references">
+            <h2 className="sectionTitle">{referencesSection.title || 'References'}</h2>
             {referencesSection.items.map((ref, i) => (
-              <div className="refItem" key={i}>
+              <div className="refItem data-resume-root" key={i}>
                 <span className="refName">{ref.name}</span>
-                {ref.phone && <span className="refLine"> · {ref.phone}</span>}
-                {ref.email && <span className="refLine"> · {ref.email}</span>}
+                {ref.phone && <span className="refLine"> Â· {ref.phone}</span>}
+                {ref.email && <span className="refLine"> Â· {ref.email}</span>}
               </div>
             ))}
           </div>
@@ -113,10 +113,10 @@ export default function ProfessionalLedgerTemplate({ content, theme }: TemplateP
       </div>
 
       {/* ================= RIGHT INDEX RAIL ================= */}
-      <div className="indexRail">
-        <div className="indexTitle">Index</div>
+      <div className="indexRail data-resume-root">
+        <div className="indexTitle data-resume-root">Index</div>
         {indexEntries.map((entry, i) => (
-          <div className="indexEntry" key={i}>
+          <div className="indexEntry data-resume-root" key={i}>
             <span className="indexNum">{String(i + 1).padStart(2, "0")}</span>
             <span>{entry}</span>
           </div>
@@ -336,3 +336,5 @@ export default function ProfessionalLedgerTemplate({ content, theme }: TemplateP
     </div>
   );
 }
+
+

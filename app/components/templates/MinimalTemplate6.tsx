@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import type { TemplateProps } from "../../types/Content";
 
 export default function MinimalMarginNotesTemplate({ content, theme }: TemplateProps) {
@@ -15,11 +15,11 @@ export default function MinimalMarginNotesTemplate({ content, theme }: TemplateP
   const contactItems = contactSection?.items || [];
 
   return (
-    <div className="mn-template">
+    <div className="mn-template data-resume-root">
       <header className="header">
         <h1 className="name">{personalInfo.fullName}</h1>
-        <div className="title">{personalInfo.title || "PROFESSIONAL"}</div>
-        <div className="contactRow">
+        <div className="title data-resume-root">{personalInfo.title || "PROFESSIONAL"}</div>
+        <div className="contactRow data-resume-root">
           {contactItems.length > 0
             ? contactItems.map((item, i) => {
                 if (typeof item === "object" && item !== null && "description" in item) {
@@ -38,12 +38,12 @@ export default function MinimalMarginNotesTemplate({ content, theme }: TemplateP
         </div>
       </header>
 
-      <div className="rule" />
+      <div className="rule data-resume-root" />
 
       {aboutText && (
-        <div className="marginRow">
-          <div className="marginLabel">Profile</div>
-          <div className="marginContent">
+        <div className="marginRow data-resume-root">
+          <div className="marginLabel data-resume-root">Profile</div>
+          <div className="marginContent data-resume-root">
             <p className="aboutText">{aboutText}</p>
           </div>
         </div>
@@ -52,14 +52,14 @@ export default function MinimalMarginNotesTemplate({ content, theme }: TemplateP
       {experienceSection && experienceSection.items.length > 0 && (
         <>
           {experienceSection.items.map((job, i) => (
-            <div className="marginRow" key={i}>
-              <div className="marginLabel">
-                {i === 0 ? "Experience" : ""}
-                <div className="marginDate">{job.start} – {job.end || "Present"}</div>
+            <div className="marginRow data-resume-root" key={i}>
+              <div className="marginLabel data-resume-root">
+                {i === 0 ? (experienceSection.title || 'Experience') : ""}
+                <div className="marginDate data-resume-root">{job.start} â€“ {job.end || "Present"}</div>
               </div>
-              <div className="marginContent">
-                <div className="jobTitle">{job.role || "Position"}</div>
-                <div className="jobSub">{job.company}{job.location ? `, ${job.location}` : ""}</div>
+              <div className="marginContent data-resume-root">
+                <div className="jobTitle data-resume-root">{job.role || "Position"}</div>
+                <div className="jobSub data-resume-root">{job.company}{job.location ? `, ${job.location}` : ""}</div>
                 {job.bullets && job.bullets.length > 0 && <p className="jobDesc">{job.bullets[0]}</p>}
               </div>
             </div>
@@ -70,14 +70,14 @@ export default function MinimalMarginNotesTemplate({ content, theme }: TemplateP
       {educationSection && educationSection.items.length > 0 && (
         <>
           {educationSection.items.map((edu, i) => (
-            <div className="marginRow" key={i}>
-              <div className="marginLabel">
-                {i === 0 ? "Education" : ""}
-                <div className="marginDate">{edu.start} – {edu.end}</div>
+            <div className="marginRow data-resume-root" key={i}>
+              <div className="marginLabel data-resume-root">
+                {i === 0 ? (educationSection.title || 'Education') : ""}
+                <div className="marginDate data-resume-root">{edu.start} â€“ {edu.end}</div>
               </div>
-              <div className="marginContent">
-                <div className="jobTitle">{edu.school}</div>
-                <div className="jobSub">{edu.degree}</div>
+              <div className="marginContent data-resume-root">
+                <div className="jobTitle data-resume-root">{edu.school}</div>
+                <div className="jobSub data-resume-root">{edu.degree}</div>
               </div>
             </div>
           ))}
@@ -85,25 +85,25 @@ export default function MinimalMarginNotesTemplate({ content, theme }: TemplateP
       )}
 
       {ratedSkillsSection && ratedSkillsSection.items.length > 0 && (
-        <div className="marginRow">
-          <div className="marginLabel">Skills</div>
-          <div className="marginContent">
-            <div className="skillLine">
-              {ratedSkillsSection.items.map((s) => s.name).join("   ·   ")}
+        <div className="marginRow data-resume-root">
+          <div className="marginLabel data-resume-root">{ratedSkillsSection.title || 'Skills'}</div>
+          <div className="marginContent data-resume-root">
+            <div className="skillLine data-resume-root">
+              {ratedSkillsSection.items.map((s) => s.name).join("   Â·   ")}
             </div>
           </div>
         </div>
       )}
 
       {referencesSection && referencesSection.items.length > 0 && (
-        <div className="marginRow">
-          <div className="marginLabel">References</div>
-          <div className="marginContent">
+        <div className="marginRow data-resume-root">
+          <div className="marginLabel data-resume-root">{referencesSection.title || 'References'}</div>
+          <div className="marginContent data-resume-root">
             {referencesSection.items.map((ref, i) => (
-              <div className="refItem" key={i}>
+              <div className="refItem data-resume-root" key={i}>
                 <span className="refName">{ref.name}</span>
-                {ref.phone && <span className="refLine"> · {ref.phone}</span>}
-                {ref.email && <span className="refLine"> · {ref.email}</span>}
+                {ref.phone && <span className="refLine"> Â· {ref.phone}</span>}
+                {ref.email && <span className="refLine"> Â· {ref.email}</span>}
               </div>
             ))}
           </div>
@@ -232,3 +232,5 @@ export default function MinimalMarginNotesTemplate({ content, theme }: TemplateP
     </div>
   );
 }
+
+

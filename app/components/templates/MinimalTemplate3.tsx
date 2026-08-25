@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React from "react";
 import type {
@@ -24,13 +24,13 @@ function findSection<T extends Section["type"]>(sections: Section[], type: T) {
   return sections.find((section) => isSectionType(section, type));
 }
 
-/** Renders "2005 – 2010" as a stacked 3-line date badge: start / — / end */
+/** Renders "2005 â€“ 2010" as a stacked 3-line date badge: start / â€” / end */
 function DateBadge({ start, end }: { start?: string; end?: string }) {
   if (!start && !end) return null;
   return (
-    <div className="dateBadge">
+    <div className="dateBadge data-resume-root">
       <span>{start || ""}</span>
-      <span className="dateDash">—</span>
+      <span className="dateDash">â€”</span>
       <span>{end || "Present"}</span>
     </div>
   );
@@ -80,29 +80,29 @@ export default function MinimalTemplate3({ content, theme }: TemplateProps) {
 
   return (
     <div
-      className="figmaResume"
+      className="figmaResume data-resume-root"
       style={{
         width: 595,
         minHeight: 842,
         backgroundColor: "#ffffff",
       }}
     >
-      {/* ===== HEADER: photo + name/title (left) — contact block (right) ===== */}
+      {/* ===== HEADER: photo + name/title (left) â€” contact block (right) ===== */}
       <header className="header">
-       {personalInfo.photoUrl &&  <div className="avatar">
+       {personalInfo.photoUrl &&  <div className="avatar data-resume-root">
          <img src={personalInfo.photoUrl} alt={name} className="avatarImg" />
          
         </div>}
 
-        <div className="nameBlock">
-          <div className="name">{name}</div>
-          <div className="profession">{title}</div>
+        <div className="nameBlock data-resume-root">
+          <div className="name data-resume-root">{name}</div>
+          <div className="profession data-resume-root">{title}</div>
         </div>
 
         {contactLines.length > 0 && (
-          <div className="contactBlock">
+          <div className="contactBlock data-resume-root">
             {contactLines.map((line, i) => (
-              <div className="contactLine" key={i}>
+              <div className="contactLine data-resume-root" key={i}>
                 {line}
               </div>
             ))}
@@ -111,31 +111,31 @@ export default function MinimalTemplate3({ content, theme }: TemplateProps) {
       </header>
 
       {/* ===== DIVIDER ===== */}
-      <div className="headerDivider" />
+      <div className="headerDivider data-resume-root" />
 
       {/* ===== BODY: two columns separated by a vertical rule ===== */}
-      <div className="columns">
+      <div className="columns data-resume-root">
         {/* -------- LEFT COLUMN -------- */}
-        <div className="col colLeft">
+        <div className="col colLeft data-resume-root">
           {personalInfo.summary && (
             <section className="block">
-              <div className="blockLabel">Profile</div>
+              <div className="blockLabel data-resume-root">Profile</div>
               <p className="bodyText">{personalInfo.summary}</p>
             </section>
           )}
 
           {education && education.items.length > 0 && (
             <section className="block">
-              <div className="blockLabel">{education.title || "Education"}</div>
-              <div className="items">
+              <div className="blockLabel data-resume-root">{education.title || "Education"}</div>
+              <div className="items data-resume-root">
                 {education.items.map((edu: EducationItem, index) => (
-                  <div className="item" key={index}>
+                  <div className="item data-resume-root" key={index}>
                     <DateBadge start={edu.start} end={edu.end} />
-                    <div className="itemMain">
-                      <div className="itemTitle">{edu.school}</div>
+                    <div className="itemMain data-resume-root">
+                      <div className="itemTitle data-resume-root">{edu.school}</div>
                       <p className="bodyText itemBody">
                         {edu.degree}
-                        {edu.location ? ` — ${edu.location}` : ""}
+                        {edu.location ? ` â€” ${edu.location}` : ""}
                       </p>
                     </div>
                   </div>
@@ -146,20 +146,20 @@ export default function MinimalTemplate3({ content, theme }: TemplateProps) {
 
           {(skillsColA.length > 0 || skillsColB.length > 0) && (
             <section className="block">
-              <div className="blockLabel">Key Skills</div>
-              <div className="skillsRow">
-                <div className="skillsCol">
-                  <div className="skillsColHeader">Professional</div>
+              <div className="blockLabel data-resume-root">Key Skills</div>
+              <div className="skillsRow data-resume-root">
+                <div className="skillsCol data-resume-root">
+                  <div className="skillsColHeader data-resume-root">Professional</div>
                   {skillsColA.map((s, i) => (
-                    <div className="skillItem" key={i}>
+                    <div className="skillItem data-resume-root" key={i}>
                       {s}
                     </div>
                   ))}
                 </div>
-                <div className="skillsCol">
-                  <div className="skillsColHeader">Personal</div>
+                <div className="skillsCol data-resume-root">
+                  <div className="skillsColHeader data-resume-root">Personal</div>
                   {skillsColB.map((s, i) => (
-                    <div className="skillItem" key={i}>
+                    <div className="skillItem data-resume-root" key={i}>
                       {s}
                     </div>
                   ))}
@@ -170,19 +170,19 @@ export default function MinimalTemplate3({ content, theme }: TemplateProps) {
         </div>
 
         {/* -------- VERTICAL DIVIDER -------- */}
-        <div className="colDivider" />
+        <div className="colDivider data-resume-root" />
 
         {/* -------- RIGHT COLUMN -------- */}
-        <div className="col colRight">
+        <div className="col colRight data-resume-root">
           {experience && experience.items.length > 0 && (
             <section className="block">
-              <div className="blockLabel">{experience.title || "Employment"}</div>
-              <div className="items">
+              <div className="blockLabel data-resume-root">{experience.title || "Employment"}</div>
+              <div className="items data-resume-root">
                 {experience.items.map((job: ExperienceItem, index) => (
-                  <div className="item" key={index}>
+                  <div className="item data-resume-root" key={index}>
                     <DateBadge start={job.start} end={job.end} />
-                    <div className="itemMain">
-                      <div className="itemTitle">
+                    <div className="itemMain data-resume-root">
+                      <div className="itemTitle data-resume-root">
                         {job.role}
                         {job.company ? ` at ${job.company}` : ""}
                       </div>
@@ -222,9 +222,9 @@ export default function MinimalTemplate3({ content, theme }: TemplateProps) {
         }
 
         /* =====================================================
-           HEADER — avatar + name/title left, contact block right
-           (matches SVG: avatar 40,40 98x98; name/title start x≈159;
-           contact block x≈362; divider at y=158, full width 40-555)
+           HEADER â€” avatar + name/title left, contact block right
+           (matches SVG: avatar 40,40 98x98; name/title start xâ‰ˆ159;
+           contact block xâ‰ˆ362; divider at y=158, full width 40-555)
         ====================================================== */
         .header {
           display: flex;
@@ -310,7 +310,7 @@ export default function MinimalTemplate3({ content, theme }: TemplateProps) {
         /* =====================================================
            TWO-COLUMN BODY (content starts 27px below the divider,
            columns 232px each, 51px gap with a vertical rule in the
-           middle — matches x=40..272 and x=323..555)
+           middle â€” matches x=40..272 and x=323..555)
         ====================================================== */
         .columns {
           display: grid;
@@ -332,7 +332,7 @@ export default function MinimalTemplate3({ content, theme }: TemplateProps) {
         }
 
         /* =====================================================
-           SECTION BLOCK (label stacked ABOVE its content — not
+           SECTION BLOCK (label stacked ABOVE its content â€” not
            side-by-side like a sidebar-label layout)
         ====================================================== */
         .block {
@@ -365,7 +365,7 @@ export default function MinimalTemplate3({ content, theme }: TemplateProps) {
         }
 
         /* =====================================================
-           ITEMS (education / experience) — a small stacked date
+           ITEMS (education / experience) â€” a small stacked date
            badge sits to the left, title + body sit to the right.
            Matches: date column ~36-40px wide, main content indented.
         ====================================================== */
@@ -416,7 +416,7 @@ export default function MinimalTemplate3({ content, theme }: TemplateProps) {
         }
 
         /* =====================================================
-           KEY SKILLS — two sub-columns, no bullets
+           KEY SKILLS â€” two sub-columns, no bullets
         ====================================================== */
         .skillsRow {
           display: grid;

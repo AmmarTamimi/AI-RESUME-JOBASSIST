@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import type { TemplateProps } from "../../types/Content";
 
 export default function ATSModernTemplate({ content, theme }: TemplateProps) {
@@ -20,32 +20,32 @@ export default function ATSModernTemplate({ content, theme }: TemplateProps) {
     : [personalInfo.phone, personalInfo.email, personalInfo.location, personalInfo.website].filter(Boolean) as string[];
 
   return (
-    <div className="atsm-template">
-      <div className="name">{personalInfo.fullName}</div>
-      <div className="title">{personalInfo.title || "Professional"}</div>
-      <div className="contactLine">{contactStrings.join("   •   ")}</div>
+    <div className="atsm-template data-resume-root">
+      <div className="name data-resume-root">{personalInfo.fullName}</div>
+      <div className="title data-resume-root">{personalInfo.title || "Professional"}</div>
+      <div className="contactLine data-resume-root">{contactStrings.join("   â€¢   ")}</div>
 
       {aboutText && (
-        <div className="section">
-          <div className="sectionTitle">Summary</div>
+        <div className="section data-resume-root">
+          <div className="sectionTitle data-resume-root">Summary</div>
           <p className="bodyText">{aboutText}</p>
         </div>
       )}
 
       {experienceSection && experienceSection.items.length > 0 && (
-        <div className="section">
-          <div className="sectionTitle">Experience</div>
+        <div className="section data-resume-root">
+          <div className="sectionTitle data-resume-root">{experienceSection.title || 'Experience'}</div>
           {experienceSection.items.map((job, i) => (
-            <div className="entry" key={i}>
-              <div className="entryRow">
+            <div className="entry data-resume-root" key={i}>
+              <div className="entryRow data-resume-root">
                 <span className="entryRole">{job.role || "Position"}</span>
-                <span className="entryDate">{job.start} – {job.end || "Present"}</span>
+                <span className="entryDate">{job.start} â€“ {job.end || "Present"}</span>
               </div>
-              <div className="entryCompany">{job.company}{job.location ? `, ${job.location}` : ""}</div>
+              <div className="entryCompany data-resume-root">{job.company}{job.location ? `, ${job.location}` : ""}</div>
               {job.bullets && job.bullets.length > 0 && (
-                <div className="bullets">
+                <div className="bullets data-resume-root">
                   {job.bullets.map((b, bi) => (
-                    <div className="bulletLine" key={bi}>- {b}</div>
+                    <div className="bulletLine data-resume-root" key={bi}>- {b}</div>
                   ))}
                 </div>
               )}
@@ -55,35 +55,35 @@ export default function ATSModernTemplate({ content, theme }: TemplateProps) {
       )}
 
       {educationSection && educationSection.items.length > 0 && (
-        <div className="section">
-          <div className="sectionTitle">Education</div>
+        <div className="section data-resume-root">
+          <div className="sectionTitle data-resume-root">{educationSection.title || 'Education'}</div>
           {educationSection.items.map((edu, i) => (
-            <div className="entry" key={i}>
-              <div className="entryRow">
+            <div className="entry data-resume-root" key={i}>
+              <div className="entryRow data-resume-root">
                 <span className="entryRole">{edu.school}</span>
-                <span className="entryDate">{edu.start} – {edu.end}</span>
+                <span className="entryDate">{edu.start} â€“ {edu.end}</span>
               </div>
-              <div className="entryCompany">{edu.degree}</div>
+              <div className="entryCompany data-resume-root">{edu.degree}</div>
             </div>
           ))}
         </div>
       )}
 
       {ratedSkillsSection && ratedSkillsSection.items.length > 0 && (
-        <div className="section">
-          <div className="sectionTitle">Skills</div>
+        <div className="section data-resume-root">
+          <div className="sectionTitle data-resume-root">{ratedSkillsSection.title || 'Skills'}</div>
           <p className="bodyText">{ratedSkillsSection.items.map((s) => s.name).join(", ")}</p>
         </div>
       )}
 
       {referencesSection && referencesSection.items.length > 0 && (
-        <div className="section">
-          <div className="sectionTitle">References</div>
+        <div className="section data-resume-root">
+          <div className="sectionTitle data-resume-root">{referencesSection.title || 'References'}</div>
           {referencesSection.items.map((ref, i) => (
-            <div className="entry" key={i}>
-              <div className="entryRole">{ref.name}</div>
-              <div className="entryCompany">
-                {[ref.phone, ref.email].filter(Boolean).join("  ·  ")}
+            <div className="entry data-resume-root" key={i}>
+              <div className="entryRole data-resume-root">{ref.name}</div>
+              <div className="entryCompany data-resume-root">
+                {[ref.phone, ref.email].filter(Boolean).join("  Â·  ")}
               </div>
             </div>
           ))}
@@ -189,3 +189,5 @@ export default function ATSModernTemplate({ content, theme }: TemplateProps) {
     </div>
   );
 }
+
+

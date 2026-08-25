@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import type { TemplateProps } from "../../types/Content";
 
 const phoneIcon = (
@@ -292,7 +292,7 @@ export default function ModernTemplate3({ content, theme }: TemplateProps) {
 
   return (
     <div
-      className="modern3"
+      className="modern3 data-resume-root"
       style={
         {
           "--m3-primary": primary,
@@ -305,14 +305,14 @@ export default function ModernTemplate3({ content, theme }: TemplateProps) {
           HEADER
       ======================================================= */}
 
-      <div className="m3-header">
-        <div className="m3-name">
-          <div className="m3-first-name">{firstName}</div>
+      <div className="m3-header data-resume-root">
+        <div className="m3-name data-resume-root">
+          <div className="m3-first-name data-resume-root">{firstName}</div>
 
-          {lastName && <div className="m3-last-name">{lastName}</div>}
+          {lastName && <div className="m3-last-name data-resume-root">{lastName}</div>}
         </div>
 
-        <div className="m3-title">{personalInfo.title || "Art Director"}</div>
+        <div className="m3-title data-resume-root">{personalInfo.title || "Art Director"}</div>
       </div>
 
       {/* ======================================================
@@ -323,8 +323,8 @@ export default function ModernTemplate3({ content, theme }: TemplateProps) {
         {/* PHOTO */}
 
         {personalInfo.photoUrl && (
-          <div className="m3-photo">
-            <div className="m3-photo-inner">
+          <div className="m3-photo data-resume-root">
+            <div className="m3-photo-inner data-resume-root">
               <img
                 src={personalInfo.photoUrl}
                 alt={personalInfo.fullName || "Profile"}
@@ -336,23 +336,23 @@ export default function ModernTemplate3({ content, theme }: TemplateProps) {
         {/* EDUCATION */}
 
         {education?.items?.length > 0 && (
-          <SidebarSection title="EDUCATION">
+          <SidebarSection title={education.title || 'EDUCATION'}>
             {education.items.map((item: any, index: number) => {
               const edu = record(item);
 
               return (
-                <div className="m3-education" key={index}>
-                  <div className="m3-edu-date">
+                <div className="m3-education data-resume-root" key={index}>
+                  <div className="m3-edu-date data-resume-root">
                     {formatDate(value(edu, "start"), value(edu, "end"))}
                   </div>
 
-                  <div className="m3-edu-degree">{value(edu, "degree")}</div>
+                  <div className="m3-edu-degree data-resume-root">{value(edu, "degree")}</div>
 
-                  <div className="m3-edu-school">{value(edu, "school")}</div>
+                  <div className="m3-edu-school data-resume-root">{value(edu, "school")}</div>
 
                   {value(edu, "description") && (
-                    <div className="m3-edu-description">
-                      • {value(edu, "description")}
+                    <div className="m3-edu-description data-resume-root">
+                      â€¢ {value(edu, "description")}
                     </div>
                   )}
                 </div>
@@ -364,7 +364,7 @@ export default function ModernTemplate3({ content, theme }: TemplateProps) {
         {/* SKILLS */}
 
         {(skills?.items ?? []).length > 0 && (
-          <SidebarSection title="SKILLS">
+          <SidebarSection title={skills.title || 'SKILLS'}>
             <ul className="m3-bullet-list">
               {skills?.items.map((item: any, index: number) => {
                 const skill = record(item);
@@ -380,7 +380,7 @@ export default function ModernTemplate3({ content, theme }: TemplateProps) {
         {/* LANGUAGES */}
 
         {(languages?.items ?? []).length > 0 && (
-          <SidebarSection title="LANGUAGES">
+          <SidebarSection title={languages.title || 'LANGUAGES'}>
             <ul className="m3-bullet-list">
               {languages?.items.map((item: any, index: number) => {
                 const language = record(item);
@@ -406,7 +406,7 @@ export default function ModernTemplate3({ content, theme }: TemplateProps) {
         {/* CONTACT */}
 
         <SidebarSection title="CONTACT">
-          <div className="m3-contact">
+          <div className="m3-contact data-resume-root">
             {contactItems.map((item, i) => {
               if (
                 typeof item === "object" &&
@@ -420,7 +420,7 @@ export default function ModernTemplate3({ content, theme }: TemplateProps) {
                 else if (item.label === "web") icon = Icon.globe;
 
                 return (
-                  <div className="m3-contact-row" key={i}>
+                  <div className="m3-contact-row data-resume-root" key={i}>
                     <span className="m3-contact-icon">{icon}</span>
                     <span className="m3-contact-value">{item.description}</span>
                   </div>
@@ -448,18 +448,18 @@ export default function ModernTemplate3({ content, theme }: TemplateProps) {
         {/* EXPERIENCE */}
 
         {experience?.items?.length > 0 && (
-          <MainSection title="EXPERIENCE">
-            <div className="m3-experience">
+          <MainSection title={experience.title || 'EXPERIENCE'}>
+            <div className="m3-experience data-resume-root">
               {experience.items.map((item: any, index: number) => {
                 const job = record(item);
 
                 const bullets = Array.isArray(job.bullets) ? job.bullets : [];
 
                 return (
-                  <div className="m3-experience-item" key={index}>
+                  <div className="m3-experience-item data-resume-root" key={index}>
                     {/* TIMELINE */}
 
-                    <div className="m3-timeline">
+                    <div className="m3-timeline data-resume-root">
                       <span className="m3-circle" />
 
                       {index < experience.items.length - 1 && (
@@ -469,17 +469,17 @@ export default function ModernTemplate3({ content, theme }: TemplateProps) {
 
                     {/* JOB CONTENT */}
 
-                    <div className="m3-job">
-                      <div className="m3-job-header">
+                    <div className="m3-job data-resume-root">
+                      <div className="m3-job-header data-resume-root">
                         <div>
-                          <div className="m3-role">{value(job, "role")}</div>
+                          <div className="m3-role data-resume-root">{value(job, "role")}</div>
 
-                          <div className="m3-company">
+                          <div className="m3-company data-resume-root">
                             {value(job, "company")}
                           </div>
                         </div>
 
-                        <div className="m3-date">
+                        <div className="m3-date data-resume-root">
                           {formatDate(value(job, "start"), value(job, "end"))}
                         </div>
                       </div>
@@ -510,28 +510,28 @@ export default function ModernTemplate3({ content, theme }: TemplateProps) {
         {/* ACHIEVEMENT */}
 
         {(achievement?.items ?? []).length > 0 && (
-          <MainSection title="ACHIEVEMENT">
-            <div className="m3-achievements">
+          <MainSection title={achievement.title || 'ACHIEVEMENT'}>
+            <div className="m3-achievements data-resume-root">
               {achievement?.items.map((item: any, index: number) => {
                 const achievementItem = record(item);
 
                 return (
-                  <div className="m3-achievement" key={index}>
-                    <span className="m3-achievement-dot">•</span>
+                  <div className="m3-achievement data-resume-root" key={index}>
+                    <span className="m3-achievement-dot">â€¢</span>
 
                     <div>
-                      <div className="m3-achievement-year">
+                      <div className="m3-achievement-year data-resume-root">
                         {value(achievementItem, "year")}
                       </div>
 
                       {value(achievementItem, "title") && (
-                        <div className="m3-achievement-title">
+                        <div className="m3-achievement-title data-resume-root">
                           {value(achievementItem, "title")}
                         </div>
                       )}
 
                       {value(achievementItem, "description") && (
-                        <div className="m3-achievement-description">
+                        <div className="m3-achievement-description data-resume-root">
                           {value(achievementItem, "description")}
                         </div>
                       )}
@@ -799,7 +799,7 @@ export default function ModernTemplate3({ content, theme }: TemplateProps) {
         }
 
         .m3-bullet-list li::before {
-          content: "•";
+          content: "â€¢";
           position: absolute;
           left: 0;
           top: 0;
@@ -1208,7 +1208,7 @@ function SidebarSection({
 }) {
   return (
     <section className="m3-sidebar-section">
-      <div className="m3-sidebar-heading">
+      <div className="m3-sidebar-heading data-resume-root">
         <span>{title}</span>
       </div>
 
@@ -1230,7 +1230,7 @@ function MainSection({
 }) {
   return (
     <section className="m3-main-section">
-      <div className="m3-main-heading">
+      <div className="m3-main-heading data-resume-root">
         <span>{title}</span>
       </div>
 
@@ -1245,10 +1245,12 @@ function MainSection({
 
 function Contact({ icon, value }: { icon: React.ReactNode; value: string }) {
   return (
-    <div className="m3-contact-row">
+    <div className="m3-contact-row data-resume-root">
       <span className="m3-contact-icon">{icon}</span>
 
       <span className="m3-contact-value">{value}</span>
     </div>
   );
 }
+
+

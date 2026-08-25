@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import type { TemplateProps } from "../../types/Content";
 
 export default function ATSClassicTemplate({ content, theme }: TemplateProps) {
@@ -20,28 +20,28 @@ export default function ATSClassicTemplate({ content, theme }: TemplateProps) {
     : [personalInfo.phone, personalInfo.email, personalInfo.location, personalInfo.website].filter(Boolean) as string[];
 
   return (
-    <div className="atsc-template">
-      {/* Plain-text header — no images, no icons, no tables */}
-      <div className="name">{personalInfo.fullName}</div>
-      <div className="title">{personalInfo.title || "Professional"}</div>
-      <div className="contactLine">{contactStrings.join("  |  ")}</div>
+    <div className="atsc-template data-resume-root">
+      {/* Plain-text header â€” no images, no icons, no tables */}
+      <div className="name data-resume-root">{personalInfo.fullName}</div>
+      <div className="title data-resume-root">{personalInfo.title || "Professional"}</div>
+      <div className="contactLine data-resume-root">{contactStrings.join("  |  ")}</div>
 
-      <div className="rule" />
+      <div className="rule data-resume-root" />
 
       {aboutText && (
-        <div className="section">
-          <div className="sectionTitle">Summary</div>
+        <div className="section data-resume-root">
+          <div className="sectionTitle data-resume-root">Summary</div>
           <p className="bodyText">{aboutText}</p>
         </div>
       )}
 
       {experienceSection && experienceSection.items.length > 0 && (
-        <div className="section">
-          <div className="sectionTitle">Experience</div>
+        <div className="section data-resume-root">
+          <div className="sectionTitle data-resume-root">{experienceSection.title || 'Experience'}</div>
           {experienceSection.items.map((job, i) => (
-            <div className="entry" key={i}>
-              <div className="entryTop">{job.role || "Position"} — {job.company}{job.location ? `, ${job.location}` : ""}</div>
-              <div className="entryDate">{job.start} – {job.end || "Present"}</div>
+            <div className="entry data-resume-root" key={i}>
+              <div className="entryTop data-resume-root">{job.role || "Position"} â€” {job.company}{job.location ? `, ${job.location}` : ""}</div>
+              <div className="entryDate data-resume-root">{job.start} â€“ {job.end || "Present"}</div>
               {job.bullets && job.bullets.length > 0 && (
                 <ul className="bullets">
                   {job.bullets.map((b, bi) => <li key={bi}>{b}</li>)}
@@ -53,33 +53,33 @@ export default function ATSClassicTemplate({ content, theme }: TemplateProps) {
       )}
 
       {educationSection && educationSection.items.length > 0 && (
-        <div className="section">
-          <div className="sectionTitle">Education</div>
+        <div className="section data-resume-root">
+          <div className="sectionTitle data-resume-root">{educationSection.title || 'Education'}</div>
           {educationSection.items.map((edu, i) => (
-            <div className="entry" key={i}>
-              <div className="entryTop">{edu.degree} — {edu.school}</div>
-              <div className="entryDate">{edu.start} – {edu.end}</div>
+            <div className="entry data-resume-root" key={i}>
+              <div className="entryTop data-resume-root">{edu.degree} â€” {edu.school}</div>
+              <div className="entryDate data-resume-root">{edu.start} â€“ {edu.end}</div>
             </div>
           ))}
         </div>
       )}
 
       {ratedSkillsSection && ratedSkillsSection.items.length > 0 && (
-        <div className="section">
-          <div className="sectionTitle">Skills</div>
+        <div className="section data-resume-root">
+          <div className="sectionTitle data-resume-root">{ratedSkillsSection.title || 'Skills'}</div>
           <p className="bodyText">{ratedSkillsSection.items.map((s) => s.name).join(", ")}</p>
         </div>
       )}
 
       {referencesSection && referencesSection.items.length > 0 && (
-        <div className="section">
-          <div className="sectionTitle">References</div>
+        <div className="section data-resume-root">
+          <div className="sectionTitle data-resume-root">{referencesSection.title || 'References'}</div>
           {referencesSection.items.map((ref, i) => (
-            <div className="entry" key={i}>
-              <div className="entryTop">
+            <div className="entry data-resume-root" key={i}>
+              <div className="entryTop data-resume-root">
                 {ref.name}
-                {ref.phone ? ` — ${ref.phone}` : ""}
-                {ref.email ? ` — ${ref.email}` : ""}
+                {ref.phone ? ` â€” ${ref.phone}` : ""}
+                {ref.email ? ` â€” ${ref.email}` : ""}
               </div>
             </div>
           ))}
@@ -180,3 +180,5 @@ export default function ATSClassicTemplate({ content, theme }: TemplateProps) {
     </div>
   );
 }
+
+

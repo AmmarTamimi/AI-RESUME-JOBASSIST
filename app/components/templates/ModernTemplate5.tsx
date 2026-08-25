@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import type { TemplateProps } from "../../types/Content";
 
 const Icon = {
@@ -56,23 +56,23 @@ export default function TechTemplate({ content, theme }: TemplateProps) {
   };
 
   return (
-    <div className="tech-template">
+    <div className="tech-template data-resume-root">
       {/* ================= TOP BAR ================= */}
-      <div className="topBar">
-        <div className="promptLine">
+      <div className="topBar data-resume-root">
+        <div className="promptLine data-resume-root">
           <span className="promptSymbol">&gt;</span> whoami
         </div>
-        <div className="headerRow">
+        <div className="headerRow data-resume-root">
           {personalInfo.photoUrl && (
             <img className="photo" src={personalInfo.photoUrl} alt={personalInfo.fullName} />
           )}
           <div>
-            <div className="name">{personalInfo.fullName}</div>
-            <div className="title">{personalInfo.title || "SOFTWARE ENGINEER"}</div>
+            <div className="name data-resume-root">{personalInfo.fullName}</div>
+            <div className="title data-resume-root">{personalInfo.title || "SOFTWARE ENGINEER"}</div>
           </div>
         </div>
 
-        <div className="contactRow">
+        <div className="contactRow data-resume-root">
           {contactItems.length > 0
             ? contactItems.map((item, i) => {
                 if (typeof item === "object" && item !== null && "label" in item && "description" in item) {
@@ -100,27 +100,27 @@ export default function TechTemplate({ content, theme }: TemplateProps) {
       </div>
 
       {/* ================= BODY GRID ================= */}
-      <div className="grid">
-        <div className="mainCol">
+      <div className="grid data-resume-root">
+        <div className="mainCol data-resume-root">
           {aboutText && (
-            <div className="block">
-              <div className="blockHeader"><span className="hash">#</span> about</div>
+            <div className="block data-resume-root">
+              <div className="blockHeader data-resume-root"><span className="hash">#</span> about</div>
               <p className="aboutText">{aboutText}</p>
             </div>
           )}
 
           {experienceSection && experienceSection.items.length > 0 && (
-            <div className="block">
-              <div className="blockHeader"><span className="hash">#</span> experience</div>
+            <div className="block data-resume-root">
+              <div className="blockHeader data-resume-root"><span className="hash">#</span> {experienceSection.title || 'experience'}</div>
               {experienceSection.items.map((job, i) => (
-                <div className="job" key={i}>
-                  <div className="jobTop">
+                <div className="job data-resume-root" key={i}>
+                  <div className="jobTop data-resume-root">
                     <span className="jobTitle">{job.role || "Position"}</span>
-                    <span className="jobDate">{job.start} – {job.end || "current"}</span>
+                    <span className="jobDate">{job.start} â€“ {job.end || "current"}</span>
                   </div>
-                  <div className="jobSub">{job.company}{job.location ? ` · ${job.location}` : ""}</div>
+                  <div className="jobSub data-resume-root">{job.company}{job.location ? ` Â· ${job.location}` : ""}</div>
                   {job.bullets && job.bullets.length > 0 && (
-                    <div className="jobDesc">{job.bullets[0]}</div>
+                    <div className="jobDesc data-resume-root">{job.bullets[0]}</div>
                   )}
                 </div>
               ))}
@@ -128,10 +128,10 @@ export default function TechTemplate({ content, theme }: TemplateProps) {
           )}
 
           {referencesSection && referencesSection.items.length > 0 && (
-            <div className="block">
-              <div className="blockHeader"><span className="hash">#</span> references</div>
+            <div className="block data-resume-root">
+              <div className="blockHeader data-resume-root"><span className="hash">#</span> {referencesSection.title || 'references'}</div>
               {referencesSection.items.map((ref, i) => (
-                <div className="refItem" key={i}>
+                <div className="refItem data-resume-root" key={i}>
                   <span className="refName">{ref.name}</span>
                   {ref.phone && <span className="refLine">{ref.phone}</span>}
                   {ref.email && <span className="refLine">{ref.email}</span>}
@@ -141,11 +141,11 @@ export default function TechTemplate({ content, theme }: TemplateProps) {
           )}
         </div>
 
-        <div className="sideCol">
+        <div className="sideCol data-resume-root">
           {ratedSkillsSection && ratedSkillsSection.items.length > 0 && (
-            <div className="block">
-              <div className="blockHeader"><span className="hash">#</span> stack</div>
-              <div className="tagCloud">
+            <div className="block data-resume-root">
+              <div className="blockHeader data-resume-root"><span className="hash">#</span> {ratedSkillsSection.title || 'stack'}</div>
+              <div className="tagCloud data-resume-root">
                 {ratedSkillsSection.items.map((skill, i) => (
                   <span className={`tag tag-${tierFor(skill.level)}`} key={i}>{skill.name}</span>
                 ))}
@@ -154,13 +154,13 @@ export default function TechTemplate({ content, theme }: TemplateProps) {
           )}
 
           {educationSection && educationSection.items.length > 0 && (
-            <div className="block">
-              <div className="blockHeader"><span className="hash">#</span> education</div>
+            <div className="block data-resume-root">
+              <div className="blockHeader data-resume-root"><span className="hash">#</span> {educationSection.title || 'education'}</div>
               {educationSection.items.map((edu, i) => (
-                <div className="eduItem" key={i}>
+                <div className="eduItem data-resume-root" key={i}>
                   <span className="eduSchool">{edu.school}</span>
                   <span className="eduDegree">{edu.degree}</span>
-                  <span className="eduDate">{edu.start} – {edu.end}</span>
+                  <span className="eduDate">{edu.start} â€“ {edu.end}</span>
                 </div>
               ))}
             </div>
@@ -402,3 +402,5 @@ export default function TechTemplate({ content, theme }: TemplateProps) {
     </div>
   );
 }
+
+

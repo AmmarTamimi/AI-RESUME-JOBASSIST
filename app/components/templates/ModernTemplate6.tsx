@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import type { TemplateProps } from "../../types/Content";
 
 const Icon = {
@@ -63,23 +63,23 @@ export default function ElegantTemplate({ content, theme }: TemplateProps) {
     .toUpperCase();
 
   return (
-    <div className="elegant-template">
+    <div className="elegant-template data-resume-root">
       {/* ================= SIDEBAR ================= */}
       <aside className="sidebar">
-        {personalInfo.photoUrl && <div className="photoWrap">
-          <div className="photoCircle">
+        {personalInfo.photoUrl && <div className="photoWrap data-resume-root">
+          <div className="photoCircle data-resume-root">
            
               <img src={personalInfo.photoUrl} alt={personalInfo.fullName} />
             
           </div>
         </div>
 }
-        <div className="sidebarContent">
-          <div className="sideHeading">
-            <div className="iconBadge">{Icon.mail}</div>
+        <div className="sidebarContent data-resume-root">
+          <div className="sideHeading data-resume-root">
+            <div className="iconBadge data-resume-root">{Icon.mail}</div>
             <h3>Contact</h3>
           </div>
-          <div className="contactList">
+          <div className="contactList data-resume-root">
             {contactItems.length > 0
               ? contactItems.map((item, i) => {
                   if (typeof item === "object" && item !== null && "label" in item && "description" in item) {
@@ -88,7 +88,7 @@ export default function ElegantTemplate({ content, theme }: TemplateProps) {
                     else if (item.label === "email") icon = Icon.mail;
                     else if (item.label === "web") icon = Icon.globe;
                     return (
-                      <div className="contactItem" key={i}>
+                      <div className="contactItem data-resume-root" key={i}>
                         <span className="ic">{icon}</span>
                         <span>{item.description}</span>
                       </div>
@@ -98,41 +98,41 @@ export default function ElegantTemplate({ content, theme }: TemplateProps) {
                 })
               : (
                 <>
-                  {personalInfo.phone && <div className="contactItem"><span className="ic">{Icon.phone}</span><span>{personalInfo.phone}</span></div>}
-                  {personalInfo.email && <div className="contactItem"><span className="ic">{Icon.mail}</span><span>{personalInfo.email}</span></div>}
-                  {personalInfo.location && <div className="contactItem"><span className="ic">{Icon.pin}</span><span>{personalInfo.location}</span></div>}
-                  {personalInfo.website && <div className="contactItem"><span className="ic">{Icon.globe}</span><span>{personalInfo.website}</span></div>}
+                  {personalInfo.phone && <div className="contactItem data-resume-root"><span className="ic">{Icon.phone}</span><span>{personalInfo.phone}</span></div>}
+                  {personalInfo.email && <div className="contactItem data-resume-root"><span className="ic">{Icon.mail}</span><span>{personalInfo.email}</span></div>}
+                  {personalInfo.location && <div className="contactItem data-resume-root"><span className="ic">{Icon.pin}</span><span>{personalInfo.location}</span></div>}
+                  {personalInfo.website && <div className="contactItem data-resume-root"><span className="ic">{Icon.globe}</span><span>{personalInfo.website}</span></div>}
                 </>
               )}
           </div>
 
-          <div className="ornament" />
+          <div className="ornament data-resume-root" />
 
           {educationSection && educationSection.items.length > 0 && (
             <>
-              <div className="sideHeading">
-                <div className="iconBadge">{Icon.cap}</div>
-                <h3>Education</h3>
+              <div className="sideHeading data-resume-root">
+                <div className="iconBadge data-resume-root">{Icon.cap}</div>
+                <h3>{educationSection.title || 'Education'}</h3>
               </div>
               {educationSection.items.map((edu, i) => (
-                <div className="eduItem" key={i}>
+                <div className="eduItem data-resume-root" key={i}>
                   <b>{edu.school}</b>
                   <span>{edu.degree}</span>
-                  <span className="dates">{edu.start} – {edu.end}</span>
+                  <span className="dates">{edu.start} â€“ {edu.end}</span>
                 </div>
               ))}
-              <div className="ornament" />
+              <div className="ornament data-resume-root" />
             </>
           )}
 
           {referencesSection && referencesSection.items.length > 0 && (
             <>
-              <div className="sideHeading">
-                <div className="iconBadge">{Icon.users}</div>
-                <h3>References</h3>
+              <div className="sideHeading data-resume-root">
+                <div className="iconBadge data-resume-root">{Icon.users}</div>
+                <h3>{referencesSection.title || 'References'}</h3>
               </div>
               {referencesSection.items.map((ref, i) => (
-                <div className="refItem" key={i}>
+                <div className="refItem data-resume-root" key={i}>
                   <b>{ref.name}</b>
                   {ref.phone && <span>Tel: {ref.phone}</span>}
                   {ref.email && <span>{ref.email}</span>}
@@ -144,32 +144,32 @@ export default function ElegantTemplate({ content, theme }: TemplateProps) {
       </aside>
 
       {/* ================= MAIN CONTENT ================= */}
-      <div className="content">
-        <div className="headerBlock">
-          <div className="name">{personalInfo.fullName}</div>
-          <div className="title">{personalInfo.title || "Professional"}</div>
-          <div className="hairline" />
+      <div className="content data-resume-root">
+        <div className="headerBlock data-resume-root">
+          <div className="name data-resume-root">{personalInfo.fullName}</div>
+          <div className="title data-resume-root">{personalInfo.title || "Professional"}</div>
+          <div className="hairline data-resume-root" />
         </div>
 
         {aboutText && (
-          <div className="section">
+          <div className="section data-resume-root">
             <h2 className="sectionTitle">Profile</h2>
-            <div className="aboutText">{aboutText}</div>
+            <div className="aboutText data-resume-root">{aboutText}</div>
           </div>
         )}
 
         {experienceSection && experienceSection.items.length > 0 && (
-          <div className="section">
-            <h2 className="sectionTitle">Experience</h2>
+          <div className="section data-resume-root">
+            <h2 className="sectionTitle">{experienceSection.title || 'Experience'}</h2>
             {experienceSection.items.map((job, i) => (
-              <div className="job" key={i}>
-                <div className="jobTop">
-                  <div className="jobTitle">{job.role || "Position"}</div>
-                  <div className="jobDate">{job.start} – {job.end || "Present"}</div>
+              <div className="job data-resume-root" key={i}>
+                <div className="jobTop data-resume-root">
+                  <div className="jobTitle data-resume-root">{job.role || "Position"}</div>
+                  <div className="jobDate data-resume-root">{job.start} â€“ {job.end || "Present"}</div>
                 </div>
-                <div className="jobSub">{job.company}{job.location ? `, ${job.location}` : ""}</div>
+                <div className="jobSub data-resume-root">{job.company}{job.location ? `, ${job.location}` : ""}</div>
                 {job.bullets && job.bullets.length > 0 && (
-                  <div className="jobDesc">{job.bullets[0]}</div>
+                  <div className="jobDesc data-resume-root">{job.bullets[0]}</div>
                 )}
               </div>
             ))}
@@ -177,14 +177,14 @@ export default function ElegantTemplate({ content, theme }: TemplateProps) {
         )}
 
         {ratedSkillsSection && ratedSkillsSection.items.length > 0 && (
-          <div className="section">
-            <h2 className="sectionTitle">Skills</h2>
-            <div className="skills">
+          <div className="section data-resume-root">
+            <h2 className="sectionTitle">{ratedSkillsSection.title || 'Skills'}</h2>
+            <div className="skills data-resume-root">
               {ratedSkillsSection.items.map((skill, i) => (
                 <div key={i}>
-                  <div className="skillName">{skill.name}</div>
-                  <div className="skillBar">
-                    <div className="skillFill" style={{ width: `${skill.level}%` }} />
+                  <div className="skillName data-resume-root">{skill.name}</div>
+                  <div className="skillBar data-resume-root">
+                    <div className="skillFill data-resume-root" style={{ width: `${skill.level}%` }} />
                   </div>
                 </div>
               ))}
@@ -440,3 +440,5 @@ export default function ElegantTemplate({ content, theme }: TemplateProps) {
     </div>
   );
 }
+
+

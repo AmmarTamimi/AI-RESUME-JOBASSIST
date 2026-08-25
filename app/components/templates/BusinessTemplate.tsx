@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import type { TemplateProps } from "../../types/Content";
 
 export default function BusinessTemplate({ content, theme }: TemplateProps) {
@@ -15,11 +15,11 @@ export default function BusinessTemplate({ content, theme }: TemplateProps) {
   } as React.CSSProperties;
 
   return (
-    <div className="biz-tpl" style={rootStyle}>
+    <div className="biz-tpl data-resume-root" style={rootStyle}>
       <header className="biz-header">
         <h1 className="biz-name">{personalInfo.fullName}</h1>
         <p className="biz-title">{personalInfo.title}</p>
-        <div className="biz-contact">
+        <div className="biz-contact data-resume-root">
           {[personalInfo.email, personalInfo.phone, personalInfo.location, personalInfo.website]
             .filter(Boolean)
             .join("  |  ")}
@@ -40,15 +40,15 @@ export default function BusinessTemplate({ content, theme }: TemplateProps) {
 
             {section.type === "experience" &&
               section.items.map((item, i) => (
-                <div className="biz-item" key={i}>
-                  <div className="biz-row">
+                <div className="biz-item data-resume-root" key={i}>
+                  <div className="biz-row data-resume-root">
                     <strong className="biz-role">{item.role}</strong>
                     <span className="biz-date">
-                      {item.start} — {item.end}
+                      {item.start} â€” {item.end}
                     </span>
                   </div>
-                  <div className="biz-muted">
-                    {item.company} · {item.location}
+                  <div className="biz-muted data-resume-root">
+                    {item.company} Â· {item.location}
                   </div>
                   <ul>
                     {item.bullets.map((b, bi) => (
@@ -60,19 +60,19 @@ export default function BusinessTemplate({ content, theme }: TemplateProps) {
 
             {section.type === "education" &&
               section.items.map((item, i) => (
-                <div className="biz-row biz-item" key={i}>
+                <div className="biz-row biz-item data-resume-root" key={i}>
                   <div>
                     <strong>{item.degree}</strong>
-                    <div className="biz-muted">{item.school}</div>
+                    <div className="biz-muted data-resume-root">{item.school}</div>
                   </div>
                   <span className="biz-date">
-                    {item.start} — {item.end}
+                    {item.start} â€” {item.end}
                   </span>
                 </div>
               ))}
 
             {section.type === "skills" && (
-              <div className="biz-skills">
+              <div className="biz-skills data-resume-root">
                 {section.items.map((s, i) => (
                   <span className="biz-skill" key={i}>
                     {s}
@@ -83,7 +83,7 @@ export default function BusinessTemplate({ content, theme }: TemplateProps) {
 
             {section.type === "custom" &&
               section.items.map((item, i) => (
-                <div className="biz-row biz-item" key={i}>
+                <div className="biz-row biz-item data-resume-root" key={i}>
                   <strong>{item.label}</strong>
                   <span className="biz-muted">{item.description}</span>
                 </div>

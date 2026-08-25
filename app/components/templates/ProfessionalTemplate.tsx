@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import type { TemplateProps } from "../../types/Content";
 
 const Icon = {
@@ -83,18 +83,18 @@ export default function ProfessionalTemplate({ content, theme }: TemplateProps) 
   } as React.CSSProperties;
 
   return (
-    <div className="prof-tpl" style={rootStyle}>
+    <div className="prof-tpl data-resume-root" style={rootStyle}>
       <header className="prof-header">
         <h1 className="prof-name">{personalInfo.fullName}</h1>
         <p className="prof-title">{personalInfo.title}</p>
       </header>
 
-      <div className="prof-body">
+      <div className="prof-body data-resume-root">
         <aside className="prof-left">
           {/* Contact Section */}
-          <div className="prof-block">
+          <div className="prof-block data-resume-root">
             <h2 className="prof-h2">Contact</h2>
-            <div className="prof-contact">
+            <div className="prof-contact data-resume-root">
               {contactItems.map((item, i) => {
                 if (typeof item === "object" && item !== null && "label" in item && "description" in item) {
                   let icon = Icon.pin;
@@ -102,7 +102,7 @@ export default function ProfessionalTemplate({ content, theme }: TemplateProps) 
                   else if (item.label === "email") icon = Icon.mail;
                   else if (item.label === "web") icon = Icon.globe;
                   return (
-                    <div className="contactItem" key={i}>
+                    <div className="contactItem data-resume-root" key={i}>
                       <span className="ic">{icon}</span>
                       <span className="contact-text">{item.description}</span>
                     </div>
@@ -117,7 +117,7 @@ export default function ProfessionalTemplate({ content, theme }: TemplateProps) 
           {leftSections.map((section) => {
             if (section.type === "skills") {
               return (
-                <div className="prof-block" key={section.id}>
+                <div className="prof-block data-resume-root" key={section.id}>
                   <h2 className="prof-h2">{section.title}</h2>
                   <ul className="prof-skill-list">
                     {section.items.map((s, i) => {
@@ -130,14 +130,14 @@ export default function ProfessionalTemplate({ content, theme }: TemplateProps) 
             }
             if (section.type === "references") {
               return (
-                <div className="prof-block" key={section.id}>
+                <div className="prof-block data-resume-root" key={section.id}>
                   <h2 className="prof-h2">{section.title}</h2>
                   {section.items.map((ref, i) => (
-                    <div key={i} className="prof-reference">
+                    <div key={i} className="prof-reference data-resume-root">
                       <strong>{ref.name}</strong>
-                      {ref.address && <div className="prof-muted">{ref.address}</div>}
-                      {ref.phone && <div className="prof-muted">{ref.phone}</div>}
-                      {ref.email && <div className="prof-muted">{ref.email}</div>}
+                      {ref.address && <div className="prof-muted data-resume-root">{ref.address}</div>}
+                      {ref.phone && <div className="prof-muted data-resume-root">{ref.phone}</div>}
+                      {ref.email && <div className="prof-muted data-resume-root">{ref.email}</div>}
                     </div>
                   ))}
                 </div>
@@ -145,10 +145,10 @@ export default function ProfessionalTemplate({ content, theme }: TemplateProps) 
             }
             if (section.type === "custom" && section.id !== "contact") {
               return (
-                <div className="prof-block" key={section.id}>
+                <div className="prof-block data-resume-root" key={section.id}>
                   <h2 className="prof-h2">{section.title}</h2>
                   {section.items.map((item, i) => (
-                    <div key={i} className="prof-custom-item">
+                    <div key={i} className="prof-custom-item data-resume-root">
                       {item.label && <strong>{item.label}</strong>}
                       {item.description && <span className="prof-muted">{item.description}</span>}
                     </div>
@@ -174,15 +174,15 @@ export default function ProfessionalTemplate({ content, theme }: TemplateProps) 
 
               {section.type === "experience" &&
                 section.items.map((item, i) => (
-                  <div className="prof-item" key={i}>
-                    <div className="prof-row">
+                  <div className="prof-item data-resume-root" key={i}>
+                    <div className="prof-row data-resume-root">
                       <strong>{item.role}</strong>
                       <span className="prof-date">
-                        {item.start} — {item.end || 'Present'}
+                        {item.start} â€” {item.end || 'Present'}
                       </span>
                     </div>
-                    <div className="prof-muted">
-                      {item.company} {item.location ? `· ${item.location}` : ''}
+                    <div className="prof-muted data-resume-root">
+                      {item.company} {item.location ? `Â· ${item.location}` : ''}
                     </div>
                     {item.bullets && item.bullets.length > 0 && (
                       <ul>
@@ -196,13 +196,13 @@ export default function ProfessionalTemplate({ content, theme }: TemplateProps) 
 
               {section.type === "education" &&
                 section.items.map((item, i) => (
-                  <div className="prof-row prof-item" key={i}>
+                  <div className="prof-row prof-item data-resume-root" key={i}>
                     <div>
                       <strong>{item.degree}</strong>
-                      <div className="prof-muted">{item.school}</div>
+                      <div className="prof-muted data-resume-root">{item.school}</div>
                     </div>
                     <span className="prof-date">
-                      {item.start} — {item.end || 'Present'}
+                      {item.start} â€” {item.end || 'Present'}
                     </span>
                   </div>
                 ))}

@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import type { TemplateProps } from "../../types/Content";
 
 // Minimal line icons - hairline weight to match the editorial aesthetic
@@ -57,23 +57,23 @@ export default function MinimalTemplate({ content, theme }: TemplateProps) {
   );
 
   return (
-    <div className="minimal-template">
+    <div className="minimal-template data-resume-root">
       {/* ================= HEADER ================= */}
       <header className="header">
-        <div className="headerTop">
+        <div className="headerTop data-resume-root">
           {personalInfo.photoUrl && (
             <img className="photo" src={personalInfo.photoUrl} alt={personalInfo.fullName} />
           ) }
-          <div className="nameBlock">
+          <div className="nameBlock data-resume-root">
             <h1 className="name">{personalInfo.fullName}</h1>
-            <div className="titleRow">
+            <div className="titleRow data-resume-root">
               <span className="titleTick" />
               <span className="title">{personalInfo.title || "PROFESSIONAL"}</span>
             </div>
           </div>
         </div>
 
-        <div className="contactBar">
+        <div className="contactBar data-resume-root">
           {contactItems.length > 0
             ? contactItems.map((item, i) => {
                 if (typeof item === "object" && item !== null && "label" in item && "description" in item) {
@@ -110,10 +110,10 @@ export default function MinimalTemplate({ content, theme }: TemplateProps) {
         </div>
       </header>
 
-      <div className="rule" />
+      <div className="rule data-resume-root" />
 
       {/* ================= BODY ================= */}
-      <div className="body">
+      <div className="body data-resume-root">
         {/* About */}
         {aboutText && (
           <section className="section">
@@ -125,23 +125,23 @@ export default function MinimalTemplate({ content, theme }: TemplateProps) {
         {/* Experience - ledger style */}
         {experienceSection && experienceSection.items.length > 0 && (
           <section className="section">
-            <h2 className="sectionLabel">Experience</h2>
-            <div className="ledger">
+            <h2 className="sectionLabel">{experienceSection.title || 'Experience'}</h2>
+            <div className="ledger data-resume-root">
               {experienceSection.items.map((job, i) => (
-                <div className="ledgerRow" key={i}>
-                  <div className="ledgerDate">
+                <div className="ledgerRow data-resume-root" key={i}>
+                  <div className="ledgerDate data-resume-root">
                     <span className="dot" />
-                    {job.start} — {job.end || "Present"}
+                    {job.start} â€” {job.end || "Present"}
                   </div>
-                  <div className="ledgerMain">
-                    <div className="jobTop">
+                  <div className="ledgerMain data-resume-root">
+                    <div className="jobTop data-resume-root">
                       <span className="jobTitle">{job.role || "Position"}</span>
                       <span className="jobCompany">{job.company}{job.location ? `, ${job.location}` : ""}</span>
                     </div>
                     {job.bullets && job.bullets.length > 0 && (
-                      <div className="jobDesc">
+                      <div className="jobDesc data-resume-root">
                         {job.bullets.map((bullet, idx) => (
-                          <div key={idx}>• {bullet}</div>
+                          <div key={idx}>â€¢ {bullet}</div>
                         ))}
                       </div>
                     )}
@@ -152,18 +152,18 @@ export default function MinimalTemplate({ content, theme }: TemplateProps) {
           </section>
         )}
 
-        <div className="twoCol">
+        <div className="twoCol data-resume-root">
           {/* Education */}
           {educationSection && educationSection.items.length > 0 && (
             <section className="section half">
-              <h2 className="sectionLabel">Education</h2>
+              <h2 className="sectionLabel">{educationSection.title || 'Education'}</h2>
               {educationSection.items.map((edu, i) => (
-                <div className="eduItem" key={i}>
-                  <div className="eduTop">
+                <div className="eduItem data-resume-root" key={i}>
+                  <div className="eduTop data-resume-root">
                     <span className="eduSchool">{edu.school}</span>
-                    <span className="eduDate">{edu.start} – {edu.end}</span>
+                    <span className="eduDate">{edu.start} â€“ {edu.end}</span>
                   </div>
-                  <div className="eduDegree">{edu.degree}</div>
+                  <div className="eduDegree data-resume-root">{edu.degree}</div>
                 </div>
               ))}
             </section>
@@ -172,12 +172,12 @@ export default function MinimalTemplate({ content, theme }: TemplateProps) {
           {/* References */}
           {referencesSection && referencesSection.items.length > 0 && (
             <section className="section half">
-              <h2 className="sectionLabel">References</h2>
+              <h2 className="sectionLabel">{referencesSection.title || 'References'}</h2>
               {referencesSection.items.map((ref, i) => (
-                <div className="refItem" key={i}>
-                  <div className="refName">{ref.name}</div>
-                  {ref.phone && <div className="refLine">{ref.phone}</div>}
-                  {ref.email && <div className="refLine">{ref.email}</div>}
+                <div className="refItem data-resume-root" key={i}>
+                  <div className="refName data-resume-root">{ref.name}</div>
+                  {ref.phone && <div className="refLine data-resume-root">{ref.phone}</div>}
+                  {ref.email && <div className="refLine data-resume-root">{ref.email}</div>}
                 </div>
               ))}
             </section>
@@ -191,9 +191,9 @@ export default function MinimalTemplate({ content, theme }: TemplateProps) {
             {section.items.map((item, i) => {
               if (typeof item === 'object' && item !== null && 'description' in item) {
                 return (
-                  <div className="otherItem" key={i}>
-                    {item.label && <div className="otherLabel">{item.label}</div>}
-                    <div className="otherDesc">{item.description}</div>
+                  <div className="otherItem data-resume-root" key={i}>
+                    {item.label && <div className="otherLabel data-resume-root">{item.label}</div>}
+                    <div className="otherDesc data-resume-root">{item.description}</div>
                   </div>
                 );
               }
@@ -205,19 +205,19 @@ export default function MinimalTemplate({ content, theme }: TemplateProps) {
         {/* Skills - supports both "skills" and "ratedSkills" */}
         {skillsSection && skillsSection.items.length > 0 && (
           <section className="section">
-            <h2 className="sectionLabel">Skills</h2>
-            <div className="skillsGrid">
+            <h2 className="sectionLabel">{skillsSection.title || 'Skills'}</h2>
+            <div className="skillsGrid data-resume-root">
               {skillsSection.items.map((skill, i) => {
                 // Handle string skills (from "skills" section)
                 if (typeof skill === 'string') {
                   return (
-                    <div className="skillRow" key={i}>
-                      <div className="skillTop">
+                    <div className="skillRow data-resume-root" key={i}>
+                      <div className="skillTop data-resume-root">
                         <span className="skillName">{skill}</span>
                         <span className="skillPct">100</span>
                       </div>
-                      <div className="skillBar">
-                        <div className="skillFill" style={{ width: '100%' }} />
+                      <div className="skillBar data-resume-root">
+                        <div className="skillFill data-resume-root" style={{ width: '100%' }} />
                       </div>
                     </div>
                   );
@@ -225,13 +225,13 @@ export default function MinimalTemplate({ content, theme }: TemplateProps) {
                 // Handle object skills (from "ratedSkills" section)
                 if (typeof skill === 'object' && skill !== null && 'name' in skill) {
                   return (
-                    <div className="skillRow" key={i}>
-                      <div className="skillTop">
+                    <div className="skillRow data-resume-root" key={i}>
+                      <div className="skillTop data-resume-root">
                         <span className="skillName">{skill.name}</span>
                         <span className="skillPct">{skill.level || 100}</span>
                       </div>
-                      <div className="skillBar">
-                        <div className="skillFill" style={{ width: `${skill.level || 100}%` }} />
+                      <div className="skillBar data-resume-root">
+                        <div className="skillFill data-resume-root" style={{ width: `${skill.level || 100}%` }} />
                       </div>
                     </div>
                   );
@@ -545,3 +545,4 @@ export default function MinimalTemplate({ content, theme }: TemplateProps) {
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import type { 
   TemplateProps, 
   CustomItem, 
@@ -143,29 +143,29 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
   const isContentHeavy = totalItems > 15;
 
   return (
-    <div className="modern-template" data-content-heavy={isContentHeavy}>
+    <div className="modern-template data-resume-root" data-content-heavy={isContentHeavy}>
       {/* ================= SIDEBAR ================= */}
       <aside className="sidebar">
         {/* Photo Section */}
         {personalInfo.photoUrl && (
-          <div className="photoWrap">
-            <div className="photoTriangle" />
-            <div className="photoCircle">
+          <div className="photoWrap data-resume-root">
+            <div className="photoTriangle data-resume-root" />
+            <div className="photoCircle data-resume-root">
               <img src={personalInfo.photoUrl} alt={personalInfo.fullName} />
             </div>
           </div>
         )}
 
-        <div className="sidebarContent">
+        <div className="sidebarContent data-resume-root">
           {/* Contact Section */}
-          <div className="sideHeading">
-            <div className="iconBadge">{Icon.person}</div>
+          <div className="sideHeading data-resume-root">
+            <div className="iconBadge data-resume-root">{Icon.person}</div>
             <h3>CONTACT ME</h3>
           </div>
           
-          {contactItems.length > 0 && (
-            <div className="contactList">
-              {contactItems.map((item, i) => {
+          <div className="contactList data-resume-root">
+            {contactItems.length > 0 ? (
+              contactItems.map((item, i) => {
                 if (isCustomItem(item)) {
                   let icon = Icon.pin;
                   if (item.label === "phone") icon = Icon.phone;
@@ -173,57 +173,55 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
                   else if (item.label === "web") icon = Icon.globe;
                   
                   return (
-                    <div className="contactItem" key={i}>
+                    <div className="contactItem data-resume-root" key={i}>
                       <span className="ic">{icon}</span>
                       <span>{item.description || item.label}</span>
                     </div>
                   );
                 }
                 return null;
-              })}
-            </div>
-          )}
-
-          {(contactItems.length === 0) && (
-            <div className="contactList">
-              {personalInfo.phone && (
-                <div className="contactItem">
-                  <span className="ic">{Icon.phone}</span>
-                  <span>{personalInfo.phone}</span>
-                </div>
-              )}
-              {personalInfo.email && (
-                <div className="contactItem">
-                  <span className="ic">{Icon.mail}</span>
-                  <span>{personalInfo.email}</span>
-                </div>
-              )}
-              {personalInfo.location && (
-                <div className="contactItem">
-                  <span className="ic">{Icon.pin}</span>
-                  <span>{personalInfo.location}</span>
-                </div>
-              )}
-              {personalInfo.website && (
-                <div className="contactItem">
-                  <span className="ic">{Icon.globe}</span>
-                  <span>{personalInfo.website}</span>
-                </div>
-              )}
-            </div>
-          )}
+              })
+            ) : (
+              <>
+                {personalInfo.phone && (
+                  <div className="contactItem data-resume-root">
+                    <span className="ic">{Icon.phone}</span>
+                    <span>{personalInfo.phone}</span>
+                  </div>
+                )}
+                {personalInfo.email && (
+                  <div className="contactItem data-resume-root">
+                    <span className="ic">{Icon.mail}</span>
+                    <span>{personalInfo.email}</span>
+                  </div>
+                )}
+                {personalInfo.location && (
+                  <div className="contactItem data-resume-root">
+                    <span className="ic">{Icon.pin}</span>
+                    <span>{personalInfo.location}</span>
+                  </div>
+                )}
+                {personalInfo.website && (
+                  <div className="contactItem data-resume-root">
+                    <span className="ic">{Icon.globe}</span>
+                    <span>{personalInfo.website}</span>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
 
           <hr className="dottedLine" />
 
           {/* References Section */}
           {referencesSection && referencesSection.items.length > 0 && (
             <>
-              <div className="sideHeading">
-                <div className="iconBadge">{Icon.users}</div>
+              <div className="sideHeading data-resume-root">
+                <div className="iconBadge data-resume-root">{Icon.users}</div>
                 <h3>REFERENCES</h3>
               </div>
               {referencesSection.items.map((ref: ReferenceItem, i) => (
-                <div className="refItem" key={i}>
+                <div className="refItem data-resume-root" key={i}>
                   <b>{ref.name}</b>
                   {ref.address && <span>{ref.address}</span>}
                   {ref.phone && <span>Tel: {ref.phone}</span>}
@@ -237,12 +235,12 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
           {/* Education Section */}
           {educationSection && educationSection.items.length > 0 && (
             <>
-              <div className="sideHeading">
-                <div className="iconBadge">{Icon.cap}</div>
+              <div className="sideHeading data-resume-root">
+                <div className="iconBadge data-resume-root">{Icon.cap}</div>
                 <h3>EDUCATION</h3>
               </div>
               {educationSection.items.map((edu, i) => (
-                <div className="eduItem" key={i}>
+                <div className="eduItem data-resume-root" key={i}>
                   <b>{edu.school}</b>
                   {edu.degree}
                   <br />
@@ -254,49 +252,49 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
         </div>
       </aside>
 
-      <div className="divider" />
+      <div className="divider data-resume-root" />
 
       {/* ================= MAIN CONTENT ================= */}
-      <div className="content">
+      <div className="content data-resume-root">
         {/* Header Block */}
-        <div className="headerBlock">
-          <div className="name">
+        <div className="headerBlock data-resume-root">
+          <div className="name data-resume-root">
             {firstPart} <span>{lastWord}</span>
           </div>
-          <div className="title">{personalInfo.title || "PROFESSIONAL"}</div>
+          <div className="title data-resume-root">{personalInfo.title || "PROFESSIONAL"}</div>
         </div>
 
         {/* About Me */}
         {aboutText && (
-          <div className="section">
-            <div className="sectionTitle">
-              <div className="iconBadge iconBadgeYellow">{Icon.info}</div>
+          <div className="section data-resume-root">
+            <div className="sectionTitle data-resume-root">
+              <div className="iconBadge iconBadgeYellow data-resume-root">{Icon.info}</div>
               <h2>ABOUT ME</h2>
             </div>
-            <div className="aboutText">{aboutText}</div>
+            <div className="aboutText data-resume-root">{aboutText}</div>
           </div>
         )}
 
         {/* Job Experience */}
         {experienceSection && experienceSection.items.length > 0 && (
-          <div className="section">
-            <div className="sectionTitle">
-              <div className="iconBadge iconBadgeYellow">{Icon.briefcase}</div>
+          <div className="section data-resume-root">
+            <div className="sectionTitle data-resume-root">
+              <div className="iconBadge iconBadgeYellow data-resume-root">{Icon.briefcase}</div>
               <h2>JOB EXPERIENCE</h2>
             </div>
             {experienceSection.items.map((job, i) => (
-              <div className="job" key={i}>
-                <div className="jobTop">
-                  <div className="jobTitle">{job.role || "Position"}</div>
-                  <div className="jobDate">
+              <div className="job data-resume-root" key={i}>
+                <div className="jobTop data-resume-root">
+                  <div className="jobTitle data-resume-root">{job.role || "Position"}</div>
+                  <div className="jobDate data-resume-root">
                     {job.start} - {job.end || "Present"}
                   </div>
                 </div>
-                <div className="jobSub">
+                <div className="jobSub data-resume-root">
                   {job.company} {job.location ? `/ ${job.location}` : ""}
                 </div>
                 {job.bullets && job.bullets.length > 0 && (
-                  <div className="jobDesc">{job.bullets[0]}</div>
+                  <div className="jobDesc data-resume-root">{job.bullets[0]}</div>
                 )}
               </div>
             ))}
@@ -305,17 +303,17 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
 
         {/* Skills (Rated) */}
         {ratedSkillsSection && ratedSkillsSection.items.length > 0 && (
-          <div className="section">
-            <div className="sectionTitle">
-              <div className="iconBadge iconBadgeYellow">{Icon.chart}</div>
-              <h2>SKILLS</h2>
+          <div className="section data-resume-root">
+            <div className="sectionTitle data-resume-root">
+              <div className="iconBadge iconBadgeYellow data-resume-root">{Icon.chart}</div>
+              <h2>{ratedSkillsSection.title || 'Skills'}</h2>
             </div>
-            <div className="skills">
+            <div className="skills data-resume-root">
               {ratedSkillsSection.items.map((skill: RatedSkillItem, i) => (
                 <div key={i}>
-                  <div className="skillName">{skill.name}</div>
-                  <div className="skillBar">
-                    <div className="skillFill" style={{ width: `${skill.level}%` }} />
+                  <div className="skillName data-resume-root">{skill.name}</div>
+                  <div className="skillBar data-resume-root">
+                    <div className="skillFill data-resume-root" style={{ width: `${skill.level}%` }} />
                   </div>
                 </div>
               ))}
@@ -325,12 +323,12 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
 
         {/* Skills (Tags) */}
         {skillsSection && skillsSection.items.length > 0 && (
-          <div className="section">
-            <div className="sectionTitle">
-              <div className="iconBadge iconBadgeYellow">{Icon.star}</div>
-              <h2>TECHNICAL SKILLS</h2>
+          <div className="section data-resume-root">
+            <div className="sectionTitle data-resume-root">
+              <div className="iconBadge iconBadgeYellow data-resume-root">{Icon.star}</div>
+              <h2>{skillsSection.title || 'TECHNICAL SKILLS'}</h2>
             </div>
-            <div className="skillsTags">
+            <div className="skillsTags data-resume-root">
               {skillsSection.items.map((skill, i) => (
                 <span key={i} className="skillTag">{skill}</span>
               ))}
@@ -340,23 +338,23 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
 
         {/* Languages Section */}
         {languagesSection && languagesSection.items.length > 0 && (
-          <div className="section">
-            <div className="sectionTitle">
-              <div className="iconBadge iconBadgeYellow">{Icon.flag}</div>
-              <h2>LANGUAGES</h2>
+          <div className="section data-resume-root">
+            <div className="sectionTitle data-resume-root">
+              <div className="iconBadge iconBadgeYellow data-resume-root">{Icon.flag}</div>
+              <h2>{languagesSection.title || 'LANGUAGES'}</h2>
             </div>
-            <div className="languages">
+            <div className="languages data-resume-root">
               {languagesSection.items.map((lang, i) => {
                 if (isLanguageItem(lang)) {
                   return (
-                    <div key={i} className="languageItem">
+                    <div key={i} className="languageItem data-resume-root">
                       <span className="languageName">{lang.name}</span>
                       {lang.level && <span className="languageLevel">{lang.level}</span>}
                     </div>
                   );
                 }
                 return (
-                  <div key={i} className="languageItem">
+                  <div key={i} className="languageItem data-resume-root">
                     <span className="languageName">{String(lang)}</span>
                   </div>
                 );
@@ -367,33 +365,33 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
 
         {/* Achievements Section */}
         {achievementsSection && achievementsSection.items.length > 0 && (
-          <div className="section">
-            <div className="sectionTitle">
-              <div className="iconBadge iconBadgeYellow">{Icon.award}</div>
-              <h2>ACHIEVEMENTS</h2>
+          <div className="section data-resume-root">
+            <div className="sectionTitle data-resume-root">
+              <div className="iconBadge iconBadgeYellow data-resume-root">{Icon.award}</div>
+              <h2>{achievementsSection.title || 'ACHIEVEMENTS'}</h2>
             </div>
-            <div className="achievements">
+            <div className="achievements data-resume-root">
               {achievementsSection.items.map((achievement, i) => {
                 if (isAchievementItem(achievement)) {
                   return (
-                    <div key={i} className="achievementItem">
-                      <div className="achievementText">{achievement.title}</div>
+                    <div key={i} className="achievementItem data-resume-root">
+                      <div className="achievementText data-resume-root">{achievement.title}</div>
                       {achievement.description && (
-                        <div className="achievementDescription">{achievement.description}</div>
+                        <div className="achievementDescription data-resume-root">{achievement.description}</div>
                       )}
                     </div>
                   );
                 }
                 if (typeof achievement === 'string') {
                   return (
-                    <div key={i} className="achievementItem">
-                      <div className="achievementText">{achievement}</div>
+                    <div key={i} className="achievementItem data-resume-root">
+                      <div className="achievementText data-resume-root">{achievement}</div>
                     </div>
                   );
                 }
                 return (
-                  <div key={i} className="achievementItem">
-                    <div className="achievementText">{String(achievement)}</div>
+                  <div key={i} className="achievementItem data-resume-root">
+                    <div className="achievementText data-resume-root">{String(achievement)}</div>
                   </div>
                 );
               })}
@@ -403,24 +401,24 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
 
         {/* Other Custom Sections */}
         {otherCustomSections.map((section) => (
-          <div key={section.id} className="section">
-            <div className="sectionTitle">
-              <div className="iconBadge iconBadgeYellow">{Icon.plus}</div>
+          <div key={section.id} className="section data-resume-root">
+            <div className="sectionTitle data-resume-root">
+              <div className="iconBadge iconBadgeYellow data-resume-root">{Icon.plus}</div>
               <h2>{section.title || "Custom"}</h2>
             </div>
-            <div className="customItems">
+            <div className="customItems data-resume-root">
               {section.items.map((item, i) => {
                 if (isCustomItem(item)) {
                   return (
-                    <div key={i} className="customItem">
-                      {item.label && <div className="customLabel">{item.label}</div>}
-                      {item.description && <div className="customDescription">{item.description}</div>}
+                    <div key={i} className="customItem data-resume-root">
+                      {item.label && <div className="customLabel data-resume-root">{item.label}</div>}
+                      {item.description && <div className="customDescription data-resume-root">{item.description}</div>}
                     </div>
                   );
                 }
                 return (
-                  <div key={i} className="customItem">
-                    <div className="customDescription">{String(item)}</div>
+                  <div key={i} className="customItem data-resume-root">
+                    <div className="customDescription data-resume-root">{String(item)}</div>
                   </div>
                 );
               })}
@@ -429,7 +427,7 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
         ))}
 
         {/* Corner Decoration */}
-        <div className="cornerTriangle" />
+        <div className="cornerTriangle data-resume-root" />
       </div>
 
       <style jsx>{`
@@ -439,9 +437,8 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
           background: #fff;
           display: flex;
           position: relative;
-          overflow: visible;
+          overflow: hidden;
           font-family: ${t.bodyFont || 'Inter'}, sans-serif;
-          padding-bottom: 20px;
         }
 
         /* ================= SIDEBAR ================= */
@@ -449,15 +446,12 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
           width: 34%;
           background: ${t.primaryColor || '#2b2b2b'};
           color: #fff;
-          position: relative;
-          padding: 0 0 40px 0;
           flex-shrink: 0;
-          min-height: 100%;
           display: flex;
           flex-direction: column;
+          padding-bottom: 32px;
         }
 
-        /* Sidebar should expand with content */
         .sidebarContent {
           padding: 0 32px;
           margin-top: 20px;
@@ -503,12 +497,6 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
           width: 100%;
           height: 100%;
           object-fit: cover;
-        }
-
-        .sidebarContent {
-          padding: 0 32px;
-          margin-top: 20px;
-          flex: 1;
         }
 
         .sideHeading {
@@ -633,20 +621,23 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
           width: 2px;
           background: ${t.accentColor || '#f4a51c'};
           flex-shrink: 0;
-          min-height: 100%;
         }
 
         /* ================= CONTENT ================= */
         .content {
           flex: 1;
-          position: relative;
           background: #fff;
-          padding-bottom: 20px;
+          padding: 0 40px 20px 46px;
+          display: flex;
+          flex-direction: column;
+          position: relative;
         }
 
         .headerBlock {
           background: #f5f5f5;
-          padding: 38px 40px 30px 46px;
+          padding: 38px 40px 30px 0;
+          margin: 0 -40px 0 -46px;
+          padding-left: 46px;
           position: relative;
         }
 
@@ -682,7 +673,7 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
         }
 
         .section {
-          padding: 26px 40px 6px 46px;
+          padding: 26px 0 6px 0;
         }
 
         /* Reduce spacing when content is heavy */
@@ -733,25 +724,14 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
           font-size: 12.5px;
           line-height: 1.9;
           color: #666;
-          padding-left: 40px;
+          padding-left: 0;
           margin: 0;
         }
 
         .job {
-          padding-left: 40px;
+          padding-left: 0;
           margin-bottom: 20px;
           position: relative;
-        }
-
-        .job::before {
-          content: "";
-          position: absolute;
-          left: -2px;
-          top: 6px;
-          width: 9px;
-          height: 9px;
-          border-radius: 50%;
-          background: ${t.accentColor || '#f4a51c'};
         }
 
         .jobTop {
@@ -790,7 +770,6 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
         }
 
         .skills {
-          padding-left: 40px;
           display: grid;
           grid-template-columns: 1fr 1fr;
           gap: 18px 30px;
@@ -819,7 +798,6 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
         }
 
         .skillsTags {
-          padding-left: 40px;
           display: flex;
           flex-wrap: wrap;
           gap: 8px;
@@ -836,7 +814,6 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
         }
 
         .languages {
-          padding-left: 40px;
           display: flex;
           flex-direction: column;
           gap: 8px;
@@ -855,7 +832,6 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
         }
 
         .achievements {
-          padding-left: 40px;
           display: flex;
           flex-direction: column;
           gap: 8px;
@@ -869,7 +845,7 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
         }
 
         .achievementItem::before {
-          content: "▸";
+          content: "â–¸";
           position: absolute;
           left: 0;
           color: ${t.accentColor || '#f4a51c'};
@@ -883,7 +859,6 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
         }
 
         .customItems {
-          padding-left: 40px;
           display: flex;
           flex-direction: column;
           gap: 12px;
@@ -925,8 +900,17 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
           }
           .sidebar {
             width: 100%;
-            max-height: none;
-            overflow-y: visible;
+          }
+          .divider {
+            width: 100%;
+            height: 2px;
+          }
+          .headerBlock {
+            margin: 0;
+            padding-left: 20px;
+          }
+          .content {
+            padding: 0 20px 20px;
           }
           .photoWrap {
             height: 180px;

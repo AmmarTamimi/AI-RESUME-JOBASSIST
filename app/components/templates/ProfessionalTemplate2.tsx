@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import type { TemplateProps } from "../../types/Content";
 
 const Icon = {
@@ -63,18 +63,18 @@ export default function BoldTemplate({ content, theme }: TemplateProps) {
     .toUpperCase();
 
   return (
-    <div className="bold-template">
+    <div className="bold-template data-resume-root">
       {/* ================= HEADER BAND ================= */}
-      <div className="headerBand">
-        <div className="headerInner">
+      <div className="headerBand data-resume-root">
+        <div className="headerInner data-resume-root">
           {personalInfo.photoUrl && (
             <img className="photo" src={personalInfo.photoUrl} alt={personalInfo.fullName} />
           ) }
-          <div className="nameBlock">
-            <div className="name">{personalInfo.fullName}</div>
-            <div className="title">{personalInfo.title || "PROFESSIONAL"}</div>
+          <div className="nameBlock data-resume-root">
+            <div className="name data-resume-root">{personalInfo.fullName}</div>
+            <div className="title data-resume-root">{personalInfo.title || "PROFESSIONAL"}</div>
           </div>
-          <div className="contactCol">
+          <div className="contactCol data-resume-root">
             {contactItems.length > 0
               ? contactItems.map((item, i) => {
                   if (typeof item === "object" && item !== null && "label" in item && "description" in item) {
@@ -83,7 +83,7 @@ export default function BoldTemplate({ content, theme }: TemplateProps) {
                     else if (item.label === "email") icon = Icon.mail;
                     else if (item.label === "web") icon = Icon.globe;
                     return (
-                      <div className="contactItem" key={i}>
+                      <div className="contactItem data-resume-root" key={i}>
                         <span className="ic">{icon}</span>{item.description}
                       </div>
                     );
@@ -92,39 +92,39 @@ export default function BoldTemplate({ content, theme }: TemplateProps) {
                 })
               : (
                 <>
-                  {personalInfo.phone && <div className="contactItem"><span className="ic">{Icon.phone}</span>{personalInfo.phone}</div>}
-                  {personalInfo.email && <div className="contactItem"><span className="ic">{Icon.mail}</span>{personalInfo.email}</div>}
-                  {personalInfo.location && <div className="contactItem"><span className="ic">{Icon.pin}</span>{personalInfo.location}</div>}
-                  {personalInfo.website && <div className="contactItem"><span className="ic">{Icon.globe}</span>{personalInfo.website}</div>}
+                  {personalInfo.phone && <div className="contactItem data-resume-root"><span className="ic">{Icon.phone}</span>{personalInfo.phone}</div>}
+                  {personalInfo.email && <div className="contactItem data-resume-root"><span className="ic">{Icon.mail}</span>{personalInfo.email}</div>}
+                  {personalInfo.location && <div className="contactItem data-resume-root"><span className="ic">{Icon.pin}</span>{personalInfo.location}</div>}
+                  {personalInfo.website && <div className="contactItem data-resume-root"><span className="ic">{Icon.globe}</span>{personalInfo.website}</div>}
                 </>
               )}
           </div>
         </div>
-        <div className="angleCut" />
+        <div className="angleCut data-resume-root" />
       </div>
 
       {/* ================= BODY ================= */}
-      <div className="body">
-        <div className="mainCol">
+      <div className="body data-resume-root">
+        <div className="mainCol data-resume-root">
           {aboutText && (
-            <div className="section">
-              <div className="sectionTitle"><span className="tag">ABOUT</span></div>
+            <div className="section data-resume-root">
+              <div className="sectionTitle data-resume-root"><span className="tag">ABOUT</span></div>
               <p className="aboutText">{aboutText}</p>
             </div>
           )}
 
           {experienceSection && experienceSection.items.length > 0 && (
-            <div className="section">
-              <div className="sectionTitle"><span className="tag">EXPERIENCE</span></div>
+            <div className="section data-resume-root">
+              <div className="sectionTitle data-resume-root"><span className="tag">{experienceSection.title || 'EXPERIENCE'}</span></div>
               {experienceSection.items.map((job, i) => (
-                <div className="job" key={i}>
-                  <div className="jobTop">
+                <div className="job data-resume-root" key={i}>
+                  <div className="jobTop data-resume-root">
                     <span className="jobTitle">{job.role || "Position"}</span>
-                    <span className="jobDate">{job.start} – {job.end || "Present"}</span>
+                    <span className="jobDate">{job.start} â€“ {job.end || "Present"}</span>
                   </div>
-                  <div className="jobSub">{job.company}{job.location ? ` / ${job.location}` : ""}</div>
+                  <div className="jobSub data-resume-root">{job.company}{job.location ? ` / ${job.location}` : ""}</div>
                   {job.bullets && job.bullets.length > 0 && (
-                    <div className="jobDesc">{job.bullets[0]}</div>
+                    <div className="jobDesc data-resume-root">{job.bullets[0]}</div>
                   )}
                 </div>
               ))}
@@ -132,16 +132,16 @@ export default function BoldTemplate({ content, theme }: TemplateProps) {
           )}
         </div>
 
-        <div className="sideCol">
+        <div className="sideCol data-resume-root">
           {ratedSkillsSection && ratedSkillsSection.items.length > 0 && (
-            <div className="section">
-              <div className="sectionTitle"><span className="tag">SKILLS</span></div>
-              <div className="skills">
+            <div className="section data-resume-root">
+              <div className="sectionTitle data-resume-root"><span className="tag">{ratedSkillsSection.title || 'SKILLS'}</span></div>
+              <div className="skills data-resume-root">
                 {ratedSkillsSection.items.map((skill, i) => (
                   <div key={i}>
-                    <div className="skillName">{skill.name}</div>
-                    <div className="skillBar">
-                      <div className="skillFill" style={{ width: `${skill.level}%` }} />
+                    <div className="skillName data-resume-root">{skill.name}</div>
+                    <div className="skillBar data-resume-root">
+                      <div className="skillFill data-resume-root" style={{ width: `${skill.level}%` }} />
                     </div>
                   </div>
                 ))}
@@ -150,23 +150,23 @@ export default function BoldTemplate({ content, theme }: TemplateProps) {
           )}
 
           {educationSection && educationSection.items.length > 0 && (
-            <div className="section">
-              <div className="sectionTitle"><span className="tag"><span className="tagIcon">{Icon.cap}</span>EDUCATION</span></div>
+            <div className="section data-resume-root">
+              <div className="sectionTitle data-resume-root"><span className="tag"><span className="tagIcon">{Icon.cap}</span>{educationSection.title || 'EDUCATION'}</span></div>
               {educationSection.items.map((edu, i) => (
-                <div className="eduItem" key={i}>
+                <div className="eduItem data-resume-root" key={i}>
                   <b>{edu.school}</b>
                   <span>{edu.degree}</span>
-                  <span className="dates">{edu.start} – {edu.end}</span>
+                  <span className="dates">{edu.start} â€“ {edu.end}</span>
                 </div>
               ))}
             </div>
           )}
 
           {referencesSection && referencesSection.items.length > 0 && (
-            <div className="section">
-              <div className="sectionTitle"><span className="tag"><span className="tagIcon">{Icon.users}</span>REFERENCES</span></div>
+            <div className="section data-resume-root">
+              <div className="sectionTitle data-resume-root"><span className="tag"><span className="tagIcon">{Icon.users}</span>{referencesSection.title || 'REFERENCES'}</span></div>
               {referencesSection.items.map((ref, i) => (
-                <div className="refItem" key={i}>
+                <div className="refItem data-resume-root" key={i}>
                   <b>{ref.name}</b>
                   {ref.phone && <span>Tel: {ref.phone}</span>}
                   {ref.email && <span>{ref.email}</span>}
@@ -427,3 +427,5 @@ export default function BoldTemplate({ content, theme }: TemplateProps) {
     </div>
   );
 }
+
+

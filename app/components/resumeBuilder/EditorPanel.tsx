@@ -11,6 +11,8 @@ import type {
   RatedSkillItem,
   ReferenceItem,
   CustomItem,
+  LanguageItem,
+  AchievementItem,
 } from "@/app/types/Content";
 import {
   User,
@@ -119,17 +121,22 @@ const ADDABLE_TYPES: {
   icon: React.ReactNode;
 }[] = [
   {
-    type: "experience",
-    label: "Experience",
+    type: "languages",
+    label: "Languages",
     icon: <Briefcase className="h-4 w-4" />,
   },
   {
-    type: "education",
-    label: "Education",
+    type: "achievements",
+    label: "Achievements",
     icon: <GraduationCap className="h-4 w-4" />,
   },
   { 
     type: "ratedSkills", 
+    label: "Rated Skills", 
+    icon: <Sparkles className="h-4 w-4" /> 
+  },
+  { 
+    type: "skills", 
     label: "Skills", 
     icon: <Sparkles className="h-4 w-4" /> 
   },
@@ -678,6 +685,16 @@ function ItemCard({ section, item, index, personalInfo, onUpdateItem, onRemoveIt
       if (ref.name) return ref.name;
       return "Untitled";
     }
+    if (section.type === "languages") {
+      const lang = item as LanguageItem;
+      if (lang.name) return lang.name;
+      return "Untitled";
+    }
+    if (section.type === "achievements") {
+      const achievement = item as AchievementItem;
+      if (achievement.title) return achievement.title;
+      return "Untitled";
+    }
     if (item && typeof item === "object") {
       if ("name" in item) return item.name || "Untitled";
       if ("label" in item) return item.label || "Untitled";
@@ -775,7 +792,6 @@ function ItemCard({ section, item, index, personalInfo, onUpdateItem, onRemoveIt
       }
 
       case "skills": {
-        // Simple string skills
         if (typeof item === "string") {
           return (
             <div>
@@ -791,12 +807,10 @@ function ItemCard({ section, item, index, personalInfo, onUpdateItem, onRemoveIt
             </div>
           );
         }
-        // If item is an object with name property (should not happen for 'skills' type)
         return null;
       }
 
       case "ratedSkills": {
-        // Rated skills with name and level
         const rated = item as RatedSkillItem;
         return (
           <div className="space-y-3">
@@ -824,6 +838,67 @@ function ItemCard({ section, item, index, personalInfo, onUpdateItem, onRemoveIt
                 <span>100%</span>
               </div>
             </div>
+          </div>
+        );
+      }
+
+      case "languages": {
+        const lang = item as LanguageItem;
+        return (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <InputField
+              label="Language"
+              value={lang.name || ""}
+              onChange={(v) => onUpdateItem({ ...lang, name: v })}
+              placeholder="English"
+              autoFocus
+            />
+            <div>
+              <label className="block text-xs font-medium text-[#64748B] dark:text-[#94A3B8] mb-1.5">Level</label>
+              <select
+                value={lang.level || ""}
+                onChange={(e) => onUpdateItem({ ...lang, level: e.target.value })}
+                className="w-full px-3 py-2 text-sm bg-[#F8FAFC] dark:bg-[#1E293B] border border-[#E2E8F0] dark:border-[#334155] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2563EB] transition-all"
+              >
+                <option value="">Select level</option>
+                <option value="Native">Native</option>
+                <option value="Fluent">Fluent</option>
+                <option value="Advanced">Advanced</option>
+                <option value="Intermediate">Intermediate</option>
+                <option value="Beginner">Beginner</option>
+              </select>
+            </div>
+          </div>
+        );
+      }
+
+      case "achievements": {
+        const achievement = item as AchievementItem;
+        return (
+          <div className="space-y-3">
+            <InputField
+              label="Title"
+              value={achievement.title || ""}
+              onChange={(v) => onUpdateItem({ ...achievement, title: v })}
+              placeholder="Award or achievement title"
+              autoFocus
+            />
+            <div>
+              <label className="block text-xs font-medium text-[#64748B] dark:text-[#94A3B8] mb-1.5">Description</label>
+              <textarea
+                value={achievement.description || ""}
+                onChange={(e) => onUpdateItem({ ...achievement, description: e.target.value })}
+                placeholder="Describe the achievement..."
+                rows={3}
+                className="w-full px-3 py-2 text-sm bg-[#F8FAFC] dark:bg-[#1E293B] border border-[#E2E8F0] dark:border-[#334155] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2563EB] transition-all resize-none"
+              />
+            </div>
+            <InputField
+              label="Date (Optional)"
+              value={achievement.date || ""}
+              onChange={(v) => onUpdateItem({ ...achievement, date: v })}
+              placeholder="2023"
+            />
           </div>
         );
       }
@@ -899,7 +974,6 @@ function ItemCard({ section, item, index, personalInfo, onUpdateItem, onRemoveIt
     </div>
   );
 }
-
 // Input Field Component
 function InputField({ label, value, onChange, placeholder, type = "text", autoFocus = false }: {
   label: string;

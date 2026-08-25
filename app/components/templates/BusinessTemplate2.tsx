@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import type { TemplateProps } from "../../types/Content";
 
 export default function BusinessCardedTemplate({ content, theme }: TemplateProps) {
@@ -22,61 +22,61 @@ export default function BusinessCardedTemplate({ content, theme }: TemplateProps
     .toUpperCase();
 
   return (
-    <div className="bc-template">
+    <div className="bc-template data-resume-root">
       {/* ================= TOP BAND ================= */}
-      <div className="topBand">
+      <div className="topBand data-resume-root">
         {personalInfo.photoUrl ? (
           <img className="photo" src={personalInfo.photoUrl} alt={personalInfo.fullName} />
         ) : (
-          <div className="photoFallback">{initials || "U"}</div>
+          <div className="photoFallback data-resume-root">{initials || "U"}</div>
         )}
-        <div className="idBlock">
-          <div className="name">{personalInfo.fullName}</div>
-          <div className="title">{personalInfo.title || "PROFESSIONAL"}</div>
+        <div className="idBlock data-resume-root">
+          <div className="name data-resume-root">{personalInfo.fullName}</div>
+          <div className="title data-resume-root">{personalInfo.title || "PROFESSIONAL"}</div>
         </div>
-        <div className="contactCol">
+        <div className="contactCol data-resume-root">
           {contactItems.length > 0
             ? contactItems.map((item, i) => {
                 if (typeof item === "object" && item !== null && "description" in item) {
-                  return <div className="contactItem" key={i}>{item.description}</div>;
+                  return <div className="contactItem data-resume-root" key={i}>{item.description}</div>;
                 }
                 return null;
               })
             : (
               <>
-                {personalInfo.phone && <div className="contactItem">{personalInfo.phone}</div>}
-                {personalInfo.email && <div className="contactItem">{personalInfo.email}</div>}
-                {personalInfo.location && <div className="contactItem">{personalInfo.location}</div>}
-                {personalInfo.website && <div className="contactItem">{personalInfo.website}</div>}
+                {personalInfo.phone && <div className="contactItem data-resume-root">{personalInfo.phone}</div>}
+                {personalInfo.email && <div className="contactItem data-resume-root">{personalInfo.email}</div>}
+                {personalInfo.location && <div className="contactItem data-resume-root">{personalInfo.location}</div>}
+                {personalInfo.website && <div className="contactItem data-resume-root">{personalInfo.website}</div>}
               </>
             )}
         </div>
       </div>
 
       {/* ================= BODY: CARD GRID ================= */}
-      <div className="body">
-        <div className="mainCol">
+      <div className="body data-resume-root">
+        <div className="mainCol data-resume-root">
           {aboutText && (
-            <div className="card">
-              <div className="cardHeader"><span className="cardNum">01</span>Summary</div>
-              <div className="cardBody">
+            <div className="card data-resume-root">
+              <div className="cardHeader data-resume-root"><span className="cardNum">01</span>Summary</div>
+              <div className="cardBody data-resume-root">
                 <p className="aboutText">{aboutText}</p>
               </div>
             </div>
           )}
 
           {experienceSection && experienceSection.items.length > 0 && (
-            <div className="card">
-              <div className="cardHeader"><span className="cardNum">02</span>Experience</div>
-              <div className="cardBody">
+            <div className="card data-resume-root">
+              <div className="cardHeader data-resume-root"><span className="cardNum">02</span>{experienceSection.title || 'Experience'}</div>
+              <div className="cardBody data-resume-root">
                 {experienceSection.items.map((job, i) => (
-                  <div className="job" key={i}>
-                    <div className="jobTop">
+                  <div className="job data-resume-root" key={i}>
+                    <div className="jobTop data-resume-root">
                       <span className="jobTitle">{job.role || "Position"}</span>
-                      <span className="jobDate">{job.start} – {job.end || "Present"}</span>
+                      <span className="jobDate">{job.start} â€“ {job.end || "Present"}</span>
                     </div>
-                    <div className="jobSub">{job.company}{job.location ? ` / ${job.location}` : ""}</div>
-                    {job.bullets && job.bullets.length > 0 && <div className="jobDesc">{job.bullets[0]}</div>}
+                    <div className="jobSub data-resume-root">{job.company}{job.location ? ` / ${job.location}` : ""}</div>
+                    {job.bullets && job.bullets.length > 0 && <div className="jobDesc data-resume-root">{job.bullets[0]}</div>}
                   </div>
                 ))}
               </div>
@@ -84,18 +84,18 @@ export default function BusinessCardedTemplate({ content, theme }: TemplateProps
           )}
         </div>
 
-        <div className="sideCol">
+        <div className="sideCol data-resume-root">
           {ratedSkillsSection && ratedSkillsSection.items.length > 0 && (
-            <div className="card">
-              <div className="cardHeader"><span className="cardNum">03</span>Skills</div>
-              <div className="cardBody">
+            <div className="card data-resume-root">
+              <div className="cardHeader data-resume-root"><span className="cardNum">03</span>{ratedSkillsSection.title || 'Skills'}</div>
+              <div className="cardBody data-resume-root">
                 {ratedSkillsSection.items.map((skill, i) => (
-                  <div className="skillRow" key={i}>
-                    <div className="skillTop">
+                  <div className="skillRow data-resume-root" key={i}>
+                    <div className="skillTop data-resume-root">
                       <span className="skillName">{skill.name}</span>
                       <span className="skillPct">{skill.level}%</span>
                     </div>
-                    <div className="skillBar"><div className="skillFill" style={{ width: `${skill.level}%` }} /></div>
+                    <div className="skillBar data-resume-root"><div className="skillFill data-resume-root" style={{ width: `${skill.level}%` }} /></div>
                   </div>
                 ))}
               </div>
@@ -103,14 +103,14 @@ export default function BusinessCardedTemplate({ content, theme }: TemplateProps
           )}
 
           {educationSection && educationSection.items.length > 0 && (
-            <div className="card">
-              <div className="cardHeader"><span className="cardNum">04</span>Education</div>
-              <div className="cardBody">
+            <div className="card data-resume-root">
+              <div className="cardHeader data-resume-root"><span className="cardNum">04</span>{educationSection.title || 'Education'}</div>
+              <div className="cardBody data-resume-root">
                 {educationSection.items.map((edu, i) => (
-                  <div className="eduItem" key={i}>
-                    <div className="eduSchool">{edu.school}</div>
-                    <div className="eduDegree">{edu.degree}</div>
-                    <div className="eduDate">{edu.start} – {edu.end}</div>
+                  <div className="eduItem data-resume-root" key={i}>
+                    <div className="eduSchool data-resume-root">{edu.school}</div>
+                    <div className="eduDegree data-resume-root">{edu.degree}</div>
+                    <div className="eduDate data-resume-root">{edu.start} â€“ {edu.end}</div>
                   </div>
                 ))}
               </div>
@@ -118,14 +118,14 @@ export default function BusinessCardedTemplate({ content, theme }: TemplateProps
           )}
 
           {referencesSection && referencesSection.items.length > 0 && (
-            <div className="card">
-              <div className="cardHeader"><span className="cardNum">05</span>References</div>
-              <div className="cardBody">
+            <div className="card data-resume-root">
+              <div className="cardHeader data-resume-root"><span className="cardNum">05</span>{referencesSection.title || 'References'}</div>
+              <div className="cardBody data-resume-root">
                 {referencesSection.items.map((ref, i) => (
-                  <div className="refItem" key={i}>
-                    <div className="refName">{ref.name}</div>
-                    {ref.phone && <div className="refLine">{ref.phone}</div>}
-                    {ref.email && <div className="refLine">{ref.email}</div>}
+                  <div className="refItem data-resume-root" key={i}>
+                    <div className="refName data-resume-root">{ref.name}</div>
+                    {ref.phone && <div className="refLine data-resume-root">{ref.phone}</div>}
+                    {ref.email && <div className="refLine data-resume-root">{ref.email}</div>}
                   </div>
                 ))}
               </div>
@@ -383,3 +383,5 @@ export default function BusinessCardedTemplate({ content, theme }: TemplateProps
     </div>
   );
 }
+
+
