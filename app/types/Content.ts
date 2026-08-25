@@ -22,11 +22,7 @@ export interface ExperienceItem {
   end: string;
   bullets: string[];
 }
-export interface AchievementItems {
-  start?: string;
-  end?: string;
-  achievement: string;
-}
+
 
 export interface EducationItem {
   school: string;
@@ -54,6 +50,16 @@ export interface RatedSkillItem {
   level: number; // 0-100
 }
 
+export interface LanguageItem {
+  name: string;
+  level?: string; // e.g., "Native", "Fluent", "Intermediate"
+}
+
+export interface AchievementItem {
+  title: string;
+  description?: string;
+  date?: string;
+}
 
 
 export type Section =
@@ -62,8 +68,8 @@ export type Section =
   | { id: string; type: "skills"; title: string; items: string[] }
   | { id: string; type: "ratedSkills"; title: string; items: RatedSkillItem[] }
   | { id: string; type: "references"; title: string; items: ReferenceItem[] }
-  | { id: string; type: "languages"; title: string; items: string[] }
-  | { id: string; type: "achievements"; title: string; items: AchievementItems[] }
+  | { id: string; type: "languages"; title: string; items: LanguageItem[] }
+  | { id: string; type: "achievements"; title: string; items: AchievementItem[] }
   | { id: string; type: "custom"; title: string; items: CustomItem[] };
 
 export type SectionType = Section["type"];

@@ -20,6 +20,10 @@ export function createBlankSection(type: SectionType): Section {
       return { id, type, title: "Skills", items: [] };
     case "references":
       return { id, type, title: "References", items: [] };
+    case "achievements":
+      return { id, type, title: "Achievements", items: [] };
+    case "languages":
+      return { id, type, title: "Languages", items: [] };
     case "custom":
       return { id, type, title: "Custom Section", items: [] };
   }

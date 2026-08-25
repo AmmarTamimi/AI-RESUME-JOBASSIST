@@ -1,5 +1,12 @@
 import React from "react";
-import type { TemplateProps } from "../../types/Content";
+import type { 
+  TemplateProps, 
+  CustomItem, 
+  ReferenceItem,
+  LanguageItem,
+  AchievementItem,
+  RatedSkillItem 
+} from "../../types/Content";
 
 // SVG Icons - clean and minimal
 const Icon = {
@@ -72,18 +79,37 @@ const Icon = {
       <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11" />
     </svg>
   ),
+  flag: (
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M4 21V4h16l-4 6 4 6H4z" />
+    </svg>
+  ),
+  star: (
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+    </svg>
+  ),
+  plus: (
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
+      <line x1="12" y1="5" x2="12" y2="19" />
+      <line x1="5" y1="12" x2="19" y2="12" />
+    </svg>
+  ),
 };
 
 export default function ModernTemplate({ content, theme }: TemplateProps) {
   const { personalInfo, sections } = content;
   const t = theme;
 
-  // Find sections
+  // Find all sections
   const contactSection = sections.find((s) => s.type === "custom" && s.id === "contact");
   const referencesSection = sections.find((s) => s.type === "references");
   const educationSection = sections.find((s) => s.type === "education");
   const experienceSection = sections.find((s) => s.type === "experience");
   const ratedSkillsSection = sections.find((s) => s.type === "ratedSkills");
+  const skillsSection = sections.find((s) => s.type === "skills");
+  const languagesSection = sections.find((s) => s.type === "languages");
+  const achievementsSection = sections.find((s) => s.type === "achievements");
   const aboutText = personalInfo.summary;
 
   // Name parsing for display
@@ -94,8 +120,30 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
   // Contact items - parse from the custom section
   const contactItems = contactSection?.items || [];
 
+  // Get all custom sections except contact
+  const otherCustomSections = sections.filter(
+    (s) => s.type === "custom" && s.id !== "contact"
+  );
+
+  // Type guards
+  const isCustomItem = (item: any): item is CustomItem => {
+    return item && typeof item === 'object' && 'label' in item;
+  };
+
+  const isLanguageItem = (item: any): item is LanguageItem => {
+    return item && typeof item === 'object' && 'name' in item;
+  };
+
+  const isAchievementItem = (item: any): item is AchievementItem => {
+    return item && typeof item === 'object' && 'title' in item;
+  };
+
+  // Count total items to determine if we need to reduce spacing
+  const totalItems = sections.reduce((acc, section) => acc + section.items.length, 0);
+  const isContentHeavy = totalItems > 15;
+
   return (
-    <div className="modern-template">
+    <div className="modern-template" data-content-heavy={isContentHeavy}>
       {/* ================= SIDEBAR ================= */}
       <aside className="sidebar">
         {/* Photo Section */}
@@ -106,7 +154,7 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
               <img src={personalInfo.photoUrl} alt={personalInfo.fullName} />
             </div>
           </div>
-        ) }
+        )}
 
         <div className="sidebarContent">
           {/* Contact Section */}
@@ -118,7 +166,7 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
           {contactItems.length > 0 && (
             <div className="contactList">
               {contactItems.map((item, i) => {
-                if (typeof item === 'object' && item !== null && 'label' in item && 'description' in item) {
+                if (isCustomItem(item)) {
                   let icon = Icon.pin;
                   if (item.label === "phone") icon = Icon.phone;
                   else if (item.label === "email") icon = Icon.mail;
@@ -127,7 +175,7 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
                   return (
                     <div className="contactItem" key={i}>
                       <span className="ic">{icon}</span>
-                      <span>{item.description}</span>
+                      <span>{item.description || item.label}</span>
                     </div>
                   );
                 }
@@ -136,7 +184,6 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
             </div>
           )}
 
-          {/* If no contact items, show default contact info from personalInfo */}
           {(contactItems.length === 0) && (
             <div className="contactList">
               {personalInfo.phone && (
@@ -175,7 +222,7 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
                 <div className="iconBadge">{Icon.users}</div>
                 <h3>REFERENCES</h3>
               </div>
-              {referencesSection.items.map((ref, i) => (
+              {referencesSection.items.map((ref: ReferenceItem, i) => (
                 <div className="refItem" key={i}>
                   <b>{ref.name}</b>
                   {ref.address && <span>{ref.address}</span>}
@@ -256,7 +303,7 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
           </div>
         )}
 
-        {/* Skills */}
+        {/* Skills (Rated) */}
         {ratedSkillsSection && ratedSkillsSection.items.length > 0 && (
           <div className="section">
             <div className="sectionTitle">
@@ -264,7 +311,7 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
               <h2>SKILLS</h2>
             </div>
             <div className="skills">
-              {ratedSkillsSection.items.map((skill, i) => (
+              {ratedSkillsSection.items.map((skill: RatedSkillItem, i) => (
                 <div key={i}>
                   <div className="skillName">{skill.name}</div>
                   <div className="skillBar">
@@ -275,6 +322,111 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
             </div>
           </div>
         )}
+
+        {/* Skills (Tags) */}
+        {skillsSection && skillsSection.items.length > 0 && (
+          <div className="section">
+            <div className="sectionTitle">
+              <div className="iconBadge iconBadgeYellow">{Icon.star}</div>
+              <h2>TECHNICAL SKILLS</h2>
+            </div>
+            <div className="skillsTags">
+              {skillsSection.items.map((skill, i) => (
+                <span key={i} className="skillTag">{skill}</span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Languages Section */}
+        {languagesSection && languagesSection.items.length > 0 && (
+          <div className="section">
+            <div className="sectionTitle">
+              <div className="iconBadge iconBadgeYellow">{Icon.flag}</div>
+              <h2>LANGUAGES</h2>
+            </div>
+            <div className="languages">
+              {languagesSection.items.map((lang, i) => {
+                if (isLanguageItem(lang)) {
+                  return (
+                    <div key={i} className="languageItem">
+                      <span className="languageName">{lang.name}</span>
+                      {lang.level && <span className="languageLevel">{lang.level}</span>}
+                    </div>
+                  );
+                }
+                return (
+                  <div key={i} className="languageItem">
+                    <span className="languageName">{String(lang)}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Achievements Section */}
+        {achievementsSection && achievementsSection.items.length > 0 && (
+          <div className="section">
+            <div className="sectionTitle">
+              <div className="iconBadge iconBadgeYellow">{Icon.award}</div>
+              <h2>ACHIEVEMENTS</h2>
+            </div>
+            <div className="achievements">
+              {achievementsSection.items.map((achievement, i) => {
+                if (isAchievementItem(achievement)) {
+                  return (
+                    <div key={i} className="achievementItem">
+                      <div className="achievementText">{achievement.title}</div>
+                      {achievement.description && (
+                        <div className="achievementDescription">{achievement.description}</div>
+                      )}
+                    </div>
+                  );
+                }
+                if (typeof achievement === 'string') {
+                  return (
+                    <div key={i} className="achievementItem">
+                      <div className="achievementText">{achievement}</div>
+                    </div>
+                  );
+                }
+                return (
+                  <div key={i} className="achievementItem">
+                    <div className="achievementText">{String(achievement)}</div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Other Custom Sections */}
+        {otherCustomSections.map((section) => (
+          <div key={section.id} className="section">
+            <div className="sectionTitle">
+              <div className="iconBadge iconBadgeYellow">{Icon.plus}</div>
+              <h2>{section.title || "Custom"}</h2>
+            </div>
+            <div className="customItems">
+              {section.items.map((item, i) => {
+                if (isCustomItem(item)) {
+                  return (
+                    <div key={i} className="customItem">
+                      {item.label && <div className="customLabel">{item.label}</div>}
+                      {item.description && <div className="customDescription">{item.description}</div>}
+                    </div>
+                  );
+                }
+                return (
+                  <div key={i} className="customItem">
+                    <div className="customDescription">{String(item)}</div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
 
         {/* Corner Decoration */}
         <div className="cornerTriangle" />
@@ -287,8 +439,9 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
           background: #fff;
           display: flex;
           position: relative;
-          overflow: hidden;
+          overflow: visible;
           font-family: ${t.bodyFont || 'Inter'}, sans-serif;
+          padding-bottom: 20px;
         }
 
         /* ================= SIDEBAR ================= */
@@ -299,6 +452,16 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
           position: relative;
           padding: 0 0 40px 0;
           flex-shrink: 0;
+          min-height: 100%;
+          display: flex;
+          flex-direction: column;
+        }
+
+        /* Sidebar should expand with content */
+        .sidebarContent {
+          padding: 0 32px;
+          margin-top: 20px;
+          flex: 1;
         }
 
         .photoWrap {
@@ -307,6 +470,7 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
           background: ${t.accentColor || '#f4a51c'};
           clip-path: polygon(0 0, 100% 0, 100% 55%, 0 100%);
           overflow: hidden;
+          flex-shrink: 0;
         }
 
         .photoTriangle {
@@ -341,56 +505,10 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
           object-fit: cover;
         }
 
-        /* Photo Placeholder - Solid design matching the theme */
-        .photoPlaceholder {
-          height: 180px;
-          background: ${t.accentColor || '#f4a51c'};
-          clip-path: polygon(0 0, 100% 0, 100% 55%, 0 100%);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          position: relative;
-        }
-
-        .photoPlaceholder::after {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 50%);
-          clip-path: polygon(0 0, 65% 0, 0 55%);
-        }
-
-        .placeholderContent {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 8px;
-          z-index: 1;
-          opacity: 0.7;
-        }
-
-        .placeholderIcon {
-          color: rgba(255,255,255,0.8);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .placeholderText {
-          color: rgba(255,255,255,0.8);
-          font-size: 13px;
-          font-weight: 600;
-          letter-spacing: 1px;
-          font-family: ${t.headingFont || 'Poppins'}, sans-serif;
-          text-transform: uppercase;
-        }
-
         .sidebarContent {
           padding: 0 32px;
           margin-top: 20px;
+          flex: 1;
         }
 
         .sideHeading {
@@ -515,6 +633,7 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
           width: 2px;
           background: ${t.accentColor || '#f4a51c'};
           flex-shrink: 0;
+          min-height: 100%;
         }
 
         /* ================= CONTENT ================= */
@@ -522,6 +641,7 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
           flex: 1;
           position: relative;
           background: #fff;
+          padding-bottom: 20px;
         }
 
         .headerBlock {
@@ -563,6 +683,24 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
 
         .section {
           padding: 26px 40px 6px 46px;
+        }
+
+        /* Reduce spacing when content is heavy */
+        .modern-template[data-content-heavy="true"] .section {
+          padding-top: 18px;
+          padding-bottom: 2px;
+        }
+
+        .modern-template[data-content-heavy="true"] .job {
+          margin-bottom: 12px;
+        }
+
+        .modern-template[data-content-heavy="true"] .jobDesc {
+          font-size: 11px;
+        }
+
+        .modern-template[data-content-heavy="true"] .aboutText {
+          font-size: 11.5px;
         }
 
         .sectionTitle {
@@ -680,6 +818,95 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
           transition: width 0.6s ease;
         }
 
+        .skillsTags {
+          padding-left: 40px;
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+          margin-bottom: 10px;
+        }
+
+        .skillTag {
+          background: ${t.accentColor || '#f4a51c'}20;
+          color: ${t.accentColor || '#f4a51c'};
+          padding: 4px 12px;
+          border-radius: 20px;
+          font-size: 12px;
+          font-weight: 500;
+        }
+
+        .languages {
+          padding-left: 40px;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+
+        .languageItem {
+          display: flex;
+          justify-content: space-between;
+          font-size: 13px;
+          color: ${t.textColor || '#2b2b2b'};
+        }
+
+        .languageLevel {
+          color: ${t.mutedColor || '#666'};
+          font-style: italic;
+        }
+
+        .achievements {
+          padding-left: 40px;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+
+        .achievementItem {
+          font-size: 13px;
+          color: ${t.textColor || '#2b2b2b'};
+          padding-left: 20px;
+          position: relative;
+        }
+
+        .achievementItem::before {
+          content: "▸";
+          position: absolute;
+          left: 0;
+          color: ${t.accentColor || '#f4a51c'};
+        }
+
+        .achievementDescription {
+          font-size: 12px;
+          color: ${t.mutedColor || '#666'};
+          margin-top: 2px;
+          padding-left: 4px;
+        }
+
+        .customItems {
+          padding-left: 40px;
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+
+        .customItem {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+
+        .customLabel {
+          font-weight: 600;
+          color: ${t.textColor || '#2b2b2b'};
+          font-size: 14px;
+        }
+
+        .customDescription {
+          font-size: 12.5px;
+          color: #666;
+          line-height: 1.6;
+        }
+
         .cornerTriangle {
           position: absolute;
           bottom: 0;
@@ -689,6 +916,7 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
           border-style: solid;
           border-width: 0 0 90px 90px;
           border-color: transparent transparent ${t.accentColor || '#f4a51c'} transparent;
+          pointer-events: none;
         }
 
         @media (max-width: 900px) {
@@ -697,8 +925,8 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
           }
           .sidebar {
             width: 100%;
-            max-height: 500px;
-            overflow-y: auto;
+            max-height: none;
+            overflow-y: visible;
           }
           .photoWrap {
             height: 180px;
@@ -709,8 +937,8 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
             top: 35px;
             left: 20px;
           }
-          .photoPlaceholder {
-            height: 150px;
+          .skills {
+            grid-template-columns: 1fr;
           }
         }
 

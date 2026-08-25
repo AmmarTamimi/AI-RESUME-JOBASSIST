@@ -36,6 +36,7 @@ import {
   Palette,
   Type,
   FileText,
+  Trophy,
 } from "lucide-react";
 import Link from "next/link";
 import { templates } from "../templates/templates";
@@ -112,22 +113,12 @@ interface EditorPanelProps {
   onUpdateTemplate: (templateId: string) => void;
 }
 
-const ADDABLE_TYPES: {
-  type: SectionType;
-  label: string;
-  icon: React.ReactNode;
-}[] = [
-  {
-    type: "experience",
-    label: "Experience",
-    icon: <Briefcase className="h-4 w-4" />,
-  },
-  {
-    type: "education",
-    label: "Education",
-    icon: <GraduationCap className="h-4 w-4" />,
-  },
+const ADDABLE_TYPES: { type: SectionType; label: string; icon: React.ReactNode }[] = [
+  { type: "experience", label: "Experience", icon: <Briefcase className="h-4 w-4" /> },
+  { type: "education", label: "Education", icon: <GraduationCap className="h-4 w-4" /> },
   { type: "skills", label: "Skills", icon: <Sparkles className="h-4 w-4" /> },
+  { type: "languages", label: "Languages", icon: <Globe className="h-4 w-4" /> },
+  { type: "achievements", label: "Achievements", icon: <Trophy className="h-4 w-4" /> },
   { type: "custom", label: "Custom", icon: <Plus className="h-4 w-4" /> },
 ];
 
@@ -286,6 +277,7 @@ export default function EditorPanel({
 
   const handleAddSection = (type: SectionType) => {
     onAddSection(type);
+    console.log("resume sections: ",sections);
   };
 
   return (
