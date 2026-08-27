@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState, useCallback } from "react";
 import type { ResumeContent, ResumeTheme } from "@/app/types/Content";
 import TemplateRenderer from "../templates/Registry";
 import { templates } from "../templates/templates";
+
 import {
   Eye,
   Maximize2,
@@ -123,7 +124,7 @@ export default function PreviewPanel({
       if (paperRef.current) {
         // Find the actual template element inside the paper
         const templateElement =
-          paperRef.current.querySelector("[data-resume-root]");
+          paperRef.current.querySelector("data-resume-root");
 
         if (templateElement) {
           // Get the actual content height
@@ -190,179 +191,422 @@ export default function PreviewPanel({
   const zoomLevel = zoom / 100;
   const totalScale = scale * zoomLevel;
 
-  // Generate PDF with proper alignment
-  const generatePDF = async (): Promise<Blob> => {
+// Replace the generatePDF function with this improved version:
+
+// Replace the generatePDF function with this improved version:
+
+// Replace the generatePDF function with this completely rewritten version:
+
+// Replace the generatePDF function with this approach using the actual DOM element:
+
+// Add this function at the top of the file, after imports
+
+// const generatePDF = async (): Promise<Blob> => {
+//   // Get the template component
+//   const template = templates.find((t) => t.id === templateId);
+//   if (!template) throw new Error("Template not found");
+
+//   // Create a hidden iframe
+//   const iframe = document.createElement('iframe');
+//   iframe.style.position = 'fixed';
+//   iframe.style.left = '-9999px';
+//   iframe.style.top = '0';
+//   iframe.style.width = '794px';
+//   iframe.style.height = '1123px';
+//   iframe.style.border = 'none';
+//   iframe.style.background = 'white';
+//   iframe.style.zIndex = '-9999';
+//   document.body.appendChild(iframe);
+
+//   // Get all style tags from the main document
+//   const allStyles = document.querySelectorAll('style');
+//   let stylesHTML = '';
+//   allStyles.forEach((style) => {
+//     stylesHTML += style.innerHTML;
+//   });
+
+//   // Get all link tags for Google Fonts
+//  // Fix the linkTags iteration with proper type checking
+// const linkTags = document.querySelectorAll('link[rel="stylesheet"]');
+// let linksHTML = '';
+// linkTags.forEach((link) => {
+//   const linkElement = link as HTMLLinkElement;
+//   if (linkElement.href && linkElement.href.includes('googleapis')) {
+//     linksHTML += `<link rel="stylesheet" href="${linkElement.href}">`;
+//   }
+// });
+
+
+
+//   // Prepare the HTML content
+//   const htmlContent = `
+//     <!DOCTYPE html>
+//     <html>
+//       <head>
+//         <meta charset="UTF-8">
+//         <meta name="viewport" content="width=794">
+//         ${linksHTML}
+//         <style>
+//           /* Reset */
+//           * { margin: 0; padding: 0; box-sizing: border-box; }
+//           body { 
+//             background: white; 
+//             width: 794px;
+//             margin: 0 auto;
+//             font-family: ${theme.bodyFont || 'Inter'}, sans-serif;
+//           }
+//           /* Dark mode override */
+//           .dark { display: none !important; }
+//           /* Template specific overrides */
+//           .modern-template, .minimal-template, .prof-tpl, 
+//           .digital-marketing-template, .modern3 {
+//             background: white !important;
+//           }
+//           /* Copy all existing styles */
+//           ${stylesHTML}
+//         </style>
+//       </head>
+//       <body>
+//         <div id="root"></div>
+//       </body>
+//     </html>
+//   `;
+
+//   // Write to iframe
+//   const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+//   if (!iframeDoc) throw new Error("Failed to get iframe document");
+
+//   iframeDoc.open();
+//   iframeDoc.write(htmlContent);
+//   iframeDoc.close();
+
+//   // Wait for iframe to load
+//   await new Promise((resolve) => setTimeout(resolve, 300));
+
+//   // Now render React component inside iframe
+//   const rootElement = iframeDoc.getElementById('root');
+//   if (!rootElement) throw new Error("Root element not found");
+
+//   // Dynamically import ReactDOM
+//   const ReactDOM = await import('react-dom/client');
+//   const React = await import('react');
+
+//   // Create root and render
+//   const root = ReactDOM.createRoot(rootElement);
+  
+//   // Render the template component with props
+//   const TemplateComponent = template.component;
+//   root.render(
+//     React.createElement(TemplateComponent, {
+//       content: content,
+//       theme: theme,
+//     })
+//   );
+
+//   // Wait for render
+//   await new Promise((resolve) => setTimeout(resolve, 1000));
+
+//   // Get the rendered height
+//   const templateElement = rootElement.querySelector('[data-resume-root]') || 
+//                          rootElement.querySelector('.modern-template') ||
+//                          rootElement.querySelector('.minimal-template') ||
+//                          rootElement;
+  
+//   const actualHeight = Math.max(templateElement.scrollHeight, 1123);
+//   const pageHeight = actualHeight + 40;
+
+//   // Set iframe height to match content
+//   iframe.style.height = pageHeight + 'px';
+
+//   // Wait for reflow
+//   await new Promise((resolve) => setTimeout(resolve, 300));
+
+//   // Now capture with html2canvas
+//   const html2canvas = (await import('html2canvas')).default;
+//   const canvas = await html2canvas(rootElement, {
+//     scale: 2,
+//     useCORS: true,
+//     logging: false,
+//     backgroundColor: '#ffffff',
+//     width: 794,
+//     height: pageHeight,
+//     windowWidth: 794,
+//     windowHeight: pageHeight,
+//   });
+
+//   // Clean up
+//   root.unmount();
+//   document.body.removeChild(iframe);
+
+//   // Convert to PDF
+//   const imgData = canvas.toDataURL('image/jpeg', 1.0);
+//   const { jsPDF } = await import('jspdf');
+
+//   const pdf = new jsPDF({
+//     orientation: 'portrait',
+//     unit: 'mm',
+//     format: 'a4',
+//     compress: true,
+//   });
+
+//   const pdfWidth = 210;
+//   const imgWidth = pdfWidth;
+//   const imgHeight = (canvas.height / canvas.width) * pdfWidth;
+
+//   pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
+
+//   return pdf.output('blob');
+// };
+
+// // Similar for PNG
+// const generatePNG = async (): Promise<Blob> => {
+//   const template = templates.find((t) => t.id === templateId);
+//   if (!template) throw new Error("Template not found");
+
+//   const iframe = document.createElement('iframe');
+//   iframe.style.position = 'fixed';
+//   iframe.style.left = '-9999px';
+//   iframe.style.top = '0';
+//   iframe.style.width = '794px';
+//   iframe.style.height = '1123px';
+//   iframe.style.border = 'none';
+//   iframe.style.background = 'white';
+//   iframe.style.zIndex = '-9999';
+//   document.body.appendChild(iframe);
+
+//   const allStyles = document.querySelectorAll('style');
+//   let stylesHTML = '';
+//   allStyles.forEach((style) => {
+//     stylesHTML += style.innerHTML;
+//   });
+
+//  // Fix the linkTags iteration with proper type checking
+// const linkTags = document.querySelectorAll('link[rel="stylesheet"]');
+// let linksHTML = '';
+// linkTags.forEach((link) => {
+//   const linkElement = link as HTMLLinkElement;
+//   if (linkElement.href && linkElement.href.includes('googleapis')) {
+//     linksHTML += `<link rel="stylesheet" href="${linkElement.href}">`;
+//   }
+// });
+
+//   const htmlContent = `
+//     <!DOCTYPE html>
+//     <html>
+//       <head>
+//         <meta charset="UTF-8">
+//         <meta name="viewport" content="width=794">
+//         ${linksHTML}
+//         <style>
+//           * { margin: 0; padding: 0; box-sizing: border-box; }
+//           body { 
+//             background: white; 
+//             width: 794px;
+//             margin: 0 auto;
+//             font-family: ${theme.bodyFont || 'Inter'}, sans-serif;
+//           }
+//           .dark { display: none !important; }
+//           .modern-template, .minimal-template, .prof-tpl, 
+//           .digital-marketing-template, .modern3 {
+//             background: white !important;
+//           }
+//           ${stylesHTML}
+//         </style>
+//       </head>
+//       <body>
+//         <div id="root"></div>
+//       </body>
+//     </html>
+//   `;
+
+//   const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+//   if (!iframeDoc) throw new Error("Failed to get iframe document");
+
+//   iframeDoc.open();
+//   iframeDoc.write(htmlContent);
+//   iframeDoc.close();
+
+//   await new Promise((resolve) => setTimeout(resolve, 300));
+
+//   const rootElement = iframeDoc.getElementById('root');
+//   if (!rootElement) throw new Error("Root element not found");
+
+//   const ReactDOM = await import('react-dom/client');
+//   const React = await import('react');
+
+//   const root = ReactDOM.createRoot(rootElement);
+//   const TemplateComponent = template.component;
+//   root.render(
+//     React.createElement(TemplateComponent, {
+//       content: content,
+//       theme: theme,
+//     })
+//   );
+
+//   await new Promise((resolve) => setTimeout(resolve, 1000));
+
+//   const templateElement = rootElement.querySelector('[data-resume-root]') || 
+//                          rootElement.querySelector('.modern-template') ||
+//                          rootElement.querySelector('.minimal-template') ||
+//                          rootElement;
+  
+//   const actualHeight = Math.max(templateElement.scrollHeight, 1123);
+//   const pageHeight = actualHeight + 40;
+//   iframe.style.height = pageHeight + 'px';
+
+//   await new Promise((resolve) => setTimeout(resolve, 300));
+
+//   const html2canvas = (await import('html2canvas')).default;
+//   const canvas = await html2canvas(rootElement, {
+//     scale: 3,
+//     useCORS: true,
+//     logging: false,
+//     backgroundColor: '#ffffff',
+//     width: 794,
+//     height: pageHeight,
+//     windowWidth: 794,
+//     windowHeight: pageHeight,
+//   });
+
+//   root.unmount();
+//   document.body.removeChild(iframe);
+
+//   return new Promise((resolve) => {
+//     canvas.toBlob((blob) => {
+//       resolve(blob!);
+//     }, 'image/png', 1.0);
+//   });
+// };
+
+// In PreviewPanel.tsx - replace the downloadResume function
+
+// In PreviewPanel.tsx - replace the downloadResume function
+
+// In PreviewPanel.tsx - replace the downloadResume function
+
+const downloadResume = async (format: "pdf" | "png") => {
+  setIsLoading(true);
+  setShowDownloadMenu(false);
+  
+  try {
     const paperElement = paperRef.current;
     if (!paperElement) throw new Error("Paper element not found");
 
-    // Get the actual rendered height
-    const templateElement = paperElement.querySelector(
-      ".modern-template, .minimal-template, .figmaResume",
-    );
+    // Get the template element
+    const templateElement = paperElement.querySelector('[data-resume-root]') || 
+                           paperElement.querySelector('.modern-template') ||
+                           paperElement.querySelector('.minimal-template') ||
+                           paperElement.querySelector('.prof-tpl') ||
+                           paperElement.querySelector('.digital-marketing-template') ||
+                           paperElement.querySelector('.modern3') ||
+                           paperElement;
 
-    const actualHeight = templateElement
-      ? templateElement.scrollHeight
-      : MIN_PAPER_HEIGHT;
-    const pageHeight = Math.max(actualHeight + 40, MIN_PAPER_HEIGHT);
-
-    // Create a temporary container
-    const captureContainer = document.createElement("div");
-    captureContainer.style.position = "fixed";
-    captureContainer.style.left = "-9999px";
-    captureContainer.style.top = "0";
-    captureContainer.style.width = PAPER_WIDTH + "px";
-    captureContainer.style.height = pageHeight + "px";
-    captureContainer.style.background = "#ffffff";
-    captureContainer.style.zIndex = "-9999";
-    captureContainer.style.overflow = "visible";
-    document.body.appendChild(captureContainer);
-
-    const clone = paperElement.cloneNode(true) as HTMLElement;
-    clone.style.transform = "none";
-    clone.style.width = PAPER_WIDTH + "px";
-    clone.style.height = pageHeight + "px";
-    clone.style.position = "relative";
-    clone.style.left = "0";
-    clone.style.top = "0";
-    clone.style.margin = "0";
-    clone.style.transformOrigin = "top left";
-    clone.style.overflow = "visible";
-
-    captureContainer.appendChild(clone);
-
-    await new Promise((resolve) => setTimeout(resolve, 200));
-
-    const html2canvas = (await import("html2canvas")).default;
-    const canvas = await html2canvas(captureContainer, {
-      scale: 2,
-      useCORS: true,
-      logging: false,
-      backgroundColor: "#ffffff",
-      width: PAPER_WIDTH,
-      height: pageHeight,
+    // Get the HTML of the template
+    const templateHTML = templateElement.outerHTML;
+    
+    // Get ALL styles from the document
+    const allStyles = document.querySelectorAll('style');
+    let stylesHTML = '';
+    allStyles.forEach((style) => {
+      stylesHTML += style.innerHTML;
     });
 
-    document.body.removeChild(captureContainer);
-
-    const imgData = canvas.toDataURL("image/jpeg", 1.0);
-
-    const { jsPDF } = await import("jspdf");
-
-    const pdfHeight = 1123;
-    const totalPages = Math.ceil(pageHeight / pdfHeight);
-
-    const pdf = new jsPDF({
-      orientation: "portrait",
-      unit: "px",
-      format: "a4",
+    // Get Google Fonts links
+    const linkTags = document.querySelectorAll('link[rel="stylesheet"]');
+    let linksHTML = '';
+    linkTags.forEach((link) => {
+      const linkElement = link as HTMLLinkElement;
+      if (linkElement.href && linkElement.href.includes('googleapis')) {
+        linksHTML += `<link rel="stylesheet" href="${linkElement.href}">`;
+      }
     });
 
-    for (let page = 0; page < totalPages; page++) {
-      if (page > 0) {
-        pdf.addPage();
+    // Build the full HTML document with proper structure
+    const html = `<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=794">
+    ${linksHTML}
+    <style>
+      /* Reset */
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { 
+        background: white; 
+        width: 794px;
+        margin: 0 auto;
+        padding: 0;
       }
-
-      const yOffset = page * pdfHeight;
-      const pageImageData = canvas.toDataURL("image/jpeg", 1.0);
-
-      if (totalPages === 1) {
-        pdf.addImage(
-          pageImageData,
-          "JPEG",
-          0,
-          0,
-          pdf.internal.pageSize.getWidth(),
-          pdf.internal.pageSize.getHeight(),
-        );
-      } else {
-        const tempCanvas = document.createElement("canvas");
-        tempCanvas.width = PAPER_WIDTH;
-        tempCanvas.height = Math.min(pdfHeight, pageHeight - yOffset);
-        const ctx = tempCanvas.getContext("2d");
-        ctx?.drawImage(
-          canvas,
-          0,
-          yOffset,
-          PAPER_WIDTH,
-          tempCanvas.height,
-          0,
-          0,
-          PAPER_WIDTH,
-          tempCanvas.height,
-        );
-
-        const croppedData = tempCanvas.toDataURL("image/jpeg", 1.0);
-        pdf.addImage(
-          croppedData,
-          "JPEG",
-          0,
-          0,
-          pdf.internal.pageSize.getWidth(),
-          pdf.internal.pageSize.getHeight(),
-        );
+      .dark { display: none !important; }
+      
+      /* ALL styles from the page */
+      ${stylesHTML}
+      
+      /* Force template to display as flex */
+      .modern-template, .minimal-template, .prof-tpl, 
+      .digital-marketing-template, .modern3 {
+        display: flex !important;
+        background: white !important;
+        width: 100% !important;
+        min-height: 100% !important;
       }
+      
+      /* Fix sidebar and content layout */
+      .sidebar, .prof-left, .leftColumn, .m3-sidebar {
+        display: block !important;
+        flex-shrink: 0 !important;
+      }
+      
+      .content, .prof-right, .rightColumn, .m3-main {
+        display: block !important;
+        flex: 1 !important;
+      }
+      
+      /* Ensure flex layouts work */
+      .resumeBody, .prof-body, .modern-template {
+        display: flex !important;
+        flex-direction: row !important;
+      }
+      
+      /* Override any dark mode styles */
+      .dark { display: none !important; }
+      [class*="dark"] { display: none !important; }
+    </style>
+  </head>
+  <body>
+    ${templateHTML}
+  </body>
+</html>`;
+
+    const res = await fetch("/api/export-resume", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ 
+        html, 
+        format, 
+        templateId 
+      }),
+    });
+    
+    if (!res.ok) {
+      const errorText = await res.text();
+      throw new Error(errorText || `Failed to download ${format.toUpperCase()}`);
     }
-
-    return pdf.output("blob");
-  };
-
-  // Generate PNG
-  const generatePNG = async (): Promise<Blob> => {
-    const paperElement = paperRef.current;
-    if (!paperElement) throw new Error("Paper element not found");
-
-    const templateElement = paperElement.querySelector(
-      ".modern-template, .minimal-template, .figmaResume",
-    );
-
-    const actualHeight = templateElement
-      ? templateElement.scrollHeight
-      : MIN_PAPER_HEIGHT;
-    const pageHeight = Math.max(actualHeight + 40, MIN_PAPER_HEIGHT);
-
-    const captureContainer = document.createElement("div");
-    captureContainer.style.position = "fixed";
-    captureContainer.style.left = "-9999px";
-    captureContainer.style.top = "0";
-    captureContainer.style.width = PAPER_WIDTH + "px";
-    captureContainer.style.height = pageHeight + "px";
-    captureContainer.style.background = "#ffffff";
-    captureContainer.style.zIndex = "-9999";
-    document.body.appendChild(captureContainer);
-
-    const clone = paperElement.cloneNode(true) as HTMLElement;
-    clone.style.transform = "none";
-    clone.style.width = PAPER_WIDTH + "px";
-    clone.style.height = pageHeight + "px";
-    clone.style.position = "relative";
-    clone.style.left = "0";
-    clone.style.top = "0";
-    clone.style.margin = "0";
-    clone.style.transformOrigin = "top left";
-    clone.style.overflow = "visible";
-
-    captureContainer.appendChild(clone);
-
-    await new Promise((resolve) => setTimeout(resolve, 200));
-
-    const html2canvas = (await import("html2canvas")).default;
-    const canvas = await html2canvas(captureContainer, {
-      scale: 2,
-      useCORS: true,
-      logging: false,
-      backgroundColor: "#ffffff",
-      width: PAPER_WIDTH,
-      height: pageHeight,
-    });
-
-    document.body.removeChild(captureContainer);
-
-    return new Promise((resolve) => {
-      canvas.toBlob((blob) => {
-        resolve(blob!);
-      }, "image/png");
-    });
-  };
+    
+    const blob = await res.blob();
+    const link = document.createElement("a");
+    link.download = `resume-${templateId}.${format}`;
+    link.href = URL.createObjectURL(blob);
+    link.click();
+    URL.revokeObjectURL(link.href);
+    
+  } catch (err) {
+    console.error(err);
+    alert(`Failed to download resume as ${format.toUpperCase()}. Please try again.`);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   // Handle Print
   const handlePrint = () => {
@@ -433,42 +677,42 @@ export default function PreviewPanel({
   };
 
   // Download as PNG
-  const handleDownloadPNG = async () => {
-    setIsLoading(true);
-    setShowDownloadMenu(false);
-    try {
-      const blob = await generatePNG();
-      const link = document.createElement("a");
-      link.download = `resume-${templateId}.png`;
-      link.href = URL.createObjectURL(blob);
-      link.click();
-      URL.revokeObjectURL(link.href);
-    } catch (error) {
-      console.error("Error downloading PNG:", error);
-      alert("Failed to download resume as PNG. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // const handleDownloadPNG = async () => {
+  //   setIsLoading(true);
+  //   setShowDownloadMenu(false);
+  //   try {
+  //     const blob = await generatePNG();
+  //     const link = document.createElement("a");
+  //     link.download = `resume-${templateId}.png`;
+  //     link.href = URL.createObjectURL(blob);
+  //     link.click();
+  //     URL.revokeObjectURL(link.href);
+  //   } catch (error) {
+  //     console.error("Error downloading PNG:", error);
+  //     alert("Failed to download resume as PNG. Please try again.");
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
-  // Download as PDF
-  const handleDownloadPDF = async () => {
-    setIsLoading(true);
-    setShowDownloadMenu(false);
-    try {
-      const blob = await generatePDF();
-      const link = document.createElement("a");
-      link.download = `resume-${templateId}.pdf`;
-      link.href = URL.createObjectURL(blob);
-      link.click();
-      URL.revokeObjectURL(link.href);
-    } catch (error) {
-      console.error("Error downloading PDF:", error);
-      alert("Failed to download resume as PDF. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // // Download as PDF
+  // const handleDownloadPDF = async () => {
+  //   setIsLoading(true);
+  //   setShowDownloadMenu(false);
+  //   try {
+  //     const blob = await generatePDF();
+  //     const link = document.createElement("a");
+  //     link.download = `resume-${templateId}.pdf`;
+  //     link.href = URL.createObjectURL(blob);
+  //     link.click();
+  //     URL.revokeObjectURL(link.href);
+  //   } catch (error) {
+  //     console.error("Error downloading PDF:", error);
+  //     alert("Failed to download resume as PDF. Please try again.");
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
   // Share functions
   const shareViaWhatsApp = () => {
@@ -527,38 +771,38 @@ export default function PreviewPanel({
     setShowShareModal(false);
   };
 
-  // Share as PDF
-  const shareAsPDF = async () => {
-    setIsLoading(true);
-    setShowShareModal(false);
-    try {
-      const blob = await generatePDF();
-      const file = new File([blob], `resume-${templateId}.pdf`, {
-        type: "application/pdf",
-      });
+  // // Share as PDF
+  // const shareAsPDF = async () => {
+  //   setIsLoading(true);
+  //   setShowShareModal(false);
+  //   try {
+  //     const blob = await generatePDF();
+  //     const file = new File([blob], `resume-${templateId}.pdf`, {
+  //       type: "application/pdf",
+  //     });
 
-      if (navigator.share) {
-        await navigator.share({
-          title: "My Resume",
-          files: [file],
-        });
-      } else {
-        const link = document.createElement("a");
-        link.download = `resume-${templateId}.pdf`;
-        link.href = URL.createObjectURL(blob);
-        link.click();
-        URL.revokeObjectURL(link.href);
-        alert("PDF downloaded! You can now share it manually.");
-      }
-    } catch (error) {
-      if (error instanceof Error && error.name !== "AbortError") {
-        console.error("Error sharing PDF:", error);
-        alert("Failed to share PDF. Please try again.");
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  //     if (navigator.share) {
+  //       await navigator.share({
+  //         title: "My Resume",
+  //         files: [file],
+  //       });
+  //     } else {
+  //       const link = document.createElement("a");
+  //       link.download = `resume-${templateId}.pdf`;
+  //       link.href = URL.createObjectURL(blob);
+  //       link.click();
+  //       URL.revokeObjectURL(link.href);
+  //       alert("PDF downloaded! You can now share it manually.");
+  //     }
+  //   } catch (error) {
+  //     if (error instanceof Error && error.name !== "AbortError") {
+  //       console.error("Error sharing PDF:", error);
+  //       alert("Failed to share PDF. Please try again.");
+  //     }
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
   // Send Email via API
   const handleSendEmail = async () => {
@@ -718,14 +962,14 @@ export default function PreviewPanel({
             {showDownloadMenu && (
               <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-[#1E293B] rounded-lg shadow-lg border border-[#E2E8F0] dark:border-[#334155] overflow-hidden z-50">
                 <button
-                  onClick={handleDownloadPNG}
+                  onClick={()=>downloadResume('png')}
                   className="w-full px-4 py-2.5 text-left text-sm hover:bg-[#F1F5F9] dark:hover:bg-[#334155] transition-colors flex items-center gap-2"
                 >
                   <FileImage className="h-4 w-4" />
                   <span>Download as PNG</span>
                 </button>
                 <button
-                  onClick={handleDownloadPDF}
+                  onClick={()=>downloadResume('pdf')}
                   className="w-full px-4 py-2.5 text-left text-sm hover:bg-[#F1F5F9] dark:hover:bg-[#334155] transition-colors flex items-center gap-2 border-t border-[#E2E8F0] dark:border-[#334155]"
                 >
                   <FileText className="h-4 w-4" />
