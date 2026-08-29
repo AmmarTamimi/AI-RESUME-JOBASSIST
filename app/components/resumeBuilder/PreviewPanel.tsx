@@ -123,8 +123,7 @@ export default function PreviewPanel({
     requestAnimationFrame(() => {
       if (paperRef.current) {
         // Find the actual template element inside the paper
-        const templateElement =
-          paperRef.current.querySelector("data-resume-root");
+        const templateElement = paperRef.current.querySelector("[data-resume-root]");
 
         if (templateElement) {
           // Get the actual content height
@@ -487,119 +486,25 @@ export default function PreviewPanel({
 const downloadResume = async (format: "pdf" | "png") => {
   setIsLoading(true);
   setShowDownloadMenu(false);
-  
   try {
-    const paperElement = paperRef.current;
-    if (!paperElement) throw new Error("Paper element not found");
-
-    // Get the template element
-    const templateElement = paperElement.querySelector('[data-resume-root]') || 
-                           paperElement.querySelector('.modern-template') ||
-                           paperElement.querySelector('.minimal-template') ||
-                           paperElement.querySelector('.prof-tpl') ||
-                           paperElement.querySelector('.digital-marketing-template') ||
-                           paperElement.querySelector('.modern3') ||
-                           paperElement;
-
-    // Get the HTML of the template
-    const templateHTML = templateElement.outerHTML;
-    
-    // Get ALL styles from the document
-    const allStyles = document.querySelectorAll('style');
-    let stylesHTML = '';
-    allStyles.forEach((style) => {
-      stylesHTML += style.innerHTML;
-    });
-
-    // Get Google Fonts links
-    const linkTags = document.querySelectorAll('link[rel="stylesheet"]');
-    let linksHTML = '';
-    linkTags.forEach((link) => {
-      const linkElement = link as HTMLLinkElement;
-      if (linkElement.href && linkElement.href.includes('googleapis')) {
-        linksHTML += `<link rel="stylesheet" href="${linkElement.href}">`;
-      }
-    });
-
-    // Build the full HTML document with proper structure
-    const html = `<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=794">
-    ${linksHTML}
-    <style>
-      /* Reset */
-      * { margin: 0; padding: 0; box-sizing: border-box; }
-      html, body { 
-        background: white; 
-        width: 794px;
-        margin: 0 auto;
-        padding: 0;
-      }
-      .dark { display: none !important; }
-      
-      /* ALL styles from the page */
-      ${stylesHTML}
-      
-      /* Force template to display as flex */
-      .modern-template, .minimal-template, .prof-tpl, 
-      .digital-marketing-template, .modern3 {
-        display: flex !important;
-        background: white !important;
-        width: 100% !important;
-        min-height: 100% !important;
-      }
-      
-      /* Fix sidebar and content layout */
-      .sidebar, .prof-left, .leftColumn, .m3-sidebar {
-        display: block !important;
-        flex-shrink: 0 !important;
-      }
-      
-      .content, .prof-right, .rightColumn, .m3-main {
-        display: block !important;
-        flex: 1 !important;
-      }
-      
-      /* Ensure flex layouts work */
-      .resumeBody, .prof-body, .modern-template {
-        display: flex !important;
-        flex-direction: row !important;
-      }
-      
-      /* Override any dark mode styles */
-      .dark { display: none !important; }
-      [class*="dark"] { display: none !important; }
-    </style>
-  </head>
-  <body>
-    ${templateHTML}
-  </body>
-</html>`;
-
     const res = await fetch("/api/export-resume", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ 
-        html, 
-        format, 
-        templateId 
+      body: JSON.stringify({
+        templateComponent: template.component, // e.g. "ModernTemplate"
+        theme,
+        content,
+        format,
       }),
     });
-    
-    if (!res.ok) {
-      const errorText = await res.text();
-      throw new Error(errorText || `Failed to download ${format.toUpperCase()}`);
-    }
-    
+    if (!res.ok) throw new Error(await res.text());
+
     const blob = await res.blob();
     const link = document.createElement("a");
     link.download = `resume-${templateId}.${format}`;
     link.href = URL.createObjectURL(blob);
     link.click();
     URL.revokeObjectURL(link.href);
-    
   } catch (err) {
     console.error(err);
     alert(`Failed to download resume as ${format.toUpperCase()}. Please try again.`);
@@ -625,7 +530,7 @@ const downloadResume = async (format: "pdf" | "png") => {
     const clone = paperElement.cloneNode(true) as HTMLElement;
 
     const templateElement = clone.querySelector(
-      ".modern-template, .minimal-template, .figmaResume",
+      "[data-resume-root]"
     );
     const actualHeight = templateElement
       ? templateElement.scrollHeight

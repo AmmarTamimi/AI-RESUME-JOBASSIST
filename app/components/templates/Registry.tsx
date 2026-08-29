@@ -1,5 +1,3 @@
-'use client';
-
 import React from 'react';
 import type { ResumeContent, ResumeTheme, TemplateLayoutConfig } from '@/app/types/Content';
 import ModernTemplate from './ModernTemplate';
