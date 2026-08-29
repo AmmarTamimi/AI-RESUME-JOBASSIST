@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import type { ResumeContent, ResumeTheme } from "@/app/types/Content";
 import TemplateRenderer from "../templates/Registry";
 import { templates } from "../templates/templates";
@@ -16,20 +16,8 @@ import {
   MessageCircle,
   Link as LinkIcon,
   Check,
-  X,
-  Printer,
-  Send,
-  User,
-  AtSign,
-  Loader2,
+  Files,
 } from "lucide-react";
-import {
-  FaWhatsapp,
-  FaLinkedinIn,
-  FaTwitter,
-  FaFacebook,
-} from "react-icons/fa";
-import { SiGmail } from "react-icons/si";
 
 interface PreviewPanelProps {
   templateId: string;
@@ -39,121 +27,46 @@ interface PreviewPanelProps {
 }
 
 const PAPER_WIDTH = 794;
-const MIN_PAPER_HEIGHT = 1123;
+const PAPER_HEIGHT = 1123;
+const PAGE_GAP = 24;
+const CAPTURE_SCALE = 2;
 
-// Share options with icons
-const SHARE_OPTIONS = [
-  {
-    id: "whatsapp",
-    label: "WhatsApp",
-    icon: FaWhatsapp,
-    color: "#25D366",
-    bgColor: "#25D36610",
-  },
-  {
-    id: "gmail",
-    label: "Gmail",
-    icon: SiGmail,
-    color: "#EA4335",
-    bgColor: "#EA433510",
-  },
-  {
-    id: "linkedin",
-    label: "LinkedIn",
-    icon: FaLinkedinIn,
-    color: "#0A66C2",
-    bgColor: "#0A66C210",
-  },
-  {
-    id: "twitter",
-    label: "Twitter",
-    icon: FaTwitter,
-    color: "#1DA1F2",
-    bgColor: "#1DA1F210",
-  },
-  {
-    id: "facebook",
-    label: "Facebook",
-    icon: FaFacebook,
-    color: "#1877F2",
-    bgColor: "#1877F210",
-  },
-  {
-    id: "link",
-    label: "Copy Link",
-    icon: LinkIcon,
-    color: "#64748B",
-    bgColor: "#64748B10",
-  },
-];
-
-export default function PreviewPanel({
-  templateId,
-  theme,
-  content,
-  onSwitchTemplate,
-}: PreviewPanelProps) {
+export default function PreviewPanel({ templateId, theme, content, onSwitchTemplate }: PreviewPanelProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const paperRef = useRef<HTMLDivElement>(null);
+  const measureOnlyRef = useRef<HTMLDivElement>(null);
+  const fullContentRef = useRef<HTMLDivElement>(null);
+
   const [scale, setScale] = useState(1);
-  const [paperHeight, setPaperHeight] = useState(MIN_PAPER_HEIGHT);
   const [zoom, setZoom] = useState(100);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showShareMenu, setShowShareMenu] = useState(false);
   const [showDownloadMenu, setShowDownloadMenu] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [showPrintModal, setShowPrintModal] = useState(false);
-  const [showShareModal, setShowShareModal] = useState(false);
-  const [shareEmail, setShareEmail] = useState("");
-  const [shareName, setShareName] = useState("");
-  const [shareMessage, setShareMessage] = useState("");
-  const [isSendingEmail, setIsSendingEmail] = useState(false);
-  const [emailSent, setEmailSent] = useState(false);
-  const [isMeasuring, setIsMeasuring] = useState(false);
+  const [naturalHeight, setNaturalHeight] = useState(PAPER_HEIGHT);
 
   const template = templates.find((t) => t.id === templateId);
 
-  // Measure actual template height
-  const measureHeight = useCallback(() => {
-    if (isMeasuring || !paperRef.current) return;
+  const pageCount = Math.max(1, Math.ceil(naturalHeight / PAPER_HEIGHT));
+  const paddedHeight = pageCount * PAPER_HEIGHT;
 
-    setIsMeasuring(true);
-
-    requestAnimationFrame(() => {
-      if (paperRef.current) {
-        // Find the actual template element inside the paper
-        const templateElement =
-          paperRef.current.querySelector("[data-resume-root]");
-
-        if (templateElement) {
-          // Get the actual content height
-          const actualHeight = templateElement.scrollHeight;
-
-          // Add small padding for safety (20px top + 20px bottom)
-          const newHeight = Math.max(actualHeight + 40, MIN_PAPER_HEIGHT);
-
-          // Only update if height changed significantly
-          setPaperHeight((prev) => {
-            const diff = Math.abs(prev - newHeight);
-            if (diff > 5) {
-              return newHeight;
-            }
-            return prev;
-          });
-        }
-      }
-
-      setIsMeasuring(false);
-    });
-  }, [isMeasuring]);
-
-  // Measure when content or template changes
+  // Measure the true, unclipped content height
   useEffect(() => {
-    const timer = setTimeout(measureHeight, 200);
-    return () => clearTimeout(timer);
-  }, [content, templateId, measureHeight]);
+    const el = measureOnlyRef.current;
+    if (!el) return;
 
-  // Calculate scale - centered alignment
+    const measure = () => {
+      const h = el.scrollHeight || el.getBoundingClientRect().height;
+      setNaturalHeight(Math.max(PAPER_HEIGHT, Math.ceil(h)));
+    };
+
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [templateId, theme, content]);
+
+  // Fit-to-width scaling
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -161,27 +74,15 @@ export default function PreviewPanel({
     const recalc = () => {
       const padding = isFullscreen ? 24 : 48;
       const availableWidth = el.clientWidth - padding;
-      const availableHeight = el.clientHeight - padding;
-
-      const scaleX = availableWidth / PAPER_WIDTH;
-      const scaleY = availableHeight / paperHeight;
-
-      const maxScale = 1.2;
-      const nextScale = Math.min(scaleX, scaleY, maxScale);
-      setScale(Math.max(nextScale, 0.3));
+      const nextScale = Math.min(availableWidth / PAPER_WIDTH, 1);
+      setScale(nextScale > 0 ? nextScale : 1);
     };
 
     recalc();
     const observer = new ResizeObserver(recalc);
     observer.observe(el);
     return () => observer.disconnect();
-  }, [isFullscreen, paperHeight]);
-
-  // Re-measure when zoom changes (to ensure height stays correct)
-  useEffect(() => {
-    const timer = setTimeout(measureHeight, 100);
-    return () => clearTimeout(timer);
-  }, [zoom, measureHeight]);
+  }, [isFullscreen]);
 
   if (!template) {
     return <div className="pp-empty">Unknown template: {templateId}</div>;
@@ -190,259 +91,119 @@ export default function PreviewPanel({
   const zoomLevel = zoom / 100;
   const totalScale = scale * zoomLevel;
 
-  // Generate PDF with proper alignment
-  const generatePDF = async (): Promise<Blob> => {
-    const paperElement = paperRef.current;
-    if (!paperElement) throw new Error("Paper element not found");
+  // Capture full canvas for export
+  const captureFullCanvas = async (): Promise<HTMLCanvasElement> => {
+    const node = fullContentRef.current;
+    if (!node) throw new Error("Resume content not ready to capture");
 
-    // Get the actual rendered height
-    const templateElement = paperElement.querySelector(
-      ".modern-template, .minimal-template, .figmaResume",
-    );
-
-    const actualHeight = templateElement
-      ? templateElement.scrollHeight
-      : MIN_PAPER_HEIGHT;
-    const pageHeight = Math.max(actualHeight + 40, MIN_PAPER_HEIGHT);
-
-    // Create a temporary container
-    const captureContainer = document.createElement("div");
-    captureContainer.style.position = "fixed";
-    captureContainer.style.left = "-9999px";
-    captureContainer.style.top = "0";
-    captureContainer.style.width = PAPER_WIDTH + "px";
-    captureContainer.style.height = pageHeight + "px";
-    captureContainer.style.background = "#ffffff";
-    captureContainer.style.zIndex = "-9999";
-    captureContainer.style.overflow = "visible";
-    document.body.appendChild(captureContainer);
-
-    const clone = paperElement.cloneNode(true) as HTMLElement;
-    clone.style.transform = "none";
-    clone.style.width = PAPER_WIDTH + "px";
-    clone.style.height = pageHeight + "px";
-    clone.style.position = "relative";
-    clone.style.left = "0";
-    clone.style.top = "0";
-    clone.style.margin = "0";
-    clone.style.transformOrigin = "top left";
-    clone.style.overflow = "visible";
-
-    captureContainer.appendChild(clone);
-
-    await new Promise((resolve) => setTimeout(resolve, 200));
+    if (typeof document !== "undefined" && "fonts" in document) {
+      try {
+        await (document as any).fonts.ready;
+      } catch {
+        /* no-op */
+      }
+    }
+    await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
 
     const html2canvas = (await import("html2canvas")).default;
-    const canvas = await html2canvas(captureContainer, {
-      scale: 2,
+    const canvas = await html2canvas(node, {
+      scale: CAPTURE_SCALE,
       useCORS: true,
       logging: false,
       backgroundColor: "#ffffff",
       width: PAPER_WIDTH,
-      height: pageHeight,
+      height: node.scrollHeight,
+      windowWidth: document.documentElement.clientWidth,
+      windowHeight: Math.max(document.documentElement.clientHeight, node.scrollHeight),
     });
+    return canvas;
+  };
 
-    document.body.removeChild(captureContainer);
+  const sliceCanvasIntoPages = (fullCanvas: HTMLCanvasElement): HTMLCanvasElement[] => {
+    const pageHeightPx = PAPER_HEIGHT * CAPTURE_SCALE;
+    const pageWidthPx = PAPER_WIDTH * CAPTURE_SCALE;
+    const totalPages = Math.max(1, Math.ceil(fullCanvas.height / pageHeightPx));
 
-    const imgData = canvas.toDataURL("image/jpeg", 1.0);
+    const pages: HTMLCanvasElement[] = [];
+    for (let i = 0; i < totalPages; i++) {
+      const pageCanvas = document.createElement("canvas");
+      pageCanvas.width = pageWidthPx;
+      pageCanvas.height = pageHeightPx;
+      const ctx = pageCanvas.getContext("2d")!;
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, pageWidthPx, pageHeightPx);
+
+      const sourceY = i * pageHeightPx;
+      const sourceHeight = Math.min(pageHeightPx, fullCanvas.height - sourceY);
+
+      ctx.drawImage(
+        fullCanvas,
+        0,
+        sourceY,
+        pageWidthPx,
+        sourceHeight,
+        0,
+        0,
+        pageWidthPx,
+        sourceHeight,
+      );
+      pages.push(pageCanvas);
+    }
+    return pages;
+  };
+
+  const generatePagedPDFBlob = async (): Promise<Blob> => {
+    const fullCanvas = await captureFullCanvas();
+    const pageCanvases = sliceCanvasIntoPages(fullCanvas);
 
     const { jsPDF } = await import("jspdf");
-
-    const pdfHeight = 1123;
-    const totalPages = Math.ceil(pageHeight / pdfHeight);
-
     const pdf = new jsPDF({
       orientation: "portrait",
       unit: "px",
-      format: "a4",
+      format: [PAPER_WIDTH, PAPER_HEIGHT],
     });
 
-    for (let page = 0; page < totalPages; page++) {
-      if (page > 0) {
-        pdf.addPage();
-      }
-
-      const yOffset = page * pdfHeight;
-      const pageImageData = canvas.toDataURL("image/jpeg", 1.0);
-
-      if (totalPages === 1) {
-        pdf.addImage(
-          pageImageData,
-          "JPEG",
-          0,
-          0,
-          pdf.internal.pageSize.getWidth(),
-          pdf.internal.pageSize.getHeight(),
-        );
-      } else {
-        const tempCanvas = document.createElement("canvas");
-        tempCanvas.width = PAPER_WIDTH;
-        tempCanvas.height = Math.min(pdfHeight, pageHeight - yOffset);
-        const ctx = tempCanvas.getContext("2d");
-        ctx?.drawImage(
-          canvas,
-          0,
-          yOffset,
-          PAPER_WIDTH,
-          tempCanvas.height,
-          0,
-          0,
-          PAPER_WIDTH,
-          tempCanvas.height,
-        );
-
-        const croppedData = tempCanvas.toDataURL("image/jpeg", 1.0);
-        pdf.addImage(
-          croppedData,
-          "JPEG",
-          0,
-          0,
-          pdf.internal.pageSize.getWidth(),
-          pdf.internal.pageSize.getHeight(),
-        );
-      }
-    }
+    pageCanvases.forEach((canvas, i) => {
+      const imgData = canvas.toDataURL("image/jpeg", 1.0);
+      if (i > 0) pdf.addPage([PAPER_WIDTH, PAPER_HEIGHT], "portrait");
+      pdf.addImage(imgData, "JPEG", 0, 0, PAPER_WIDTH, PAPER_HEIGHT);
+    });
 
     return pdf.output("blob");
   };
 
-  // Generate PNG
-  const generatePNG = async (): Promise<Blob> => {
-    const paperElement = paperRef.current;
-    if (!paperElement) throw new Error("Paper element not found");
+  const generatePagedPNGBlobs = async (): Promise<Blob[]> => {
+    const fullCanvas = await captureFullCanvas();
+    const pageCanvases = sliceCanvasIntoPages(fullCanvas);
 
-    const templateElement = paperElement.querySelector(
-      ".modern-template, .minimal-template, .figmaResume",
+    return Promise.all(
+      pageCanvases.map(
+        (canvas) =>
+          new Promise<Blob>((resolve, reject) => {
+            canvas.toBlob((blob) => {
+              if (blob) resolve(blob);
+              else reject(new Error("Failed to encode PNG"));
+            }, "image/png");
+          }),
+      ),
     );
-
-    const actualHeight = templateElement
-      ? templateElement.scrollHeight
-      : MIN_PAPER_HEIGHT;
-    const pageHeight = Math.max(actualHeight + 40, MIN_PAPER_HEIGHT);
-
-    const captureContainer = document.createElement("div");
-    captureContainer.style.position = "fixed";
-    captureContainer.style.left = "-9999px";
-    captureContainer.style.top = "0";
-    captureContainer.style.width = PAPER_WIDTH + "px";
-    captureContainer.style.height = pageHeight + "px";
-    captureContainer.style.background = "#ffffff";
-    captureContainer.style.zIndex = "-9999";
-    document.body.appendChild(captureContainer);
-
-    const clone = paperElement.cloneNode(true) as HTMLElement;
-    clone.style.transform = "none";
-    clone.style.width = PAPER_WIDTH + "px";
-    clone.style.height = pageHeight + "px";
-    clone.style.position = "relative";
-    clone.style.left = "0";
-    clone.style.top = "0";
-    clone.style.margin = "0";
-    clone.style.transformOrigin = "top left";
-    clone.style.overflow = "visible";
-
-    captureContainer.appendChild(clone);
-
-    await new Promise((resolve) => setTimeout(resolve, 200));
-
-    const html2canvas = (await import("html2canvas")).default;
-    const canvas = await html2canvas(captureContainer, {
-      scale: 2,
-      useCORS: true,
-      logging: false,
-      backgroundColor: "#ffffff",
-      width: PAPER_WIDTH,
-      height: pageHeight,
-    });
-
-    document.body.removeChild(captureContainer);
-
-    return new Promise((resolve) => {
-      canvas.toBlob((blob) => {
-        resolve(blob!);
-      }, "image/png");
-    });
   };
 
-  // Handle Print
-  const handlePrint = () => {
-    setShowDownloadMenu(false);
-    setShowPrintModal(true);
-  };
-
-  // Perform Print
-  const performPrint = () => {
-    const printWindow = window.open("", "_blank");
-    if (!printWindow) return;
-
-    const paperElement = paperRef.current;
-    if (!paperElement) return;
-
-    const clone = paperElement.cloneNode(true) as HTMLElement;
-
-    const templateElement = clone.querySelector(
-      ".modern-template, .minimal-template, .figmaResume",
-    );
-    const actualHeight = templateElement
-      ? templateElement.scrollHeight
-      : MIN_PAPER_HEIGHT;
-    const pageHeight = Math.max(actualHeight + 40, MIN_PAPER_HEIGHT);
-
-    const allStyles = document.querySelectorAll("style");
-    let allStylesText = "";
-    allStyles.forEach((style) => {
-      allStylesText += style.innerHTML;
-    });
-
-    printWindow.document.write(`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>Resume</title>
-          <style>
-            body { margin: 0; padding: 0; background: white; }
-            .print-container { 
-              width: ${PAPER_WIDTH}px; 
-              min-height: ${pageHeight}px;
-              margin: 0 auto;
-              background: white;
-              position: relative;
-              overflow: visible;
-            }
-            * { box-sizing: border-box; }
-            ${allStylesText}
-            .dark { display: none; }
-            .modern-template { background: white !important; }
-            .sidebar { background: ${theme.primaryColor || "#2b2b2b"} !important; }
-          </style>
-        </head>
-        <body>
-          <div class="print-container">
-            ${clone.innerHTML}
-          </div>
-          <script>
-            window.onload = function() {
-              window.print();
-              window.close();
-            }
-          <\/script>
-        </body>
-      </html>
-    `);
-    printWindow.document.close();
-  };
-
-  // Download as PNG
   const handleDownloadPNG = async () => {
     setIsLoading(true);
     setShowDownloadMenu(false);
     try {
-      const blob = await generatePNG();
-      const link = document.createElement("a");
-      link.download = `resume-${templateId}.png`;
-      link.href = URL.createObjectURL(blob);
-      link.click();
-      URL.revokeObjectURL(link.href);
+      const blobs = await generatePagedPNGBlobs();
+      blobs.forEach((blob, i) => {
+        const link = document.createElement("a");
+        link.download =
+          blobs.length > 1 ? `resume-${templateId}-page-${i + 1}.png` : `resume-${templateId}.png`;
+        link.href = URL.createObjectURL(blob);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(() => URL.revokeObjectURL(link.href), 2000);
+      });
     } catch (error) {
       console.error("Error downloading PNG:", error);
       alert("Failed to download resume as PNG. Please try again.");
@@ -451,12 +212,11 @@ export default function PreviewPanel({
     }
   };
 
-  // Download as PDF
   const handleDownloadPDF = async () => {
     setIsLoading(true);
     setShowDownloadMenu(false);
     try {
-      const blob = await generatePDF();
+      const blob = await generatePagedPDFBlob();
       const link = document.createElement("a");
       link.download = `resume-${templateId}.pdf`;
       link.href = URL.createObjectURL(blob);
@@ -470,78 +230,74 @@ export default function PreviewPanel({
     }
   };
 
-  // Share functions
-  const shareViaWhatsApp = () => {
-    const url = window.location.href;
-    const message = `📄 Check out my resume!\n\n${url}`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, "_blank");
-    setShowShareModal(false);
+  const shareViaWhatsApp = async () => {
+    setShowShareMenu(false);
+    try {
+      const url = window.location.href;
+      const message = `📄 Check out my resume!\n\n${url}`;
+      const encodedMessage = encodeURIComponent(message);
+      const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
+      window.open(whatsappUrl, "_blank", "noopener,noreferrer");
+    } catch (error) {
+      console.error("Error sharing via WhatsApp:", error);
+      alert("Failed to open WhatsApp. Please make sure WhatsApp is installed or try again.");
+    }
   };
 
-  const shareViaGmail = () => {
-    const url = window.location.href;
-    const fullName = content.personalInfo?.fullName || "My";
-    const jobTitle = content.personalInfo?.title || "Resume";
-    const subject = `${fullName}'s Resume - ${jobTitle}`;
-    const body = `Hello,\n\nI wanted to share my resume with you. Please find it at the link below:\n\n${url}\n\nBest regards,\n${fullName}`;
-    window.open(
-      `https://mail.google.com/mail/?view=cm&fs=1&to=&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`,
-      "_blank",
-    );
-    setShowShareModal(false);
+  const shareViaGmail = async () => {
+    setShowShareMenu(false);
+    try {
+      const url = window.location.href;
+      const fullName = content.personalInfo?.fullName || "My";
+      const jobTitle = content.personalInfo?.title || "Resume";
+      const subject = `${fullName}'s Resume - ${jobTitle}`;
+      const body = `Hello,\n\nI wanted to share my resume with you. Please find it at the link below:\n\n${url}\n\nBest regards,\n${fullName}`;
+      const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      window.open(gmailUrl, "_blank", "noopener,noreferrer");
+    } catch (error) {
+      console.error("Error sharing via Gmail:", error);
+      alert("Failed to open Gmail. Please try again.");
+    }
   };
 
-  const shareViaLinkedIn = () => {
-    const url = window.location.href;
-    window.open(
-      `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`,
-      "_blank",
-    );
-    setShowShareModal(false);
-  };
-
-  const shareViaTwitter = () => {
-    const url = window.location.href;
-    const text = "Check out my resume!";
-    window.open(
-      `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,
-      "_blank",
-    );
-    setShowShareModal(false);
-  };
-
-  const shareViaFacebook = () => {
-    const url = window.location.href;
-    window.open(
-      `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
-      "_blank",
-    );
-    setShowShareModal(false);
+  const shareViaEmailFallback = async () => {
+    setShowShareMenu(false);
+    try {
+      const url = window.location.href;
+      const fullName = content.personalInfo?.fullName || "My";
+      const jobTitle = content.personalInfo?.title || "Resume";
+      const subject = `${fullName}'s Resume - ${jobTitle}`;
+      const body = `Hello,\n\nI wanted to share my resume with you. Please find it at the link below:\n\n${url}\n\nBest regards,\n${fullName}`;
+      const emailUrl = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      window.open(emailUrl, "_blank", "noopener,noreferrer");
+    } catch (error) {
+      console.error("Error sharing via Email:", error);
+      alert("Failed to open email client. Please try again.");
+    }
   };
 
   const shareViaLink = async () => {
-    const url = window.location.href;
-    await navigator.clipboard.writeText(url);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 3000);
-    setShowShareModal(false);
+    setShowShareMenu(false);
+    try {
+      const url = window.location.href;
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 3000);
+    } catch (error) {
+      console.error("Error copying link:", error);
+      alert("Failed to copy link. Please try again.");
+    }
   };
 
-  // Share as PDF
   const shareAsPDF = async () => {
+    setShowShareMenu(false);
     setIsLoading(true);
-    setShowShareModal(false);
     try {
-      const blob = await generatePDF();
-      const file = new File([blob], `resume-${templateId}.pdf`, {
-        type: "application/pdf",
-      });
+      const blob = await generatePagedPDFBlob();
+      const file = new File([blob], `resume-${templateId}.pdf`, { type: "application/pdf" });
 
-      if (navigator.share) {
-        await navigator.share({
-          title: "My Resume",
-          files: [file],
-        });
+      if (navigator.share && navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ title: "My Resume", files: [file] });
       } else {
         const link = document.createElement("a");
         link.download = `resume-${templateId}.pdf`;
@@ -560,73 +316,16 @@ export default function PreviewPanel({
     }
   };
 
-  // Send Email via API
-  const handleSendEmail = async () => {
-    if (!shareEmail) {
-      alert("Please enter an email address");
-      return;
-    }
-
-    setIsSendingEmail(true);
-    setEmailSent(false);
-
-    try {
-      const url = window.location.href;
-      const fullName = content.personalInfo?.fullName || "Someone";
-      const jobTitle = content.personalInfo?.title || "Resume";
-
-      const response = await fetch("/api/send-email", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          to_email: shareEmail,
-          from_name: shareName || "Anonymous",
-          message: shareMessage || `Check out my resume: ${url}`,
-          resume_url: url,
-          resume_name: `${fullName}'s Resume - ${jobTitle}`,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to send email");
-      }
-
-      setEmailSent(true);
-      setTimeout(() => {
-        setShowShareModal(false);
-        setShareEmail("");
-        setShareName("");
-        setShareMessage("");
-        setEmailSent(false);
-      }, 2000);
-    } catch (error) {
-      console.error("Error sending email:", error);
-      alert("Failed to send email. Please try again.");
-    } finally {
-      setIsSendingEmail(false);
-    }
-  };
-
-  // Open Share Modal
-  const openShareModal = () => {
-    setShowShareModal(true);
-  };
-
-  // Handle Share button click
   const handleShare = () => {
-    setShowShareModal(true);
+    setShowShareMenu(!showShareMenu);
+    setShowDownloadMenu(false);
   };
 
-  // Handle Download
   const handleDownload = () => {
     setShowDownloadMenu(!showDownloadMenu);
+    setShowShareMenu(false);
   };
 
-  // Handle Fullscreen
   const handleFullscreen = () => {
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen().catch((err) => {
@@ -644,8 +343,7 @@ export default function PreviewPanel({
       setIsFullscreen(!!document.fullscreenElement);
     };
     document.addEventListener("fullscreenchange", handleFullscreenChange);
-    return () =>
-      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
   }, []);
 
   const zoomIn = () => setZoom((prev) => Math.min(prev + 10, 200));
@@ -656,12 +354,18 @@ export default function PreviewPanel({
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
       if (!target.closest(".dropdown-container")) {
+        setShowShareMenu(false);
         setShowDownloadMenu(false);
       }
     };
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
+
+  const stackNaturalHeight = pageCount * PAPER_HEIGHT + (pageCount - 1) * PAGE_GAP;
+
+  // Create a content key that changes when any section data changes
+  const contentKey = JSON.stringify(content.sections);
 
   return (
     <div className={`pp-root ${isFullscreen ? "fullscreen" : ""}`}>
@@ -670,115 +374,160 @@ export default function PreviewPanel({
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
             <Eye className="h-4 w-4 text-[#64748B]" />
-            <span className="text-sm font-medium text-[#0F172A] dark:text-white">
-              Preview
-            </span>
+            <span className="text-sm font-medium text-[#0F172A] dark:text-white">Preview</span>
           </div>
+          {pageCount > 1 && (
+            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#EDE9FE] dark:bg-[#4C1D95] text-[#7C3AED] dark:text-[#C4B5FD] text-xs font-medium">
+              <Files className="h-3.5 w-3.5" />
+              {pageCount} pages
+            </div>
+          )}
           <div className="flex items-center gap-2 text-xs text-[#64748B] dark:text-[#94A3B8]">
             <span>{zoom}%</span>
-            <button
-              onClick={zoomOut}
-              className="p-1 rounded hover:bg-[#F1F5F9] dark:hover:bg-[#1E293B] transition-colors"
-              title="Zoom Out"
-            >
+            <button onClick={zoomOut} className="p-1 rounded hover:bg-[#F1F5F9] dark:hover:bg-[#1E293B] transition-colors" title="Zoom Out">
               <span className="text-sm">−</span>
             </button>
-            <button
-              onClick={resetZoom}
-              className="px-2 py-0.5 text-xs bg-[#F1F5F9] dark:bg-[#1E293B] rounded hover:bg-[#E2E8F0] dark:hover:bg-[#334155] transition-colors"
-              title="Reset Zoom"
-            >
+            <button onClick={resetZoom} className="px-2 py-0.5 text-xs bg-[#F1F5F9] dark:bg-[#1E293B] rounded hover:bg-[#E2E8F0] dark:hover:bg-[#334155] transition-colors" title="Reset Zoom">
               100%
             </button>
-            <button
-              onClick={zoomIn}
-              className="p-1 rounded hover:bg-[#F1F5F9] dark:hover:bg-[#1E293B] transition-colors"
-              title="Zoom In"
-            >
+            <button onClick={zoomIn} className="p-1 rounded hover:bg-[#F1F5F9] dark:hover:bg-[#1E293B] transition-colors" title="Zoom In">
               <span className="text-sm">+</span>
             </button>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          {/* Download Button with Dropdown */}
+        <div className="flex items-center gap-2 relative">
+          {/* Download Button */}
           <div className="dropdown-container relative">
             <button
               onClick={handleDownload}
               disabled={isLoading}
-              className={`p-1.5 rounded-lg hover:bg-[#F1F5F9] dark:hover:bg-[#1E293B] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1`}
+              className="p-1.5 rounded-lg hover:bg-[#F1F5F9] dark:hover:bg-[#1E293B] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
               title="Download Resume"
             >
-              <Download
-                className={`h-4 w-4 text-[#64748B] ${isLoading ? "animate-pulse" : ""}`}
-              />
+              <Download className={`h-4 w-4 text-[#64748B] ${isLoading ? "animate-pulse" : ""}`} />
               <ChevronDown className="h-3 w-3 text-[#64748B]" />
             </button>
 
             {showDownloadMenu && (
-              <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-[#1E293B] rounded-lg shadow-lg border border-[#E2E8F0] dark:border-[#334155] overflow-hidden z-50">
-                <button
-                  onClick={handleDownloadPNG}
-                  className="w-full px-4 py-2.5 text-left text-sm hover:bg-[#F1F5F9] dark:hover:bg-[#334155] transition-colors flex items-center gap-2"
-                >
+              <div className="absolute right-0 mt-2 w-52 bg-white dark:bg-[#1E293B] rounded-lg shadow-lg border border-[#E2E8F0] dark:border-[#334155] overflow-hidden z-50">
+                <button onClick={handleDownloadPNG} className="w-full px-4 py-2.5 text-left text-sm hover:bg-[#F1F5F9] dark:hover:bg-[#334155] transition-colors flex items-center gap-2">
                   <FileImage className="h-4 w-4" />
-                  <span>Download as PNG</span>
+                  <span>Download as PNG{pageCount > 1 ? ` (${pageCount} files)` : ""}</span>
                 </button>
-                <button
-                  onClick={handleDownloadPDF}
-                  className="w-full px-4 py-2.5 text-left text-sm hover:bg-[#F1F5F9] dark:hover:bg-[#334155] transition-colors flex items-center gap-2 border-t border-[#E2E8F0] dark:border-[#334155]"
-                >
+                <button onClick={handleDownloadPDF} className="w-full px-4 py-2.5 text-left text-sm hover:bg-[#F1F5F9] dark:hover:bg-[#334155] transition-colors flex items-center gap-2 border-t border-[#E2E8F0] dark:border-[#334155]">
                   <FileText className="h-4 w-4" />
-                  <span>Download as PDF</span>
-                </button>
-                <button
-                  onClick={handlePrint}
-                  className="w-full px-4 py-2.5 text-left text-sm hover:bg-[#F1F5F9] dark:hover:bg-[#334155] transition-colors flex items-center gap-2 border-t border-[#E2E8F0] dark:border-[#334155]"
-                >
-                  <Printer className="h-4 w-4" />
-                  <span>Print Resume</span>
+                  <span>Download as PDF{pageCount > 1 ? ` (${pageCount} pages)` : ""}</span>
                 </button>
               </div>
             )}
           </div>
 
           {/* Share Button */}
-          <button
-            onClick={handleShare}
-            className="p-1.5 rounded-lg hover:bg-[#F1F5F9] dark:hover:bg-[#1E293B] transition-colors"
-            title="Share Resume"
-          >
-            <Share2 className="h-4 w-4 text-[#64748B]" />
-          </button>
+          <div className="dropdown-container relative">
+            <button onClick={handleShare} className="p-1.5 rounded-lg hover:bg-[#F1F5F9] dark:hover:bg-[#1E293B] transition-colors flex items-center gap-1" title="Share Resume">
+              <Share2 className="h-4 w-4 text-[#64748B]" />
+              <ChevronDown className="h-3 w-3 text-[#64748B]" />
+            </button>
+
+            {showShareMenu && (
+              <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-[#1E293B] rounded-lg shadow-lg border border-[#E2E8F0] dark:border-[#334155] overflow-hidden z-50">
+                <div className="py-1">
+                  <button onClick={shareViaWhatsApp} className="w-full px-4 py-2.5 text-left text-sm hover:bg-[#F1F5F9] dark:hover:bg-[#334155] transition-colors flex items-center gap-3">
+                    <MessageCircle className="h-4 w-4" style={{ color: "#25D366" }} />
+                    <span>Share via WhatsApp</span>
+                  </button>
+                  <button onClick={shareViaGmail} className="w-full px-4 py-2.5 text-left text-sm hover:bg-[#F1F5F9] dark:hover:bg-[#334155] transition-colors flex items-center gap-3">
+                    <Mail className="h-4 w-4" style={{ color: "#EA4335" }} />
+                    <span>Share via Gmail</span>
+                  </button>
+                  <button onClick={shareViaEmailFallback} className="w-full px-4 py-2.5 text-left text-sm hover:bg-[#F1F5F9] dark:hover:bg-[#334155] transition-colors flex items-center gap-3 border-t border-[#E2E8F0] dark:border-[#334155]">
+                    <Mail className="h-4 w-4" style={{ color: "#64748B" }} />
+                    <span>Email (Default)</span>
+                  </button>
+                  <button onClick={shareViaLink} className="w-full px-4 py-2.5 text-left text-sm hover:bg-[#F1F5F9] dark:hover:bg-[#334155] transition-colors flex items-center gap-3 border-t border-[#E2E8F0] dark:border-[#334155]">
+                    <LinkIcon className="h-4 w-4" style={{ color: "#64748B" }} />
+                    <span>Copy Link</span>
+                    {copied && <Check className="h-4 w-4 text-green-500 ml-auto" />}
+                  </button>
+                </div>
+
+                <div className="border-t border-[#E2E8F0] dark:border-[#334155]"></div>
+
+                <button
+                  onClick={shareAsPDF}
+                  disabled={isLoading}
+                  className="w-full px-4 py-2.5 text-left text-sm hover:bg-[#F1F5F9] dark:hover:bg-[#334155] transition-colors flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <FileText className="h-4 w-4 text-[#2563EB]" />
+                  <span>Share as PDF{pageCount > 1 ? ` (${pageCount} pages)` : ""}</span>
+                  {isLoading && <span className="ml-auto text-xs text-[#64748B]">Generating...</span>}
+                </button>
+              </div>
+            )}
+          </div>
 
           {/* Fullscreen Button */}
-          <button
-            onClick={handleFullscreen}
-            className="p-1.5 rounded-lg hover:bg-[#F1F5F9] dark:hover:bg-[#1E293B] transition-colors"
-            title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
-          >
-            {isFullscreen ? (
-              <Minimize2 className="h-4 w-4 text-[#64748B]" />
-            ) : (
-              <Maximize2 className="h-4 w-4 text-[#64748B]" />
-            )}
+          <button onClick={handleFullscreen} className="p-1.5 rounded-lg hover:bg-[#F1F5F9] dark:hover:bg-[#1E293B] transition-colors" title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}>
+            {isFullscreen ? <Minimize2 className="h-4 w-4 text-[#64748B]" /> : <Maximize2 className="h-4 w-4 text-[#64748B]" />}
           </button>
         </div>
       </div>
 
-      {/* Viewport - Centered */}
+      {/* Viewport */}
       <div className="pp-viewport" ref={containerRef}>
         <div
-          ref={paperRef}
-          className="pp-paper"
+          className="pp-scaled-box"
           style={{
-            width: PAPER_WIDTH,
-            height: paperHeight,
-            transform: `scale(${totalScale})`,
-            transformOrigin: "center center",
+            width: PAPER_WIDTH * totalScale,
+            height: stackNaturalHeight * totalScale,
           }}
         >
+          <div
+            className="pp-pages-stack"
+            style={{
+              width: PAPER_WIDTH,
+              transform: `scale(${totalScale})`,
+              transformOrigin: "top left",
+              gap: PAGE_GAP,
+            }}
+          >
+            {Array.from({ length: pageCount }).map((_, i) => (
+              <div key={i} className="pp-page">
+                <div className="pp-page-clip" style={{ width: PAPER_WIDTH, height: PAPER_HEIGHT }}>
+                  <div
+                    className="pp-page-window"
+                    style={{
+                      width: PAPER_WIDTH,
+                      height: paddedHeight,
+                      transform: `translateY(${-i * PAPER_HEIGHT}px)`,
+                    }}
+                  >
+                    <TemplateRenderer
+                      key={`${templateId}-${i}-${contentKey}`}
+                      templateComponent={template.component}
+                      content={content}
+                      theme={theme}
+                      layoutConfig={template.layoutConfig}
+                    />
+                  </div>
+                </div>
+                {pageCount > 1 && (
+                  <div className="pp-page-badge">
+                    Page {i + 1} of {pageCount}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Hidden measure hosts */}
+      <div className="pp-measure-host" aria-hidden="true">
+        <div ref={measureOnlyRef} style={{ width: PAPER_WIDTH, background: "#ffffff" }}>
           <TemplateRenderer
+            key={`measure-${templateId}-${contentKey}`}
             templateComponent={template.component}
             content={content}
             theme={theme}
@@ -787,244 +536,26 @@ export default function PreviewPanel({
         </div>
       </div>
 
-      {/* Print Modal */}
-      {showPrintModal && (
-        <div className="modal-overlay" onClick={() => setShowPrintModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3 className="modal-title">Print Resume</h3>
-              <button
-                className="modal-close"
-                onClick={() => setShowPrintModal(false)}
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-            <div className="modal-body">
-              <div className="print-preview">
-                <div className="print-preview-icon">
-                  <Printer className="h-12 w-12 text-[#2563EB]" />
-                </div>
-                <p className="print-preview-text">
-                  Your resume is ready to print. This will open a print dialog
-                  where you can choose your printer and settings.
-                </p>
-              </div>
-              <div className="print-options">
-                <div className="print-option">
-                  <input
-                    type="checkbox"
-                    id="include-margins"
-                    checked
-                    readOnly
-                  />
-                  <label htmlFor="include-margins">
-                    Include margins for printing
-                  </label>
-                </div>
-                <div className="print-option">
-                  <input
-                    type="checkbox"
-                    id="include-colors"
-                    defaultChecked
-                    readOnly
-                  />
-                  <label htmlFor="include-colors">Print in color</label>
-                </div>
-              </div>
-            </div>
-            <div className="modal-footer">
-              <button
-                className="btn-secondary"
-                onClick={() => setShowPrintModal(false)}
-              >
-                Cancel
-              </button>
-              <button className="btn-primary" onClick={performPrint}>
-                <Printer className="h-4 w-4" />
-                Print Resume
-              </button>
-            </div>
-          </div>
+      <div className="pp-measure-host" aria-hidden="true">
+        <div
+          ref={fullContentRef}
+          style={{ width: PAPER_WIDTH, height: paddedHeight, background: "#ffffff" }}
+        >
+          <TemplateRenderer
+            key={`full-${templateId}-${contentKey}`}
+            templateComponent={template.component}
+            content={content}
+            theme={theme}
+            layoutConfig={template.layoutConfig}
+          />
         </div>
-      )}
-
-      {/* Share Modal */}
-      {showShareModal && (
-        <div className="modal-overlay" onClick={() => setShowShareModal(false)}>
-          <div
-            className="modal-content share-modal"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="modal-header">
-              <h3 className="modal-title">Share Resume</h3>
-              <button
-                className="modal-close"
-                onClick={() => setShowShareModal(false)}
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-            <div className="modal-body">
-              {/* Share Options Grid */}
-              <div className="share-options-grid">
-                {SHARE_OPTIONS.map((option) => {
-                  const Icon = option.icon;
-                  return (
-                    <button
-                      key={option.id}
-                      onClick={() => {
-                        switch (option.id) {
-                          case "whatsapp":
-                            shareViaWhatsApp();
-                            break;
-                          case "gmail":
-                            shareViaGmail();
-                            break;
-                          case "linkedin":
-                            shareViaLinkedIn();
-                            break;
-                          case "twitter":
-                            shareViaTwitter();
-                            break;
-                          case "facebook":
-                            shareViaFacebook();
-                            break;
-                          case "link":
-                            shareViaLink();
-                            break;
-                        }
-                      }}
-                      className="share-option-btn"
-                      style={{
-                        backgroundColor: option.bgColor,
-                        borderColor: `${option.color}30`,
-                      }}
-                    >
-                      <div
-                        className="share-option-icon"
-                        style={{ color: option.color }}
-                      >
-                        <Icon className="h-6 w-6" />
-                      </div>
-                      <span className="share-option-label">{option.label}</span>
-                      {option.id === "link" && copied && (
-                        <span className="share-option-badge">
-                          <Check className="h-3 w-3" />
-                          Copied!
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-
-              <div className="share-divider">
-                <span>or send via email</span>
-              </div>
-
-              {/* Email Form */}
-              {emailSent ? (
-                <div className="email-success">
-                  <Check className="h-12 w-12 text-green-500 mx-auto" />
-                  <p className="text-lg font-medium text-green-600">
-                    Email Sent!
-                  </p>
-                  <p className="text-sm text-[#64748B]">
-                    Your resume has been shared with {shareEmail}
-                  </p>
-                </div>
-              ) : (
-                <form
-                  className="share-form"
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    handleSendEmail();
-                  }}
-                >
-                  <div className="form-group">
-                    <label htmlFor="share-name" className="form-label">
-                      Your Name{" "}
-                      <span className="text-[#94A3B8] text-xs">(optional)</span>
-                    </label>
-                    <div className="form-input-wrapper">
-                      <User className="form-input-icon" />
-                      <input
-                        id="share-name"
-                        type="text"
-                        value={shareName}
-                        onChange={(e) => setShareName(e.target.value)}
-                        placeholder="Your name"
-                        className="form-input"
-                      />
-                    </div>
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="share-email" className="form-label">
-                      Recipient's Email <span className="text-red-500">*</span>
-                    </label>
-                    <div className="form-input-wrapper">
-                      <AtSign className="form-input-icon" />
-                      <input
-                        id="share-email"
-                        type="email"
-                        value={shareEmail}
-                        onChange={(e) => setShareEmail(e.target.value)}
-                        placeholder="recipient@email.com"
-                        className="form-input"
-                        required
-                      />
-                    </div>
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="share-message" className="form-label">
-                      Personal Message{" "}
-                      <span className="text-[#94A3B8] text-xs">(optional)</span>
-                    </label>
-                    <textarea
-                      id="share-message"
-                      value={shareMessage}
-                      onChange={(e) => setShareMessage(e.target.value)}
-                      placeholder="I wanted to share my resume with you..."
-                      rows={3}
-                      className="form-textarea"
-                    />
-                  </div>
-                  <div className="form-note">
-                    <p className="text-xs text-[#94A3B8]">
-                      The recipient will receive a link to view your resume
-                      online.
-                    </p>
-                  </div>
-                  <button
-                    type="submit"
-                    className="btn-primary w-full justify-center"
-                    disabled={!shareEmail || isSendingEmail}
-                  >
-                    {isSendingEmail ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        Sending...
-                      </>
-                    ) : (
-                      <>
-                        <Send className="h-4 w-4" />
-                        Send Email
-                      </>
-                    )}
-                  </button>
-                </form>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      </div>
 
       <style>{`
-        .pp-root { 
-          height: 100%; 
-          display: flex; 
-          flex-direction: column; 
+        .pp-root {
+          height: 100%;
+          display: flex;
+          flex-direction: column;
           background: #F1F5F9;
           position: relative;
         }
@@ -1038,10 +569,10 @@ export default function PreviewPanel({
           background: #0F172A;
         }
         .pp-toolbar {
-          display: flex; 
-          align-items: center; 
+          display: flex;
+          align-items: center;
           justify-content: space-between;
-          padding: 10px 16px; 
+          padding: 10px 16px;
           background: #fff;
           border-bottom: 1px solid #e2e8f0;
           flex-shrink: 0;
@@ -1052,370 +583,74 @@ export default function PreviewPanel({
           border-bottom: 1px solid #334155;
         }
         .pp-viewport {
-          flex: 1; 
-          display: flex; 
-          align-items: center; 
+          flex: 1;
+          display: flex;
+          align-items: flex-start;
           justify-content: center;
-          overflow: auto; 
+          overflow: auto;
           padding: 24px;
           background: #F1F5F9;
         }
         .dark .pp-viewport {
           background: #0F172A;
         }
-        .pp-paper {
-          background: #fff; 
-          box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+        .pp-scaled-box {
+          position: relative;
           flex-shrink: 0;
+        }
+        .pp-pages-stack {
+          display: flex;
+          flex-direction: column;
+          position: absolute;
+          top: 0;
+          left: 0;
+        }
+        .pp-page {
+          flex-shrink: 0;
+          position: relative;
+        }
+        .pp-page-clip {
+          background: #fff;
+          box-shadow: 0 4px 24px rgba(0,0,0,0.18);
           border-radius: 4px;
+          overflow: hidden;
+          position: relative;
+        }
+        .dark .pp-page-clip {
+          background: #1E293B;
+        }
+        .pp-page-window {
+          position: relative;
           overflow: visible;
-          transform-origin: center center;
-          transition: height 0.2s ease;
         }
-        .dark .pp-paper {
-          background: #1E293B;
-        }
-        .pp-empty { 
-          padding: 40px; 
-          color: #94A3B8; 
-          text-align: center; 
-        }
-
-        /* Share Modal Styles */
-        .share-modal .modal-content {
-          max-width: 520px;
-        }
-        .share-options-grid {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 12px;
-          margin-bottom: 20px;
-        }
-        .share-option-btn {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 8px;
-          padding: 16px 12px;
-          border: 1px solid;
-          border-radius: 12px;
-          background: transparent;
-          cursor: pointer;
-          transition: all 0.2s;
-          position: relative;
-        }
-        .share-option-btn:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        .dark .share-option-btn:hover {
-          box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        }
-        .share-option-icon {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-        .share-option-label {
-          font-size: 12px;
-          font-weight: 500;
-          color: #0F172A;
-        }
-        .dark .share-option-label {
-          color: #E2E8F0;
-        }
-        .share-option-badge {
+        .pp-page-badge {
           position: absolute;
-          top: -6px;
-          right: -6px;
-          background: #22C55E;
-          color: white;
-          border-radius: 12px;
-          padding: 2px 8px;
-          font-size: 10px;
-          display: flex;
-          align-items: center;
-          gap: 2px;
-        }
-        .share-divider {
-          display: flex;
-          align-items: center;
-          gap: 16px;
-          margin: 16px 0;
+          bottom: -22px;
+          left: 50%;
+          transform: translateX(-50%);
+          font-size: 11px;
           color: #94A3B8;
-          font-size: 12px;
+          white-space: nowrap;
         }
-        .share-divider::before,
-        .share-divider::after {
-          content: '';
-          flex: 1;
-          height: 1px;
-          background: #E2E8F0;
-        }
-        .dark .share-divider::before,
-        .dark .share-divider::after {
-          background: #334155;
-        }
-
-        /* Modal Styles */
-        .modal-overlay {
+        .pp-measure-host {
           position: fixed;
-          inset: 0;
-          background: rgba(0,0,0,0.5);
-          backdrop-filter: blur(4px);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          z-index: 99999;
-          padding: 20px;
+          top: 0;
+          left: -99999px;
+          pointer-events: none;
+          z-index: -1;
         }
-        .modal-content {
-          background: white;
-          border-radius: 16px;
-          max-width: 480px;
-          width: 100%;
-          max-height: 90vh;
-          overflow-y: auto;
-          box-shadow: 0 24px 48px rgba(0,0,0,0.25);
-          animation: modalIn 0.3s ease;
-        }
-        .dark .modal-content {
-          background: #1E293B;
-        }
-        @keyframes modalIn {
-          from { opacity: 0; transform: scale(0.95) translateY(10px); }
-          to { opacity: 1; transform: scale(1) translateY(0); }
-        }
-        .modal-header {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 20px 24px;
-          border-bottom: 1px solid #E2E8F0;
-        }
-        .dark .modal-header {
-          border-bottom: 1px solid #334155;
-        }
-        .modal-title {
-          font-size: 18px;
-          font-weight: 600;
-          color: #0F172A;
-        }
-        .dark .modal-title {
-          color: #FFFFFF;
-        }
-        .modal-close {
-          padding: 4px;
-          border-radius: 8px;
-          color: #64748B;
-          transition: background 0.2s;
-          background: none;
-          border: none;
-          cursor: pointer;
-        }
-        .modal-close:hover {
-          background: #F1F5F9;
-        }
-        .dark .modal-close:hover {
-          background: #334155;
-        }
-        .modal-body {
-          padding: 24px;
-        }
-        .modal-footer {
-          display: flex;
-          gap: 12px;
-          justify-content: flex-end;
-          padding: 16px 24px;
-          border-top: 1px solid #E2E8F0;
-        }
-        .dark .modal-footer {
-          border-top: 1px solid #334155;
-        }
-        .btn-primary {
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          padding: 10px 20px;
-          background: #2563EB;
-          color: white;
-          border: none;
-          border-radius: 8px;
-          font-weight: 500;
-          font-size: 14px;
-          cursor: pointer;
-          transition: background 0.2s;
-        }
-        .btn-primary:hover {
-          background: #1D4ED8;
-        }
-        .btn-primary:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
-        .btn-secondary {
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          padding: 10px 20px;
-          background: transparent;
-          color: #0F172A;
-          border: 1px solid #E2E8F0;
-          border-radius: 8px;
-          font-weight: 500;
-          font-size: 14px;
-          cursor: pointer;
-          transition: background 0.2s;
-        }
-        .dark .btn-secondary {
-          color: #FFFFFF;
-          border-color: #334155;
-        }
-        .btn-secondary:hover {
-          background: #F1F5F9;
-        }
-        .dark .btn-secondary:hover {
-          background: #334155;
-        }
-
-        /* Print Preview */
-        .print-preview {
-          text-align: center;
-          padding: 20px 0;
-        }
-        .print-preview-icon {
-          display: flex;
-          justify-content: center;
-          margin-bottom: 16px;
-        }
-        .print-preview-text {
-          color: #0F172A;
-          font-size: 15px;
-          line-height: 1.6;
-        }
-        .dark .print-preview-text {
-          color: #E2E8F0;
-        }
-        .print-options {
-          margin-top: 16px;
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-        }
-        .print-option {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-        }
-        .print-option input[type="checkbox"] {
-          width: 18px;
-          height: 18px;
-          accent-color: #2563EB;
-        }
-        .print-option label {
-          font-size: 14px;
-          color: #0F172A;
-        }
-        .dark .print-option label {
-          color: #E2E8F0;
-        }
-
-        /* Share Form */
-        .share-form {
-          display: flex;
-          flex-direction: column;
-          gap: 16px;
-        }
-        .form-group {
-          display: flex;
-          flex-direction: column;
-          gap: 6px;
-        }
-        .form-label {
-          font-size: 14px;
-          font-weight: 500;
-          color: #0F172A;
-        }
-        .dark .form-label {
-          color: #E2E8F0;
-        }
-        .form-input-wrapper {
-          position: relative;
-        }
-        .form-input-icon {
-          position: absolute;
-          left: 12px;
-          top: 50%;
-          transform: translateY(-50%);
-          width: 18px;
-          height: 18px;
+        .pp-empty {
+          padding: 40px;
           color: #94A3B8;
-        }
-        .form-input {
-          width: 100%;
-          padding: 10px 12px 10px 40px;
-          border: 1px solid #E2E8F0;
-          border-radius: 8px;
-          font-size: 14px;
-          background: white;
-          color: #0F172A;
-          transition: border-color 0.2s;
-        }
-        .dark .form-input {
-          background: #0F172A;
-          border-color: #334155;
-          color: #FFFFFF;
-        }
-        .form-input:focus {
-          outline: none;
-          border-color: #2563EB;
-          box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-        }
-        .form-textarea {
-          width: 100%;
-          padding: 10px 12px;
-          border: 1px solid #E2E8F0;
-          border-radius: 8px;
-          font-size: 14px;
-          background: white;
-          color: #0F172A;
-          resize: vertical;
-          transition: border-color 0.2s;
-          font-family: inherit;
-        }
-        .dark .form-textarea {
-          background: #0F172A;
-          border-color: #334155;
-          color: #FFFFFF;
-        }
-        .form-textarea:focus {
-          outline: none;
-          border-color: #2563EB;
-          box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-        }
-        .email-success {
           text-align: center;
-          padding: 20px 0;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 8px;
         }
-
         .animate-pulse {
           animation: pulse 1.5s ease-in-out infinite;
-        }
-        .animate-spin {
-          animation: spin 1s linear infinite;
         }
         @keyframes pulse {
           0%, 100% { opacity: 1; }
           50% { opacity: 0.5; }
         }
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-
         @media (max-width: 768px) {
           .pp-viewport {
             padding: 12px;
@@ -1425,23 +660,12 @@ export default function PreviewPanel({
             gap: 8px;
             padding: 8px 12px;
           }
-          .modal-content {
-            margin: 10px;
-          }
-          .share-options-grid {
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-          }
-          .share-option-btn {
-            padding: 12px 8px;
-          }
         }
       `}</style>
     </div>
   );
 }
 
-// ChevronDown component for the dropdowns
 function ChevronDown({ className }: { className?: string }) {
   return (
     <svg
