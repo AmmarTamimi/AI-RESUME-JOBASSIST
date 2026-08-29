@@ -18,6 +18,7 @@ import {
   Link as LinkIcon,
   Check,
   Files,
+  ChevronDown,
 } from "lucide-react";
 
 interface PreviewPanelProps {
@@ -29,13 +30,133 @@ interface PreviewPanelProps {
 
 const PAPER_WIDTH = 794;
 const PAPER_HEIGHT = 1123;
-const PAGE_GAP = 24;
-const CAPTURE_SCALE = 2;
+const PAGE_GAP = 24; // visual gap between stacked pages in the preview
+const CAPTURE_SCALE = 2; // resolution multiplier used for html2canvas exports
+
+// Breathing room around a page break, applied ONLY to the readable text layer.
+// The background/layout layer is never shrunk by these — it always fills the
+// full page height regardless.
+const PAGE_TEXT_TOP_PADDING = 40; // blank gap above text at the start of every page after the first
+const PAGE_TEXT_BOTTOM_PADDING = 40; // minimum blank buffer kept above a break, so a line is never sliced in half
+
+/**
+ * Finds safe places to cut the resume into pages so a break never lands in
+ * the middle of a line of text (or any other leaf element, like a divider
+ * or icon). It walks every text node in the rendered content and reads its
+ * actual on-screen line boxes via Range.getClientRects() — each rect is one
+ * visual line — then, for every page, picks the last line-boundary at or
+ * before the ideal cutoff (leaving `bottomPad` px of buffer) instead of
+ * cutting at a raw pixel multiple.
+ *
+ * Returns an array of Y offsets (in the container's own content coordinates)
+ * of length pageCount + 1: breakpoints[0] is always 0, breakpoints[N] is the
+ * end of the content, and pageCount = breakpoints.length - 1.
+ */
+function computeSafeBreakpoints(
+  container: HTMLElement,
+  pageHeight: number,
+  topPad: number,
+  bottomPad: number,
+  totalHeight: number,
+): number[] {
+  const containerTop = container.getBoundingClientRect().top;
+  const safeBottoms: number[] = [];
+
+  const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, {
+    acceptNode: (node) =>
+      node.textContent && node.textContent.trim().length > 0
+        ? NodeFilter.FILTER_ACCEPT
+        : NodeFilter.FILTER_REJECT,
+  });
+  const range = document.createRange();
+  let node: Node | null;
+  // eslint-disable-next-line no-cond-assign
+  while ((node = walker.nextNode())) {
+    range.selectNodeContents(node);
+    const rects = range.getClientRects();
+    for (let r = 0; r < rects.length; r++) {
+      const rect = rects[r];
+      if (rect.height > 0) safeBottoms.push(rect.bottom - containerTop);
+    }
+  }
+
+  // Leaf (childless) elements — icons, dividers, rating bars, images — are
+  // also safe break candidates, so those aren't split either.
+  container.querySelectorAll("*").forEach((el) => {
+    if (el.children.length === 0) {
+      const rect = el.getBoundingClientRect();
+      if (rect.height > 0) safeBottoms.push(rect.bottom - containerTop);
+    }
+  });
+
+  safeBottoms.sort((a, b) => a - b);
+
+  const breakpoints: number[] = [0];
+  let cursor = 0;
+  let guard = 0;
+
+  while (cursor < totalHeight - 1 && guard < 200) {
+    guard++;
+    const isFirstPage = breakpoints.length === 1;
+    const availableThisPage = pageHeight - (isFirstPage ? 0 : topPad);
+    const remaining = totalHeight - cursor;
+
+    // If everything left already fits within this page, this IS the last
+    // page — stop here instead of hunting for an interior break point.
+    // Without this check, a resume that's only, say, half a page long would
+    // still get a spurious near-empty "page 2" once a break candidate was
+    // found anywhere in the (artificially generous) search window.
+    if (remaining <= availableThisPage) {
+      breakpoints.push(totalHeight);
+      cursor = totalHeight;
+      break;
+    }
+
+    const idealTarget = cursor + availableThisPage - bottomPad;
+
+    let chosen = -1;
+    for (let k = safeBottoms.length - 1; k >= 0; k--) {
+      if (safeBottoms[k] <= idealTarget && safeBottoms[k] > cursor) {
+        chosen = safeBottoms[k];
+        break;
+      }
+    }
+    // Fallback: nothing fit comfortably (e.g. a single block taller than a
+    // page) — hard-cut at the raw boundary so pagination still terminates.
+    if (chosen === -1 || chosen <= cursor) {
+      chosen = Math.min(cursor + availableThisPage, totalHeight);
+    }
+
+    if (chosen >= totalHeight) {
+      breakpoints.push(totalHeight);
+      cursor = totalHeight;
+      break;
+    }
+    breakpoints.push(chosen);
+    cursor = chosen;
+  }
+
+  if (breakpoints[breakpoints.length - 1] < totalHeight) {
+    breakpoints.push(totalHeight);
+  }
+
+  return breakpoints;
+}
 
 export default function PreviewPanel({ templateId, theme, content, onSwitchTemplate }: PreviewPanelProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  // Pure measurement mount: renders the resume at its natural, unconstrained
+  // height so we can find out exactly how tall the real content is, and where
+  // the safe page-break points are. Never padded/stretched.
   const measureOnlyRef = useRef<HTMLDivElement>(null);
+  // Foreground capture mount: the REAL, readable resume, stretched to a full
+  // page-multiple height. Used to capture the text layer for PDF/PNG export.
   const fullContentRef = useRef<HTMLDivElement>(null);
+  // Background capture mount: same resume, but with all text made invisible
+  // via CSS. Used to capture a "layout only" layer for PDF/PNG export — this
+  // is what lets a page's background/sidebar fill the whole page even when
+  // the actual text stops early.
+  const bgOnlyContentRef = useRef<HTMLDivElement>(null);
 
   const [scale, setScale] = useState(1);
   const [zoom, setZoom] = useState(100);
@@ -45,29 +166,49 @@ export default function PreviewPanel({ templateId, theme, content, onSwitchTempl
   const [showDownloadMenu, setShowDownloadMenu] = useState(false);
   const [copied, setCopied] = useState(false);
   const [naturalHeight, setNaturalHeight] = useState(PAPER_HEIGHT);
+  const [pageBreaks, setPageBreaks] = useState<number[]>([0, PAPER_HEIGHT]);
 
   const template = templates.find((t) => t.id === templateId);
 
-  const pageCount = Math.max(1, Math.ceil(naturalHeight / PAPER_HEIGHT));
+  // pageBreaks has length pageCount + 1: [0, breakY1, breakY2, ..., totalHeight]
+  const pageCount = Math.max(1, pageBreaks.length - 1);
+  // Every rendered/exported page's underlying content is stretched to a full
+  // page-multiple height — this is what makes full-height template styling
+  // (sidebars, background fills) work correctly on every page, including a
+  // trailing partial one.
   const paddedHeight = pageCount * PAPER_HEIGHT;
 
-  // Measure the true, unclipped content height
+  // Create a content key that changes when any section data changes, so the
+  // hidden/visible render mounts refresh in lockstep with the editor.
+  const contentKey = JSON.stringify(content.sections);
+
+  // ---- Measure natural content height and compute safe page-break points ----
   useEffect(() => {
     const el = measureOnlyRef.current;
     if (!el) return;
 
-    const measure = () => {
+    const recompute = () => {
       const h = el.scrollHeight || el.getBoundingClientRect().height;
-      setNaturalHeight(Math.max(PAPER_HEIGHT, Math.ceil(h)));
+      // Use the resume's TRUE height here — no artificial "at least one full
+      // page" floor. Padding that up to PAPER_HEIGHT was what caused a
+      // short, single-page resume to get a spurious, near-empty page 2 (the
+      // break-search loop kept hunting for a split all the way up to that
+      // padded minimum, even when there was no real content left to place).
+      const totalHeight = Math.max(1, Math.ceil(h));
+      setNaturalHeight(totalHeight);
+      setPageBreaks(
+        computeSafeBreakpoints(el, PAPER_HEIGHT, PAGE_TEXT_TOP_PADDING, PAGE_TEXT_BOTTOM_PADDING, totalHeight),
+      );
     };
 
-    measure();
-    const ro = new ResizeObserver(measure);
+    recompute();
+    const ro = new ResizeObserver(recompute);
     ro.observe(el);
     return () => ro.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [templateId, theme, content]);
 
-  // Fit-to-width scaling
+  // ---- Fit-to-viewport scaling ----
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -75,15 +216,26 @@ export default function PreviewPanel({ templateId, theme, content, onSwitchTempl
     const recalc = () => {
       const padding = isFullscreen ? 24 : 48;
       const availableWidth = el.clientWidth - padding;
-      const nextScale = Math.min(availableWidth / PAPER_WIDTH, 1);
-      setScale(nextScale > 0 ? nextScale : 1);
+      const availableHeight = el.clientHeight - padding;
+
+      if (pageCount === 1) {
+        const scaleX = availableWidth / PAPER_WIDTH;
+        const scaleY = availableHeight / PAPER_HEIGHT;
+        const nextScale = Math.min(scaleX, scaleY, 1);
+        setScale(nextScale > 0 ? nextScale : 1);
+      } else {
+        const scaleX = availableWidth / PAPER_WIDTH;
+        const scaleY = availableHeight / PAPER_HEIGHT;
+        const nextScale = Math.min(scaleX, scaleY, 1.2);
+        setScale(nextScale > 0 ? nextScale : 1);
+      }
     };
 
     recalc();
     const observer = new ResizeObserver(recalc);
     observer.observe(el);
     return () => observer.disconnect();
-  }, [isFullscreen]);
+  }, [isFullscreen, pageCount]);
 
   if (!template) {
     return <div className="pp-empty">Unknown template: {templateId}</div>;
@@ -92,41 +244,66 @@ export default function PreviewPanel({ templateId, theme, content, onSwitchTempl
   const zoomLevel = zoom / 100;
   const totalScale = scale * zoomLevel;
 
-  // Capture full canvas for export
-  const captureFullCanvas = async (): Promise<HTMLCanvasElement> => {
-    const node = fullContentRef.current;
-    if (!node) throw new Error("Resume content not ready to capture");
-
+  // ---------------------------------------------------------------------------
+  // CAPTURE: render the full (unclipped) resume once as a single tall canvas —
+  // once for the real text (fullContentRef) and once with text hidden
+  // (bgOnlyContentRef) — then slice both into page-height chunks and composite
+  // them together per page. This guarantees PDF / PNG pages line up exactly
+  // with what's shown in the preview.
+  // ---------------------------------------------------------------------------
+  const captureNode = async (node: HTMLElement): Promise<HTMLCanvasElement> => {
     if (typeof document !== "undefined" && "fonts" in document) {
       try {
         await (document as any).fonts.ready;
       } catch {
-        /* no-op */
+        /* no-op: not all browsers implement this fully */
       }
     }
     await new Promise((resolve) => requestAnimationFrame(() => resolve(null)));
 
     const html2canvas = (await import("html2canvas")).default;
-    const canvas = await html2canvas(node, {
+    return html2canvas(node, {
       scale: CAPTURE_SCALE,
       useCORS: true,
       logging: false,
       backgroundColor: "#ffffff",
       width: PAPER_WIDTH,
       height: node.scrollHeight,
+      // Use the real browser viewport size (not PAPER_WIDTH) so responsive
+      // CSS/media queries resolve exactly as they do in the live preview.
       windowWidth: document.documentElement.clientWidth,
       windowHeight: Math.max(document.documentElement.clientHeight, node.scrollHeight),
     });
-    return canvas;
   };
 
-  const sliceCanvasIntoPages = (fullCanvas: HTMLCanvasElement): HTMLCanvasElement[] => {
-    const pageHeightPx = PAPER_HEIGHT * CAPTURE_SCALE;
+  const captureFullCanvas = (): Promise<HTMLCanvasElement> => {
+    const node = fullContentRef.current;
+    if (!node) throw new Error("Resume content not ready to capture");
+    return captureNode(node);
+  };
+
+  const captureBgOnlyCanvas = (): Promise<HTMLCanvasElement> => {
+    const node = bgOnlyContentRef.current;
+    if (!node) throw new Error("Resume background layer not ready to capture");
+    return captureNode(node);
+  };
+
+  // Composite the two captured canvases into one canvas per page: the
+  // background (text-hidden) layer fills the ENTIRE remaining page height,
+  // and the real text is drawn on top of it, clipped to exactly this page's
+  // slice — mirroring the two-layer structure used in the live preview.
+  const sliceCanvasIntoPages = (fgCanvas: HTMLCanvasElement, bgCanvas: HTMLCanvasElement): HTMLCanvasElement[] => {
     const pageWidthPx = PAPER_WIDTH * CAPTURE_SCALE;
-    const totalPages = Math.max(1, Math.ceil(fullCanvas.height / pageHeightPx));
+    const pageHeightPx = PAPER_HEIGHT * CAPTURE_SCALE;
+    const topPadPx = PAGE_TEXT_TOP_PADDING * CAPTURE_SCALE;
+    const breaksPx = pageBreaks.map((b) => b * CAPTURE_SCALE);
+    const totalPages = Math.max(1, breaksPx.length - 1);
 
     const pages: HTMLCanvasElement[] = [];
     for (let i = 0; i < totalPages; i++) {
+      const topPad = i > 0 ? topPadPx : 0;
+      const availableBoxPx = pageHeightPx - topPad;
+
       const pageCanvas = document.createElement("canvas");
       pageCanvas.width = pageWidthPx;
       pageCanvas.height = pageHeightPx;
@@ -134,28 +311,28 @@ export default function PreviewPanel({ templateId, theme, content, onSwitchTempl
       ctx.fillStyle = "#ffffff";
       ctx.fillRect(0, 0, pageWidthPx, pageHeightPx);
 
-      const sourceY = i * pageHeightPx;
-      const sourceHeight = Math.min(pageHeightPx, fullCanvas.height - sourceY);
+      const sourceY = breaksPx[i];
 
-      ctx.drawImage(
-        fullCanvas,
-        0,
-        sourceY,
-        pageWidthPx,
-        sourceHeight,
-        0,
-        0,
-        pageWidthPx,
-        sourceHeight,
-      );
+      // 1) Background/layout layer — fills the whole remaining page height.
+      const bgSourceHeight = Math.max(0, Math.min(availableBoxPx, bgCanvas.height - sourceY));
+      if (bgSourceHeight > 0) {
+        ctx.drawImage(bgCanvas, 0, sourceY, pageWidthPx, bgSourceHeight, 0, topPad, pageWidthPx, bgSourceHeight);
+      }
+
+      // 2) Real text layer — drawn on top, clipped to exactly this page's slice.
+      const fgSourceHeight = Math.max(0, Math.min(breaksPx[i + 1] - breaksPx[i], fgCanvas.height - sourceY));
+      if (fgSourceHeight > 0) {
+        ctx.drawImage(fgCanvas, 0, sourceY, pageWidthPx, fgSourceHeight, 0, topPad, pageWidthPx, fgSourceHeight);
+      }
+
       pages.push(pageCanvas);
     }
     return pages;
   };
 
   const generatePagedPDFBlob = async (): Promise<Blob> => {
-    const fullCanvas = await captureFullCanvas();
-    const pageCanvases = sliceCanvasIntoPages(fullCanvas);
+    const [fgCanvas, bgCanvas] = await Promise.all([captureFullCanvas(), captureBgOnlyCanvas()]);
+    const pageCanvases = sliceCanvasIntoPages(fgCanvas, bgCanvas);
 
     const { jsPDF } = await import("jspdf");
     const pdf = new jsPDF({
@@ -174,8 +351,8 @@ export default function PreviewPanel({ templateId, theme, content, onSwitchTempl
   };
 
   const generatePagedPNGBlobs = async (): Promise<Blob[]> => {
-    const fullCanvas = await captureFullCanvas();
-    const pageCanvases = sliceCanvasIntoPages(fullCanvas);
+    const [fgCanvas, bgCanvas] = await Promise.all([captureFullCanvas(), captureBgOnlyCanvas()]);
+    const pageCanvases = sliceCanvasIntoPages(fgCanvas, bgCanvas);
 
     return Promise.all(
       pageCanvases.map(
@@ -197,8 +374,7 @@ export default function PreviewPanel({ templateId, theme, content, onSwitchTempl
       const blobs = await generatePagedPNGBlobs();
       blobs.forEach((blob, i) => {
         const link = document.createElement("a");
-        link.download =
-          blobs.length > 1 ? `resume-${templateId}-page-${i + 1}.png` : `resume-${templateId}.png`;
+        link.download = blobs.length > 1 ? `resume-${templateId}-page-${i + 1}.png` : `resume-${templateId}.png`;
         link.href = URL.createObjectURL(blob);
         document.body.appendChild(link);
         link.click();
@@ -365,9 +541,6 @@ export default function PreviewPanel({ templateId, theme, content, onSwitchTempl
 
   const stackNaturalHeight = pageCount * PAPER_HEIGHT + (pageCount - 1) * PAGE_GAP;
 
-  // Create a content key that changes when any section data changes
-  const contentKey = JSON.stringify(content.sections);
-
   return (
     <div className={`pp-root ${isFullscreen ? "fullscreen" : ""}`}>
       {/* Toolbar */}
@@ -403,22 +576,39 @@ export default function PreviewPanel({ templateId, theme, content, onSwitchTempl
             <button
               onClick={handleDownload}
               disabled={isLoading}
-              className="p-1.5 rounded-lg hover:bg-[#F1F5F9] dark:hover:bg-[#1E293B] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[#2563EB] hover:bg-[#1D4ED8] rounded-lg transition-all duration-200 shadow-sm shadow-blue-500/25 hover:shadow-blue-500/40 disabled:opacity-50 disabled:cursor-not-allowed group"
               title="Download Resume"
             >
-              <Download className={`h-4 w-4 text-[#64748B] ${isLoading ? "animate-pulse" : ""}`} />
-              <ChevronDown className="h-3 w-3 text-[#64748B]" />
+              <Download className={`h-4 w-4 ${isLoading ? "animate-pulse" : "group-hover:scale-110 transition-transform"}`} />
+              <span>Download</span>
+              <ChevronDown className="h-3.5 w-3.5 ml-0.5 group-hover:rotate-180 transition-transform duration-200" />
             </button>
 
             {showDownloadMenu && (
-              <div className="absolute right-0 mt-2 w-52 bg-white dark:bg-[#1E293B] rounded-lg shadow-lg border border-[#E2E8F0] dark:border-[#334155] overflow-hidden z-50">
-                <button onClick={handleDownloadPNG} className="w-full px-4 py-2.5 text-left text-sm hover:bg-[#F1F5F9] dark:hover:bg-[#334155] transition-colors flex items-center gap-2">
-                  <FileImage className="h-4 w-4" />
-                  <span>Download as PNG{pageCount > 1 ? ` (${pageCount} files)` : ""}</span>
+              <div className="absolute right-0 mt-2 w-52 bg-white dark:bg-[#1E293B] rounded-lg shadow-lg border border-[#E2E8F0] dark:border-[#334155] overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                <button
+                  onClick={handleDownloadPNG}
+                  className="w-full px-4 py-3 text-left text-sm hover:bg-[#F1F5F9] dark:hover:bg-[#334155] transition-colors flex items-center gap-3 group"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center group-hover:bg-emerald-100 dark:group-hover:bg-emerald-900/30 transition-colors">
+                    <FileImage className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-[#0F172A] dark:text-white">PNG Image</p>
+                    <p className="text-xs text-[#64748B] dark:text-[#94A3B8]">{pageCount > 1 ? `${pageCount} files` : "Single image"}</p>
+                  </div>
                 </button>
-                <button onClick={handleDownloadPDF} className="w-full px-4 py-2.5 text-left text-sm hover:bg-[#F1F5F9] dark:hover:bg-[#334155] transition-colors flex items-center gap-2 border-t border-[#E2E8F0] dark:border-[#334155]">
-                  <FileText className="h-4 w-4" />
-                  <span>Download as PDF{pageCount > 1 ? ` (${pageCount} pages)` : ""}</span>
+                <button
+                  onClick={handleDownloadPDF}
+                  className="w-full px-4 py-3 text-left text-sm hover:bg-[#F1F5F9] dark:hover:bg-[#334155] transition-colors flex items-center gap-3 group border-t border-[#E2E8F0] dark:border-[#334155]"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-red-50 dark:bg-red-900/20 flex items-center justify-center group-hover:bg-red-100 dark:group-hover:bg-red-900/30 transition-colors">
+                    <FileText className="h-4 w-4 text-red-600 dark:text-red-400" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-[#0F172A] dark:text-white">PDF Document</p>
+                    <p className="text-xs text-[#64748B] dark:text-[#94A3B8]">{pageCount > 1 ? `${pageCount} pages` : "Single page"}</p>
+                  </div>
                 </button>
               </div>
             )}
@@ -426,62 +616,115 @@ export default function PreviewPanel({ templateId, theme, content, onSwitchTempl
 
           {/* Share Button */}
           <div className="dropdown-container relative">
-            <button onClick={handleShare} className="p-1.5 rounded-lg hover:bg-[#F1F5F9] dark:hover:bg-[#1E293B] transition-colors flex items-center gap-1" title="Share Resume">
-              <Share2 className="h-4 w-4 text-[#64748B]" />
-              <ChevronDown className="h-3 w-3 text-[#64748B]" />
+            <button
+              onClick={handleShare}
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-[#0F172A] dark:text-white bg-[#F1F5F9] dark:bg-[#1E293B] hover:bg-[#E2E8F0] dark:hover:bg-[#334155] rounded-lg transition-all duration-200 border border-[#E2E8F0] dark:border-[#334155] group"
+              title="Share Resume"
+            >
+              <Share2 className="h-4 w-4 group-hover:scale-110 transition-transform" />
+              <span>Share</span>
+              <ChevronDown className="h-3.5 w-3.5 ml-0.5 group-hover:rotate-180 transition-transform duration-200" />
             </button>
 
             {showShareMenu && (
-              <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-[#1E293B] rounded-lg shadow-lg border border-[#E2E8F0] dark:border-[#334155] overflow-hidden z-50">
-                <div className="py-1">
-                  <button onClick={shareViaWhatsApp} className="w-full px-4 py-2.5 text-left text-sm hover:bg-[#F1F5F9] dark:hover:bg-[#334155] transition-colors flex items-center gap-3">
-                    <MessageCircle className="h-4 w-4" style={{ color: "#25D366" }} />
-                    <span>Share via WhatsApp</span>
+              <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-[#1E293B] rounded-lg shadow-lg border border-[#E2E8F0] dark:border-[#334155] overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="p-1">
+                  <button
+                    onClick={shareViaWhatsApp}
+                    className="w-full px-3 py-2.5 text-left text-sm hover:bg-[#F1F5F9] dark:hover:bg-[#334155] transition-colors flex items-center gap-3 rounded-lg group"
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-[#25D366]/10 flex items-center justify-center group-hover:bg-[#25D366]/20 transition-colors">
+                      <MessageCircle className="h-4 w-4 text-[#25D366]" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-[#0F172A] dark:text-white">WhatsApp</p>
+                      <p className="text-xs text-[#64748B] dark:text-[#94A3B8]">Share via WhatsApp</p>
+                    </div>
                   </button>
-                  <button onClick={shareViaGmail} className="w-full px-4 py-2.5 text-left text-sm hover:bg-[#F1F5F9] dark:hover:bg-[#334155] transition-colors flex items-center gap-3">
-                    <Mail className="h-4 w-4" style={{ color: "#EA4335" }} />
-                    <span>Share via Gmail</span>
+
+                  <button
+                    onClick={shareViaGmail}
+                    className="w-full px-3 py-2.5 text-left text-sm hover:bg-[#F1F5F9] dark:hover:bg-[#334155] transition-colors flex items-center gap-3 rounded-lg group"
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-[#EA4335]/10 flex items-center justify-center group-hover:bg-[#EA4335]/20 transition-colors">
+                      <Mail className="h-4 w-4 text-[#EA4335]" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-[#0F172A] dark:text-white">Gmail</p>
+                      <p className="text-xs text-[#64748B] dark:text-[#94A3B8]">Share via Gmail</p>
+                    </div>
                   </button>
-                  <button onClick={shareViaEmailFallback} className="w-full px-4 py-2.5 text-left text-sm hover:bg-[#F1F5F9] dark:hover:bg-[#334155] transition-colors flex items-center gap-3 border-t border-[#E2E8F0] dark:border-[#334155]">
-                    <Mail className="h-4 w-4" style={{ color: "#64748B" }} />
-                    <span>Email (Default)</span>
+
+                  <button
+                    onClick={shareViaEmailFallback}
+                    className="w-full px-3 py-2.5 text-left text-sm hover:bg-[#F1F5F9] dark:hover:bg-[#334155] transition-colors flex items-center gap-3 rounded-lg group"
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-[#64748B]/10 flex items-center justify-center group-hover:bg-[#64748B]/20 transition-colors">
+                      <Mail className="h-4 w-4 text-[#64748B]" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-[#0F172A] dark:text-white">Email</p>
+                      <p className="text-xs text-[#64748B] dark:text-[#94A3B8]">Default email client</p>
+                    </div>
                   </button>
-                  <button onClick={shareViaLink} className="w-full px-4 py-2.5 text-left text-sm hover:bg-[#F1F5F9] dark:hover:bg-[#334155] transition-colors flex items-center gap-3 border-t border-[#E2E8F0] dark:border-[#334155]">
-                    <LinkIcon className="h-4 w-4" style={{ color: "#64748B" }} />
-                    <span>Copy Link</span>
-                    {copied && <Check className="h-4 w-4 text-green-500 ml-auto" />}
+
+                  <button
+                    onClick={shareViaLink}
+                    className="w-full px-3 py-2.5 text-left text-sm hover:bg-[#F1F5F9] dark:hover:bg-[#334155] transition-colors flex items-center gap-3 rounded-lg group"
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-[#8B5CF6]/10 flex items-center justify-center group-hover:bg-[#8B5CF6]/20 transition-colors">
+                      <LinkIcon className="h-4 w-4 text-[#8B5CF6]" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium text-[#0F172A] dark:text-white">Copy Link</p>
+                      <p className="text-xs text-[#64748B] dark:text-[#94A3B8]">Copy resume link</p>
+                    </div>
+                    {copied && <Check className="h-4 w-4 text-green-500" />}
                   </button>
                 </div>
 
-                <div className="border-t border-[#E2E8F0] dark:border-[#334155]"></div>
-
-                <button
-                  onClick={shareAsPDF}
-                  disabled={isLoading}
-                  className="w-full px-4 py-2.5 text-left text-sm hover:bg-[#F1F5F9] dark:hover:bg-[#334155] transition-colors flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <FileText className="h-4 w-4 text-[#2563EB]" />
-                  <span>Share as PDF{pageCount > 1 ? ` (${pageCount} pages)` : ""}</span>
-                  {isLoading && <span className="ml-auto text-xs text-[#64748B]">Generating...</span>}
-                </button>
+                <div className="border-t border-[#E2E8F0] dark:border-[#334155] p-1">
+                  <button
+                    onClick={shareAsPDF}
+                    disabled={isLoading}
+                    className="w-full px-3 py-2.5 text-left text-sm hover:bg-[#F1F5F9] dark:hover:bg-[#334155] transition-colors flex items-center gap-3 rounded-lg group disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <div className="w-8 h-8 rounded-lg bg-[#2563EB]/10 flex items-center justify-center group-hover:bg-[#2563EB]/20 transition-colors">
+                      <FileText className="h-4 w-4 text-[#2563EB]" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium text-[#0F172A] dark:text-white">Share as PDF</p>
+                      <p className="text-xs text-[#64748B] dark:text-[#94A3B8]">{pageCount > 1 ? `${pageCount} pages` : "Single page"}</p>
+                    </div>
+                    {isLoading && <div className="w-4 h-4 border-2 border-[#2563EB] border-t-transparent rounded-full animate-spin" />}
+                  </button>
+                </div>
               </div>
             )}
           </div>
 
           {/* Fullscreen Button */}
-          <button onClick={handleFullscreen} className="p-1.5 rounded-lg hover:bg-[#F1F5F9] dark:hover:bg-[#1E293B] transition-colors" title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}>
-            {isFullscreen ? <Minimize2 className="h-4 w-4 text-[#64748B]" /> : <Maximize2 className="h-4 w-4 text-[#64748B]" />}
+          <button
+            onClick={handleFullscreen}
+            className="inline-flex items-center justify-center p-2 text-[#64748B] dark:text-[#94A3B8] hover:text-[#0F172A] dark:hover:text-white hover:bg-[#F1F5F9] dark:hover:bg-[#1E293B] rounded-lg transition-all duration-200 border border-[#E2E8F0] dark:border-[#334155] hover:border-[#8B5CF6] dark:hover:border-[#8B5CF6] group"
+            title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
+          >
+            {isFullscreen ? (
+              <Minimize2 className="h-4 w-4 group-hover:scale-110 transition-transform" />
+            ) : (
+              <Maximize2 className="h-4 w-4 group-hover:scale-110 transition-transform" />
+            )}
           </button>
         </div>
       </div>
 
       {/* Viewport */}
-      <div className="pp-viewport" ref={containerRef}>
+      <div className={`pp-viewport ${pageCount > 1 ? "pp-viewport-multi" : ""}`} ref={containerRef}>
         <div
           className="pp-scaled-box"
           style={{
             width: PAPER_WIDTH * totalScale,
-            height: stackNaturalHeight * totalScale,
+            height: pageCount === 1 ? PAPER_HEIGHT * totalScale : stackNaturalHeight * totalScale,
           }}
         >
           <div
@@ -493,38 +736,85 @@ export default function PreviewPanel({ templateId, theme, content, onSwitchTempl
               gap: PAGE_GAP,
             }}
           >
-            {Array.from({ length: pageCount }).map((_, i) => (
-              <div key={i} className="pp-page">
-                <div className="pp-page-clip" style={{ width: PAPER_WIDTH, height: PAPER_HEIGHT }}>
-                  <div
-                    className="pp-page-window"
-                    style={{
-                      width: PAPER_WIDTH,
-                      height: paddedHeight,
-                      transform: `translateY(${-i * PAPER_HEIGHT}px)`,
-                    }}
-                  >
-                    <TemplateRenderer
-                      key={`${templateId}-${i}-${contentKey}`}
-                      templateComponent={template.component}
-                      content={content}
-                      theme={theme}
-                      layoutConfig={template.layoutConfig}
-                    />
+            {Array.from({ length: pageCount }).map((_, i) => {
+              const sliceTop = pageBreaks[i];
+              const sliceBottom = pageBreaks[i + 1] ?? naturalHeight;
+              const topPad = i > 0 ? PAGE_TEXT_TOP_PADDING : 0;
+              // Full remaining height for this page, after the top padding gap.
+              // The BACKGROUND layer uses this — it always fills the whole page.
+              const availableBox = PAPER_HEIGHT - topPad;
+              // Exact amount of real text that belongs on this page — the
+              // TEXT layer is clipped to this, and nothing more, so it never
+              // repeats the next page's content.
+              const sliceHeight = Math.max(0, Math.min(sliceBottom - sliceTop, availableBox));
+
+              return (
+                <div key={i} className="pp-page">
+                  <div className="pp-page-clip" style={{ width: PAPER_WIDTH, height: PAPER_HEIGHT }}>
+                    {/* Layer 1 — background/layout only (text invisible). Fills
+                        the entire remaining page height so sidebars, colored
+                        panels, etc. always look like a complete, full page. */}
+                    <div
+                      className="pp-page-window-mask"
+                      style={{ top: topPad, width: PAPER_WIDTH, height: availableBox }}
+                    >
+                      <div
+                        className="pp-text-hidden"
+                        style={{
+                          width: PAPER_WIDTH,
+                          height: paddedHeight,
+                          transform: `translateY(-${sliceTop}px)`,
+                        }}
+                      >
+                        <TemplateRenderer
+                          key={`bg-${templateId}-${i}-${contentKey}`}
+                          templateComponent={template.component}
+                          content={content}
+                          theme={theme}
+                          layoutConfig={template.layoutConfig}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Layer 2 — the real, readable text. Clipped to exactly
+                        this page's slice (with padding already reserved by
+                        the safe-break calculation), drawn on top of Layer 1. */}
+                    <div
+                      className="pp-page-window-mask"
+                      style={{ top: topPad, width: PAPER_WIDTH, height: sliceHeight }}
+                    >
+                      <div
+                        className="pp-page-window"
+                        style={{
+                          width: PAPER_WIDTH,
+                          height: paddedHeight,
+                          transform: `translateY(-${sliceTop}px)`,
+                        }}
+                      >
+                        <TemplateRenderer
+                          key={`fg-${templateId}-${i}-${contentKey}`}
+                          templateComponent={template.component}
+                          content={content}
+                          theme={theme}
+                          layoutConfig={template.layoutConfig}
+                        />
+                      </div>
+                    </div>
                   </div>
+                  {pageCount > 1 && (
+                    <div className="pp-page-badge">
+                      Page {i + 1} of {pageCount}
+                    </div>
+                  )}
                 </div>
-                {pageCount > 1 && (
-                  <div className="pp-page-badge">
-                    Page {i + 1} of {pageCount}
-                  </div>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
 
-      {/* Hidden measure hosts */}
+      {/* Hidden, unconstrained render used ONLY to measure the resume's true
+          natural content height and safe break points. Never padded/stretched. */}
       <div className="pp-measure-host" aria-hidden="true">
         <div ref={measureOnlyRef} style={{ width: PAPER_WIDTH, background: "#ffffff" }}>
           <TemplateRenderer
@@ -537,13 +827,28 @@ export default function PreviewPanel({ templateId, theme, content, onSwitchTempl
         </div>
       </div>
 
+      {/* Hidden render used for the real-text (foreground) PDF/PNG capture. */}
+      <div className="pp-measure-host" aria-hidden="true">
+        <div ref={fullContentRef} style={{ width: PAPER_WIDTH, height: paddedHeight, background: "#ffffff" }}>
+          <TemplateRenderer
+            key={`full-${templateId}-${contentKey}`}
+            templateComponent={template.component}
+            content={content}
+            theme={theme}
+            layoutConfig={template.layoutConfig}
+          />
+        </div>
+      </div>
+
+      {/* Hidden render used for the background-only (text-hidden) PDF/PNG capture. */}
       <div className="pp-measure-host" aria-hidden="true">
         <div
-          ref={fullContentRef}
+          ref={bgOnlyContentRef}
+          className="pp-text-hidden"
           style={{ width: PAPER_WIDTH, height: paddedHeight, background: "#ffffff" }}
         >
           <TemplateRenderer
-            key={`full-${templateId}-${contentKey}`}
+            key={`bgcapture-${templateId}-${contentKey}`}
             templateComponent={template.component}
             content={content}
             theme={theme}
@@ -586,11 +891,16 @@ export default function PreviewPanel({ templateId, theme, content, onSwitchTempl
         .pp-viewport {
           flex: 1;
           display: flex;
-          align-items: flex-start;
+          align-items: center;
           justify-content: center;
-          overflow: auto;
+          overflow: hidden;
           padding: 24px;
           background: #F1F5F9;
+        }
+        .pp-viewport.pp-viewport-multi {
+          align-items: flex-start;
+          overflow-y: auto;
+          padding: 24px;
         }
         .dark .pp-viewport {
           background: #0F172A;
@@ -620,9 +930,13 @@ export default function PreviewPanel({ templateId, theme, content, onSwitchTempl
         .dark .pp-page-clip {
           background: #1E293B;
         }
+        .pp-page-window-mask {
+          position: absolute;
+          left: 0;
+          overflow: hidden;
+        }
         .pp-page-window {
           position: relative;
-          overflow: visible;
         }
         .pp-page-badge {
           position: absolute;
@@ -640,6 +954,17 @@ export default function PreviewPanel({ templateId, theme, content, onSwitchTempl
           pointer-events: none;
           z-index: -1;
         }
+        /* Makes all text invisible while leaving backgrounds, borders, and
+           images intact — used for the "layout only" background layer so it
+           can safely be shown at full page height without duplicating any
+           readable text. */
+        .pp-text-hidden,
+        .pp-text-hidden * {
+          color: transparent !important;
+          -webkit-text-fill-color: transparent !important;
+          text-shadow: none !important;
+          caret-color: transparent !important;
+        }
         .pp-empty {
           padding: 40px;
           color: #94A3B8;
@@ -652,6 +977,15 @@ export default function PreviewPanel({ templateId, theme, content, onSwitchTempl
           0%, 100% { opacity: 1; }
           50% { opacity: 0.5; }
         }
+
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(-8px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-in {
+          animation: fadeIn 0.2s ease-out forwards;
+        }
+
         @media (max-width: 768px) {
           .pp-viewport {
             padding: 12px;
@@ -661,27 +995,15 @@ export default function PreviewPanel({ templateId, theme, content, onSwitchTempl
             gap: 8px;
             padding: 8px 12px;
           }
+          .pp-toolbar .dropdown-container .inline-flex {
+            padding: 6px 12px;
+            font-size: 12px;
+          }
+          .pp-toolbar .dropdown-container .inline-flex span {
+            display: none;
+          }
         }
       `}</style>
     </div>
-  );
-}
-
-function ChevronDown({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="12"
-      height="12"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <polyline points="6 9 12 15 18 9"></polyline>
-    </svg>
   );
 }
