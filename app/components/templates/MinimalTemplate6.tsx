@@ -60,7 +60,7 @@
 //               <div className="marginContent data-resume-root">
 //                 <div className="jobTitle data-resume-root">{job.role || "Position"}</div>
 //                 <div className="jobSub data-resume-root">{job.company}{job.location ? `, ${job.location}` : ""}</div>
-//                 {job.bullets && job.bullets.length > 0 && <p className="jobDesc">{job.bullets[0]}</p>}
+//                 {job.bullets && job.bullets.length > 0 && <p className="jobDesc">{job.bullets}</p>}
 //               </div>
 //             </div>
 //           ))}
@@ -355,7 +355,7 @@ export default function MinimalMarginNotesTemplate({ content, theme }: TemplateP
               <div className="marginContent data-resume-root">
                 <div className="jobTitle data-resume-root">{job.role || "Position"}</div>
                 <div className="jobSub data-resume-root">{job.company}{job.location ? `, ${job.location}` : ""}</div>
-                {job.bullets && job.bullets.length > 0 && <p className="jobDesc">{job.bullets[0]}</p>}
+                {job.bullets && job.bullets.length > 0 && <p className="jobDesc">{job.bullets}</p>}
               </div>
             </div>
           ))}

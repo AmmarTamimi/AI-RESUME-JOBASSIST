@@ -40,11 +40,11 @@ export default function ATSCompactTemplate({ content, theme }: TemplateProps) {
           {experienceSection.items.map((job, i) => (
             <div className="entry data-resume-root" key={i}>
               <span className="entryRole">{job.role || "Position"}, {job.company}</span>
-              <span className="entryDate"> ({job.start} â€“ {job.end || "Present"})</span>
+              <span className="entryDate"> ({job.start} - {job.end || "Present"})</span>
               {job.bullets && job.bullets.length > 0 && (
                 <div className="bullets data-resume-root">
                   {job.bullets.map((b, bi) => (
-                    <span className="bulletLine" key={bi}>â€¢ {b}  </span>
+                    <span className="bulletLine" key={bi}>• {b}</span>
                   ))}
                 </div>
               )}
@@ -59,7 +59,7 @@ export default function ATSCompactTemplate({ content, theme }: TemplateProps) {
           {educationSection.items.map((edu, i) => (
             <div className="entry data-resume-root" key={i}>
               <span className="entryRole">{edu.degree}, {edu.school}</span>
-              <span className="entryDate"> ({edu.start} â€“ {edu.end})</span>
+              <span className="entryDate"> ({edu.start} - {edu.end})</span>
             </div>
           ))}
         </div>
@@ -79,7 +79,7 @@ export default function ATSCompactTemplate({ content, theme }: TemplateProps) {
             <div className="entry data-resume-root" key={i}>
               <span className="entryRole">{ref.name}</span>
               <span className="entryDate">
-                {" "}({[ref.phone, ref.email].filter(Boolean).join(", ")})
+                ({[ref.phone, ref.email].filter(Boolean).join(", ")})
               </span>
             </div>
           ))}
@@ -159,6 +159,8 @@ export default function ATSCompactTemplate({ content, theme }: TemplateProps) {
 
         .bullets {
           margin-top: 3px;
+          display: flex;
+          flex-wrap: wrap;
         }
 
         .bulletLine {
@@ -174,5 +176,3 @@ export default function ATSCompactTemplate({ content, theme }: TemplateProps) {
     </div>
   );
 }
-
-

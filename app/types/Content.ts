@@ -20,6 +20,7 @@ export interface ExperienceItem {
   location?: string;
   start: string;
   end: string;
+  description?: string;
   bullets: string[];
 }
 

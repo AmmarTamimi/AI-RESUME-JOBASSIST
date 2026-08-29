@@ -78,7 +78,7 @@
 //                         <div className="jobTitle data-resume-root">{job.role || "Position"}</div>
 //                         <div className="jobSub data-resume-root">{job.company}{job.location ? `, ${job.location}` : ""}</div>
 //                         <div className="jobDate data-resume-root">{job.start} â€“ {job.end || "Present"}</div>
-//                         {job.bullets && job.bullets.length > 0 && <p className="jobDesc">{job.bullets[0]}</p>}
+//                         {job.bullets && job.bullets.length > 0 && <p className="jobDesc">{job.bullets}</p>}
 //                       </>
 //                     )}
 //                   </div>
@@ -91,7 +91,7 @@
 //                         <div className="jobTitle data-resume-root">{job.role || "Position"}</div>
 //                         <div className="jobSub data-resume-root">{job.company}{job.location ? `, ${job.location}` : ""}</div>
 //                         <div className="jobDate data-resume-root">{job.start} â€“ {job.end || "Present"}</div>
-//                         {job.bullets && job.bullets.length > 0 && <p className="jobDesc">{job.bullets[0]}</p>}
+//                         {job.bullets && job.bullets.length > 0 && <p className="jobDesc">{job.bullets}</p>}
 //                       </>
 //                     )}
 //                   </div>
@@ -570,7 +570,7 @@ export default function MinimalTimelineTemplate({ content, theme }: TemplateProp
                         <div className="jobTitle data-resume-root">{job.role || "Position"}</div>
                         <div className="jobSub data-resume-root">{job.company}{job.location ? `, ${job.location}` : ""}</div>
                         <div className="jobDate data-resume-root">{job.start} – {job.end || "Present"}</div>
-                        {job.bullets && job.bullets.length > 0 && <p className="jobDesc">{job.bullets[0]}</p>}
+                        {job.bullets && job.bullets.length > 0 && <p className="jobDesc">{job.bullets}</p>}
                       </>
                     )}
                   </div>
@@ -583,7 +583,7 @@ export default function MinimalTimelineTemplate({ content, theme }: TemplateProp
                         <div className="jobTitle data-resume-root">{job.role || "Position"}</div>
                         <div className="jobSub data-resume-root">{job.company}{job.location ? `, ${job.location}` : ""}</div>
                         <div className="jobDate data-resume-root">{job.start} – {job.end || "Present"}</div>
-                        {job.bullets && job.bullets.length > 0 && <p className="jobDesc">{job.bullets[0]}</p>}
+                        {job.bullets && job.bullets.length > 0 && <p className="jobDesc">{job.bullets}</p>}
                       </>
                     )}
                   </div>

@@ -113,7 +113,7 @@
 //                   {job.company} â€” {job.start}â€“{job.end || 'Present'}
 //                 </p>
 //                 {job.bullets && job.bullets.length > 0 && (
-//                   <p className="minimal-experience-desc">{job.bullets[0]}</p>
+//                   <p className="minimal-experience-desc">{job.bullets}</p>
 //                 )}
 //               </div>
 //             ))}
@@ -579,7 +579,7 @@ export default function MinimalTemplate({ content, theme }: TemplateProps) {
                   {job.company} — {job.start}–{job.end || 'Present'}
                 </p>
                 {job.bullets && job.bullets.length > 0 && (
-                  <p className="minimal-experience-desc">{job.bullets[0]}</p>
+                  <p className="minimal-experience-desc">{job.bullets}</p>
                 )}
               </div>
             ))}

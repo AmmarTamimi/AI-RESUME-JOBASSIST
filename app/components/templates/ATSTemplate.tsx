@@ -42,11 +42,7 @@ export default function ATSClassicTemplate({ content, theme }: TemplateProps) {
             <div className="entry data-resume-root" key={i}>
               <div className="entryTop data-resume-root">{job.role || "Position"} â€” {job.company}{job.location ? `, ${job.location}` : ""}</div>
               <div className="entryDate data-resume-root">{job.start} â€“ {job.end || "Present"}</div>
-              {job.bullets && job.bullets.length > 0 && (
-                <ul className="bullets">
-                  {job.bullets.map((b, bi) => <li key={bi}>{b}</li>)}
-                </ul>
-              )}
+              {job.bullets && job.bullets.length > 0 && <div className="jobDesc data-resume-root">{job.bullets}</div>}
             </div>
           ))}
         </div>

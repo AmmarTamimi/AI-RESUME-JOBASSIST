@@ -77,7 +77,7 @@
 //                     <span className="jobDate">{job.start} â€“ {job.end || "Present"}</span>
 //                   </div>
 //                   <div className="jobSub data-resume-root">{job.company}{job.location ? `, ${job.location}` : ""}</div>
-//                   {job.bullets && job.bullets.length > 0 && <p className="jobDesc">{job.bullets[0]}</p>}
+//                   {job.bullets && job.bullets.length > 0 && <p className="jobDesc">{job.bullets}</p>}
 //                 </div>
 //               ))}
 //             </div>
@@ -498,7 +498,7 @@ export default function MinimalSplitTemplate({ content, theme }: TemplateProps) 
                     <span className="jobDate">{job.start} – {job.end || "Present"}</span>
                   </div>
                   <div className="jobSub data-resume-root">{job.company}{job.location ? `, ${job.location}` : ""}</div>
-                  {job.bullets && job.bullets.length > 0 && <p className="jobDesc">{job.bullets[0]}</p>}
+                  {job.bullets && job.bullets.length > 0 && <p className="jobDesc">{job.bullets}</p>}
                 </div>
               ))}
             </div>

@@ -77,7 +77,7 @@ export default function ProfessionalStripTemplate({ content, theme }: TemplatePr
                     <span className="jobDate">{job.start} â€“ {job.end || "Present"}</span>
                   </div>
                   <div className="jobSub data-resume-root">{job.company}{job.location ? `, ${job.location}` : ""}</div>
-                  {job.bullets && job.bullets.length > 0 && <div className="jobDesc data-resume-root">{job.bullets[0]}</div>}
+                  {job.bullets && job.bullets.length > 0 && <div className="jobDesc data-resume-root">{job.bullets}</div>}
                 </div>
               ))}
             </div>

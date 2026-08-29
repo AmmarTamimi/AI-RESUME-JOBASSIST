@@ -120,7 +120,7 @@
 //                   </div>
 //                   <div className="jobSub data-resume-root">{job.company}{job.location ? ` Â· ${job.location}` : ""}</div>
 //                   {job.bullets && job.bullets.length > 0 && (
-//                     <div className="jobDesc data-resume-root">{job.bullets[0]}</div>
+//                     <div className="jobDesc data-resume-root">{job.bullets}</div>
 //                   )}
 //                 </div>
 //               ))}
@@ -627,7 +627,7 @@ export default function TechTemplate({ content, theme }: TemplateProps) {
                   </div>
                   <div className="jobSub data-resume-root">{job.company}{job.location ? ` · ${job.location}` : ""}</div>
                   {job.bullets && job.bullets.length > 0 && (
-                    <div className="jobDesc data-resume-root">{job.bullets[0]}</div>
+                    <div className="jobDesc data-resume-root">{job.bullets}</div>
                   )}
                 </div>
               ))}
