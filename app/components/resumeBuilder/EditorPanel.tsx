@@ -21,24 +21,34 @@ import {
   Sparkles,
   Plus,
   Trash2,
-  GripVertical,
   Bold,
   Italic,
   Underline,
   ChevronDown,
   ChevronRight,
   X,
-  Phone,
-  Mail,
-  MapPin,
-  Globe,
-  Link as LinkIcon,
   Menu,
   Camera,
   Palette,
   Type,
   FileText,
   Trophy,
+  ChevronLeft,
+  ChevronRight as ChevronRightIcon,
+  Home,
+  Settings,
+  LogOut,
+  Mail,
+  Phone,
+  MapPin,
+  Globe,
+  Award,
+  Star,
+  BookOpen,
+  Users,
+  Code,
+  Languages,
+  Edit,
 } from "lucide-react";
 import Link from "next/link";
 import { templates } from "../templates/templates";
@@ -114,7 +124,6 @@ interface EditorPanelProps {
   onUpdateTemplate: (templateId: string) => void;
 }
 
-// Updated ADDABLE_TYPES to support both skills and ratedSkills
 const ADDABLE_TYPES: {
   type: SectionType;
   label: string;
@@ -123,22 +132,22 @@ const ADDABLE_TYPES: {
   {
     type: "languages",
     label: "Languages",
-    icon: <Briefcase className="h-4 w-4" />,
+    icon: <Languages className="h-4 w-4" />,
   },
   {
     type: "achievements",
     label: "Achievements",
-    icon: <GraduationCap className="h-4 w-4" />,
+    icon: <Award className="h-4 w-4" />,
   },
   { 
     type: "ratedSkills", 
     label: "Rated Skills", 
-    icon: <Sparkles className="h-4 w-4" /> 
+    icon: <Star className="h-4 w-4" /> 
   },
   { 
     type: "skills", 
     label: "Skills", 
-    icon: <Sparkles className="h-4 w-4" /> 
+    icon: <Code className="h-4 w-4" /> 
   },
   { 
     type: "custom", 
@@ -178,6 +187,16 @@ const loadGoogleFont = (fontName: string) => {
 
 const CATEGORIES = ["All", "Modern", "Professional", "Minimal", "Creative", "Business", "ATS-Friendly"];
 
+// Helper function to check if a string has meaningful content
+const hasMeaningfulContent = (str: string): boolean => {
+  if (!str) return false;
+  const trimmed = str.trim();
+  if (trimmed === '') return false;
+  const defaultValues = ['John Doe', 'Software Engineer', 'john@email.com', '+1 (555) 000-0000', 'San Francisco, CA', 'johndoe.com'];
+  if (defaultValues.includes(trimmed)) return false;
+  return trimmed.length > 0;
+};
+
 export default function EditorPanel({
   personalInfo,
   sections,
@@ -196,10 +215,340 @@ export default function EditorPanel({
     new Set(sections.map((s) => s.id)),
   );
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isThemeExpanded, setIsThemeExpanded] = useState(true);
-  const [isPersonalInfoExpanded, setIsPersonalInfoExpanded] = useState(true);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [currentStep, setCurrentStep] = useState(0);
+  const [isNavigating, setIsNavigating] = useState(false);
+
+  // Get all section IDs for navigation
+  const allSectionIds = [
+    'theme', 
+    'personal', 
+    ...sections.map(s => s.id),
+    'add-section'
+  ];
+
+  const getStepInfo = () => {
+    const currentId = allSectionIds[currentStep] || 'theme';
+    const totalSteps = allSectionIds.length;
+    return { currentId, totalSteps };
+  };
+
+  const { currentId, totalSteps } = getStepInfo();
+
+  const navigateToSection = (direction: 'next' | 'prev') => {
+    setIsNavigating(true);
+    const newStep = direction === 'next' 
+      ? Math.min(currentStep + 1, totalSteps - 1)
+      : Math.max(currentStep - 1, 0);
+    
+    setCurrentStep(newStep);
+    
+    const container = document.querySelector('.editor-content');
+    if (container) {
+      container.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    
+    setTimeout(() => setIsNavigating(false), 500);
+  };
+
+  const hasSectionContent = (sectionId: string) => {
+    if (sectionId === 'theme') {
+      return !!(theme.primaryColor && theme.primaryColor !== "#2B2B2B");
+    }
+    if (sectionId === 'personal') {
+      return hasMeaningfulContent(personalInfo.fullName) && 
+             hasMeaningfulContent(personalInfo.title);
+    }
+    if (sectionId === 'add-section') {
+      return false;
+    }
+    const section = sections.find(s => s.id === sectionId);
+    if (!section) return false;
+    
+    for (const item of section.items) {
+      if (typeof item === 'string' && hasMeaningfulContent(item)) return true;
+      if (typeof item === 'object' && item !== null) {
+        const values = Object.values(item);
+        for (const val of values) {
+          if (typeof val === 'string' && hasMeaningfulContent(val)) return true;
+        }
+      }
+    }
+    return false;
+  };
+
+  const getSectionLabel = (id: string) => {
+    if (id === 'theme') return 'Theme';
+    if (id === 'personal') return 'Profile';
+    if (id === 'add-section') return 'Add Section';
+    const section = sections.find(s => s.id === id);
+    return section?.title || id;
+  };
+
+  const renderStepContent = () => {
+    const currentId = allSectionIds[currentStep];
+    
+    if (currentId === 'theme') {
+      return renderThemeSection();
+    }
+    if (currentId === 'personal') {
+      return renderPersonalInfoSection();
+    }
+    if (currentId === 'add-section') {
+      return renderAddSectionContent();
+    }
+    const section = sections.find(s => s.id === currentId);
+    if (section) {
+      return renderDynamicSection(section);
+    }
+    return null;
+  };
+
+  const renderAddSectionContent = () => (
+    <div className="border-2 border-dashed border-[#E2E8F0] dark:border-[#334155] rounded-xl p-8 text-center">
+      <Plus className="h-12 w-12 text-[#94A3B8] mx-auto mb-3" />
+      <h3 className="text-lg font-semibold text-[#0F172A] dark:text-white mb-2">Add a New Section</h3>
+      <p className="text-sm text-[#64748B] dark:text-[#94A3B8] mb-4">
+        Choose from the available section types to add to your resume
+      </p>
+      <div className="flex flex-wrap justify-center gap-2">
+        {ADDABLE_TYPES.map((type) => (
+          <button
+            key={type.type}
+            onClick={() => {
+              onAddSection(type.type);
+              setTimeout(() => {
+                const newIndex = allSectionIds.length - 2;
+                setCurrentStep(newIndex);
+              }, 100);
+            }}
+            className="flex items-center gap-1.5 px-4 py-2 text-sm bg-[#F1F5F9] dark:bg-[#1E293B] text-[#0F172A] dark:text-white rounded-lg hover:bg-[#E2E8F0] dark:hover:bg-[#334155] transition-colors"
+          >
+            {type.icon}
+            {type.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
+  const renderThemeSection = () => (
+    <div className="space-y-4">
+      <div>
+        <label className="block text-sm font-medium text-[#0F172A] dark:text-white mb-2">Colors</label>
+        <div className="space-y-3">
+          <div>
+            <label className="block text-xs font-medium text-[#64748B] dark:text-[#94A3B8] mb-1.5">Primary Color</label>
+            <div className="flex items-center gap-3">
+              <input
+                type="color"
+                value={theme.primaryColor || "#2B2B2B"}
+                onChange={(e) => onUpdateTheme("primaryColor", e.target.value)}
+                className="w-10 h-10 rounded-lg cursor-pointer border border-[#E2E8F0] dark:border-[#334155] p-1"
+              />
+              <input
+                type="text"
+                value={theme.primaryColor || "#2B2B2B"}
+                onChange={(e) => onUpdateTheme("primaryColor", e.target.value)}
+                className="flex-1 px-3 py-2 text-sm bg-[#F8FAFC] dark:bg-[#1E293B] border border-[#E2E8F0] dark:border-[#334155] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2563EB] transition-all"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-[#64748B] dark:text-[#94A3B8] mb-1.5">Accent Color</label>
+            <div className="flex items-center gap-3">
+              <input
+                type="color"
+                value={theme.accentColor || "#F4A51C"}
+                onChange={(e) => onUpdateTheme("accentColor", e.target.value)}
+                className="w-10 h-10 rounded-lg cursor-pointer border border-[#E2E8F0] dark:border-[#334155] p-1"
+              />
+              <input
+                type="text"
+                value={theme.accentColor || "#F4A51C"}
+                onChange={(e) => onUpdateTheme("accentColor", e.target.value)}
+                className="flex-1 px-3 py-2 text-sm bg-[#F8FAFC] dark:bg-[#1E293B] border border-[#E2E8F0] dark:border-[#334155] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2563EB] transition-all"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-[#64748B] dark:text-[#94A3B8] mb-1.5">Presets</label>
+            <div className="flex flex-wrap gap-2">
+              {COLOR_PRESETS.map((color) => (
+                <button
+                  key={color}
+                  onClick={() => onUpdateTheme("accentColor", color)}
+                  className="w-8 h-8 rounded-full border-2 border-[#E2E8F0] dark:border-[#334155] transition-transform hover:scale-110"
+                  style={{ backgroundColor: color }}
+                  title={color}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+      <hr className="border-[#E2E8F0] dark:border-[#334155]" />
+      <div>
+        <label className="block text-sm font-medium text-[#0F172A] dark:text-white mb-2">
+          <Type className="h-4 w-4 inline mr-2" /> Fonts
+        </label>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label className="block text-xs font-medium text-[#64748B] dark:text-[#94A3B8] mb-1.5">Heading Font</label>
+            <select
+              value={theme.headingFont || "Poppins"}
+              onChange={(e) => {
+                const font = e.target.value;
+                onUpdateTheme("headingFont", font as any);
+                loadGoogleFont(font);
+              }}
+              className="w-full px-2 py-1.5 text-sm bg-[#F8FAFC] dark:bg-[#1E293B] border border-[#E2E8F0] dark:border-[#334155] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2563EB] transition-all"
+            >
+              {GOOGLE_FONTS.map((font) => (
+                <option key={font} value={font} style={{ fontFamily: font }}>
+                  {font}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-[#64748B] dark:text-[#94A3B8] mb-1.5">Body Font</label>
+            <select
+              value={theme.bodyFont || "Inter"}
+              onChange={(e) => {
+                const font = e.target.value;
+                onUpdateTheme("bodyFont", font as any);
+                loadGoogleFont(font);
+              }}
+              className="w-full px-2 py-1.5 text-sm bg-[#F8FAFC] dark:bg-[#1E293B] border border-[#E2E8F0] dark:border-[#334155] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2563EB] transition-all"
+            >
+              {GOOGLE_FONTS.map((font) => (
+                <option key={font} value={font} style={{ fontFamily: font }}>
+                  {font}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderPersonalInfoSection = () => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="col-span-1 sm:col-span-2 flex justify-center mb-2">
+        <div className="relative">
+          <div className="w-24 h-24 rounded-full overflow-hidden bg-[#F1F5F9] dark:bg-[#1E293B] border-2 border-dashed border-[#E2E8F0] dark:border-[#334155] hover:border-[#8B5CF6] dark:hover:border-[#8B5CF6] transition-colors cursor-pointer group">
+            {personalInfo.photoUrl ? (
+              <img src={personalInfo.photoUrl} alt="Profile" className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center">
+                <User className="h-10 w-10 text-[#94A3B8] dark:text-[#64748B]" />
+              </div>
+            )}
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  const reader = new FileReader();
+                  reader.onloadend = () => onUpdatePersonalInfo("photoUrl", reader.result as string);
+                  reader.readAsDataURL(file);
+                }
+              }}
+              className="absolute inset-0 opacity-0 cursor-pointer"
+            />
+          </div>
+          <div className="absolute bottom-0 right-0 bg-[#8B5CF6] rounded-full p-1.5 border-2 border-white dark:border-[#0F172A] shadow-sm">
+            <Camera className="h-3.5 w-3.5 text-white" />
+          </div>
+          {personalInfo.photoUrl && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onUpdatePersonalInfo("photoUrl", undefined); }}
+              className="absolute -top-1 -right-1 bg-red-500 hover:bg-red-600 rounded-full p-1 border-2 border-white dark:border-[#0F172A] shadow-sm transition-colors"
+            >
+              <X className="h-3.5 w-3.5 text-white" />
+            </button>
+          )}
+        </div>
+      </div>
+      <InputField label="Full Name" value={personalInfo.fullName} onChange={(v) => onUpdatePersonalInfo("fullName", v)} placeholder="John Doe" />
+      <InputField label="Job Title" value={personalInfo.title} onChange={(v) => onUpdatePersonalInfo("title", v)} placeholder="Software Engineer" />
+      <InputField label="Email" value={personalInfo.email || ""} onChange={(v) => onUpdatePersonalInfo("email", v)} placeholder="john@email.com" />
+      <InputField label="Phone" value={personalInfo.phone || ""} onChange={(v) => onUpdatePersonalInfo("phone", v)} placeholder="+1 (555) 000-0000" />
+      <InputField label="Location" value={personalInfo.location || ""} onChange={(v) => onUpdatePersonalInfo("location", v)} placeholder="San Francisco, CA" />
+      <InputField label="Website" value={personalInfo.website || ""} onChange={(v) => onUpdatePersonalInfo("website", v)} placeholder="johndoe.com" />
+      <div className="col-span-1 sm:col-span-2">
+        <TextAreaField
+          label="Professional Summary"
+          value={personalInfo.summary || ""}
+          onChange={(v) => onUpdatePersonalInfo("summary", v)}
+          placeholder="Write a brief summary of your professional background..."
+          rows={6}
+        />
+      </div>
+    </div>
+  );
+
+  const renderDynamicSection = (section: Section) => {
+    const itemCount = section.items.length;
+
+    return (
+      <div className="space-y-4">
+        <div>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <input
+                value={section.title}
+                onChange={(e) => onUpdateSectionTitle(section.id, e.target.value)}
+                className="text-lg font-semibold bg-transparent border-none focus:outline-none text-[#0F172A] dark:text-white min-w-0"
+                placeholder="Section Title"
+              />
+              <span className="text-xs text-[#94A3B8]">({itemCount})</span>
+            </div>
+            <button
+              onClick={() => onRemoveSection(section.id)}
+              className="p-1 text-[#94A3B8] hover:text-[#EF4444] transition-colors"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          </div>
+          <p className="text-sm text-[#64748B] dark:text-[#94A3B8] mt-1">
+            {section.type === 'experience' && 'Show your relevant experience (last 10 years). Use bullet points to note your achievements, if possible - use numbers/facts (Achieved X, measured by Y, by doing Z).'}
+            {section.type === 'education' && 'List your educational background, including degrees, institutions, and graduation years.'}
+            {section.type === 'skills' && 'List your technical skills and competencies.'}
+            {section.type === 'ratedSkills' && 'Rate your skills on a scale of 0-100%.'}
+            {section.type === 'languages' && 'List the languages you speak and your proficiency level.'}
+            {section.type === 'achievements' && 'Highlight your key achievements and awards.'}
+            {section.type === 'references' && 'Provide professional references who can vouch for your skills and experience.'}
+          </p>
+        </div>
+
+        <div className="space-y-3">
+          {section.items.map((item, index) => (
+            <ItemCard
+              key={index}
+              index={index}
+              section={section}
+              item={item}
+              personalInfo={personalInfo}
+              onUpdateItem={(value) => onUpdateItem(section.id, index, value)}
+              onRemoveItem={() => onRemoveItem(section.id, index)}
+            />
+          ))}
+          <button
+            onClick={() => onAddItem(section.id)}
+            className="flex items-center gap-1 text-sm text-[#2563EB] hover:text-[#1D4ED8] transition-colors"
+          >
+            <Plus className="h-4 w-4" />
+            Add {section.type === "experience" ? "Experience" : section.type === "education" ? "Education" : "Item"}
+          </button>
+        </div>
+      </div>
+    );
+  };
 
   useEffect(() => {
     if (theme.headingFont) loadGoogleFont(theme.headingFont);
@@ -220,422 +569,198 @@ export default function EditorPanel({
     });
   }, [sections]);
 
-  const toggleSection = (sectionId: string) => {
-    setExpandedSections((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(sectionId)) newSet.delete(sectionId);
-      else newSet.add(sectionId);
-      return newSet;
-    });
-  };
-
-  const handleAddSection = (type: SectionType) => {
-    onAddSection(type);
-    console.log("resume sections: ",sections);
-  };
+  useEffect(() => {
+    const total = 3 + sections.length;
+    if (currentStep >= total) {
+      setCurrentStep(total - 1);
+    }
+  }, [sections.length]);
 
   return (
-    <>
-      <button
-        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        className="lg:hidden fixed bottom-4 right-4 z-50 p-3 bg-[#2563EB] text-white rounded-full shadow-lg hover:bg-[#1D4ED8] transition-colors"
-      >
-        <Menu className="h-6 w-6" />
-      </button>
-
-      <div
-        className={`h-full bg-white dark:bg-[#0F172A] overflow-y-auto transition-all duration-300 ${
-          isMobileMenuOpen ? "fixed inset-0 z-40" : "relative"
-        } lg:relative lg:inset-auto`}
-      >
-        <div className="sticky top-0 z-10 bg-white dark:bg-[#0F172A] border-b border-[#E2E8F0] dark:border-[#334155] px-4 sm:px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-lg font-semibold text-[#0F172A] dark:text-white">My Resume</h1>
-              <div className="flex gap-1 items-center text-xs sm:text-sm text-slate-500 flex-wrap">
-                <Link href={"/dashboard"}>Dashboard</Link>
-                <p>/</p>
-                <Link href={"/dashboard/resumes"}>Resumes</Link>
-                <p>/</p>
-                <p>Resume</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <button className="px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-medium text-[#64748B] dark:text-[#94A3B8] bg-[#F1F5F9] dark:bg-[#1E293B] rounded-lg hover:bg-[#E2E8F0] dark:hover:bg-[#334155] transition-colors">
-                Create
-              </button>
-              <button
-                onClick={() => setIsTemplateModalOpen(true)}
-                className="px-2 sm:px-3 py-1.5 text-xs sm:text-sm font-medium text-white bg-[#2563EB] rounded-lg hover:bg-[#1D4ED8] transition-colors"
-              >
-                Templates
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <AnimatePresence>
-          {isTemplateModalOpen && (
-            <>
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={() => setIsTemplateModalOpen(false)}
-                className="fixed inset-0 bg-black/50 z-50"
-              />
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-[#0F172A] rounded-t-2xl shadow-2xl max-h-[80vh] overflow-hidden"
-              >
-                <div className="p-4 sm:p-6 border-b border-[#E2E8F0] dark:border-[#334155] flex items-center justify-between">
-                  <div>
-                    <h2 className="text-lg font-semibold text-[#0F172A] dark:text-white">Choose a Template</h2>
-                    <p className="text-sm text-[#64748B] dark:text-[#94A3B8]">Select a template to customize your resume</p>
-                  </div>
-                  <button onClick={() => setIsTemplateModalOpen(false)} className="p-2 hover:bg-[#F1F5F9] dark:hover:bg-[#1E293B] rounded-lg transition-colors">
-                    <X className="h-5 w-5 text-[#64748B] dark:text-[#94A3B8]" />
-                  </button>
-                </div>
-                <div className="px-4 sm:px-6 py-3 border-b border-[#E2E8F0] dark:border-[#334155] overflow-x-auto">
-                  <div className="flex gap-2">
-                    {CATEGORIES.map((category) => (
-                      <button
-                        key={category}
-                        onClick={() => setSelectedCategory(category)}
-                        className={`px-3 py-1.5 text-sm font-medium rounded-lg whitespace-nowrap transition-colors ${
-                          selectedCategory === category
-                            ? "bg-[#2563EB] text-white"
-                            : "bg-[#F1F5F9] dark:bg-[#1E293B] text-[#64748B] dark:text-[#94A3B8] hover:bg-[#E2E8F0] dark:hover:bg-[#334155]"
-                        }`}
-                      >
-                        {category}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div className="p-4 sm:p-6 overflow-y-auto max-h-[55vh]">
-                  <div className="flex gap-4 overflow-x-auto pb-4">
-                    {templates
-                      .filter((template) => selectedCategory === "All" || template.category?.toLowerCase() === selectedCategory.toLowerCase())
-                      .map((template) => (
-                        <div key={template.id} className="min-w-[200px] max-w-[200px] flex-shrink-0">
-                          <TemplateCard
-                            template={template}
-                            onUse={() => {
-                              setIsTemplateModalOpen(false);
-                              onUpdateTemplate(template.id);
-                            }}
-                          />
-                        </div>
-                      ))}
-                  </div>
-                </div>
-              </motion.div>
-            </>
-          )}
-        </AnimatePresence>
-
-        <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
-          {/* Theme Customization */}
-          <SectionCard
-            title="Theme Customization"
-            icon={<Palette className="h-5 w-5" />}
-            isExpanded={isThemeExpanded}
-            onToggle={() => setIsThemeExpanded(!isThemeExpanded)}
-          >
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-[#0F172A] dark:text-white mb-2">Colors</label>
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-xs font-medium text-[#64748B] dark:text-[#94A3B8] mb-1.5">Primary Color</label>
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="color"
-                        value={theme.primaryColor || "#2B2B2B"}
-                        onChange={(e) => onUpdateTheme("primaryColor", e.target.value)}
-                        className="w-10 h-10 rounded-lg cursor-pointer border border-[#E2E8F0] dark:border-[#334155] p-1"
-                      />
-                      <input
-                        type="text"
-                        value={theme.primaryColor || "#2B2B2B"}
-                        onChange={(e) => onUpdateTheme("primaryColor", e.target.value)}
-                        className="flex-1 px-3 py-2 text-sm bg-[#F8FAFC] dark:bg-[#1E293B] border border-[#E2E8F0] dark:border-[#334155] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2563EB] transition-all"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-[#64748B] dark:text-[#94A3B8] mb-1.5">Accent Color</label>
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="color"
-                        value={theme.accentColor || "#F4A51C"}
-                        onChange={(e) => onUpdateTheme("accentColor", e.target.value)}
-                        className="w-10 h-10 rounded-lg cursor-pointer border border-[#E2E8F0] dark:border-[#334155] p-1"
-                      />
-                      <input
-                        type="text"
-                        value={theme.accentColor || "#F4A51C"}
-                        onChange={(e) => onUpdateTheme("accentColor", e.target.value)}
-                        className="flex-1 px-3 py-2 text-sm bg-[#F8FAFC] dark:bg-[#1E293B] border border-[#E2E8F0] dark:border-[#334155] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2563EB] transition-all"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-[#64748B] dark:text-[#94A3B8] mb-1.5">Presets</label>
-                    <div className="flex flex-wrap gap-2">
-                      {COLOR_PRESETS.map((color) => (
-                        <button
-                          key={color}
-                          onClick={() => onUpdateTheme("accentColor", color)}
-                          className="w-8 h-8 rounded-full border-2 border-[#E2E8F0] dark:border-[#334155] transition-transform hover:scale-110"
-                          style={{ backgroundColor: color }}
-                          title={color}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <hr className="border-[#E2E8F0] dark:border-[#334155]" />
-              <div>
-                <label className="block text-sm font-medium text-[#0F172A] dark:text-white mb-2">
-                  <Type className="h-4 w-4 inline mr-2" /> Fonts
-                </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-medium text-[#64748B] dark:text-[#94A3B8] mb-1.5">Heading Font</label>
-                    <select
-                      value={theme.headingFont || "Poppins"}
-                      onChange={(e) => {
-                        const font = e.target.value;
-                        onUpdateTheme("headingFont", font as any);
-                        loadGoogleFont(font);
-                      }}
-                      className="w-full px-2 py-1.5 text-sm bg-[#F8FAFC] dark:bg-[#1E293B] border border-[#E2E8F0] dark:border-[#334155] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2563EB] transition-all"
-                    >
-                      {GOOGLE_FONTS.map((font) => (
-                        <option key={font} value={font} style={{ fontFamily: font }}>
-                          {font}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-[#64748B] dark:text-[#94A3B8] mb-1.5">Body Font</label>
-                    <select
-                      value={theme.bodyFont || "Inter"}
-                      onChange={(e) => {
-                        const font = e.target.value;
-                        onUpdateTheme("bodyFont", font as any);
-                        loadGoogleFont(font);
-                      }}
-                      className="w-full px-2 py-1.5 text-sm bg-[#F8FAFC] dark:bg-[#1E293B] border border-[#E2E8F0] dark:border-[#334155] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2563EB] transition-all"
-                    >
-                      {GOOGLE_FONTS.map((font) => (
-                        <option key={font} value={font} style={{ fontFamily: font }}>
-                          {font}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-              </div>
-              <div className="mt-2 p-3 bg-[#F8FAFC] dark:bg-[#1E293B] rounded-lg border border-[#E2E8F0] dark:border-[#334155]">
-                <p className="text-xs text-[#64748B] dark:text-[#94A3B8] mb-1">Preview</p>
-                <p className="text-lg font-bold" style={{ fontFamily: theme.headingFont || "Poppins", color: theme.primaryColor || "#2B2B2B" }}>
-                  Heading Font
-                </p>
-                <p className="text-sm" style={{ fontFamily: theme.bodyFont || "Inter", color: theme.textColor || "#666" }}>
-                  The quick brown fox jumps over the lazy dog. Body font preview.
-                </p>
-                <span className="text-xs font-semibold px-2 py-0.5 rounded inline-block mt-1" style={{ backgroundColor: theme.accentColor || "#F4A51C", color: "#fff" }}>
-                  Accent Color
-                </span>
-              </div>
-            </div>
-          </SectionCard>
-
-          {/* Personal Information */}
-          <SectionCard
-            title="Personal Information"
-            icon={<User className="h-5 w-5" />}
-            isExpanded={isPersonalInfoExpanded}
-            onToggle={() => setIsPersonalInfoExpanded(!isPersonalInfoExpanded)}
-          >
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="col-span-1 sm:col-span-2 flex justify-center mb-2">
-                <div className="relative">
-                  <div className="w-24 h-24 rounded-full overflow-hidden bg-[#F1F5F9] dark:bg-[#1E293B] border-2 border-dashed border-[#E2E8F0] dark:border-[#334155] hover:border-[#8B5CF6] dark:hover:border-[#8B5CF6] transition-colors cursor-pointer group">
-                    {personalInfo.photoUrl ? (
-                      <img src={personalInfo.photoUrl} alt="Profile" className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <User className="h-10 w-10 text-[#94A3B8] dark:text-[#64748B]" />
-                      </div>
-                    )}
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          const reader = new FileReader();
-                          reader.onloadend = () => onUpdatePersonalInfo("photoUrl", reader.result as string);
-                          reader.readAsDataURL(file);
-                        }
-                      }}
-                      className="absolute inset-0 opacity-0 cursor-pointer"
-                    />
-                  </div>
-                  <div className="absolute bottom-0 right-0 bg-[#8B5CF6] rounded-full p-1.5 border-2 border-white dark:border-[#0F172A] shadow-sm">
-                    <Camera className="h-3.5 w-3.5 text-white" />
-                  </div>
-                  {personalInfo.photoUrl && (
-                    <button
-                      onClick={(e) => { e.stopPropagation(); onUpdatePersonalInfo("photoUrl", undefined); }}
-                      className="absolute -top-1 -right-1 bg-red-500 hover:bg-red-600 rounded-full p-1 border-2 border-white dark:border-[#0F172A] shadow-sm transition-colors"
-                    >
-                      <X className="h-3.5 w-3.5 text-white" />
-                    </button>
-                  )}
-                </div>
-              </div>
-              <InputField label="Full Name" value={personalInfo.fullName} onChange={(v) => onUpdatePersonalInfo("fullName", v)} placeholder="John Doe" />
-              <InputField label="Job Title" value={personalInfo.title} onChange={(v) => onUpdatePersonalInfo("title", v)} placeholder="Software Engineer" />
-              <InputField label="Email" value={personalInfo.email || ""} onChange={(v) => onUpdatePersonalInfo("email", v)} placeholder="john@email.com" />
-              <InputField label="Phone" value={personalInfo.phone || ""} onChange={(v) => onUpdatePersonalInfo("phone", v)} placeholder="+1 (555) 000-0000" />
-              <InputField label="Location" value={personalInfo.location || ""} onChange={(v) => onUpdatePersonalInfo("location", v)} placeholder="San Francisco, CA" />
-              <InputField label="Website" value={personalInfo.website || ""} onChange={(v) => onUpdatePersonalInfo("website", v)} placeholder="johndoe.com" />
-              <div className="col-span-1 sm:col-span-2">
-                <TextAreaField
-                  label="Professional Summary"
-                  value={personalInfo.summary || ""}
-                  onChange={(v) => onUpdatePersonalInfo("summary", v)}
-                  placeholder="Write a brief summary of your professional background..."
-                  rows={8}
-                />
-              </div>
-            </div>
-          </SectionCard>
-
-          {/* Dynamic Sections */}
-          {sections.map((section) => {
-            const isExpanded = expandedSections.has(section.id);
-            const sectionIcon = getSectionIcon(section.type);
-            const itemCount = section.items.length;
-            const isContactSection = section.id === "contact" || section.title === "Contact";
-
-            return (
-              <SectionCard
-                key={section.id}
-                title={
-                  <div className="flex items-center gap-2">
-                    <input
-                      value={section.title}
-                      onChange={(e) => onUpdateSectionTitle(section.id, e.target.value)}
-                      className="bg-transparent border-none focus:outline-none text-sm font-medium text-[#0F172A] dark:text-white min-w-0"
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                    <span className="text-xs text-[#94A3B8]">({itemCount})</span>
-                  </div>
-                }
-                icon={sectionIcon}
-                isExpanded={isExpanded}
-                onToggle={() => toggleSection(section.id)}
-                onRemove={() => onRemoveSection(section.id)}
-              >
-                <div className="space-y-3">
-                  {section.items.map((item, index) => (
-                    <ItemCard
-                      key={index}
-                      index={index}
-                      section={section}
-                      item={item}
-                      personalInfo={personalInfo}
-                      onUpdateItem={(value) => onUpdateItem(section.id, index, value)}
-                      onRemoveItem={() => onRemoveItem(section.id, index)}
-                    />
-                  ))}
-                  {!isContactSection && (
-                    <button
-                      onClick={() => onAddItem(section.id)}
-                      className="flex items-center gap-1 text-sm text-[#2563EB] hover:text-[#1D4ED8] transition-colors"
-                    >
-                      <Plus className="h-4 w-4" />
-                      Add{" "}
-                      {section.type === "experience"
-                        ? "Experience"
-                        : section.type === "education"
-                          ? "Education"
-                          : section.type === "ratedSkills" || section.type === "skills"
-                            ? "Skill"
-                            : "Item"}
-                    </button>
-                  )}
-                </div>
-              </SectionCard>
-            );
-          })}
-
-          {/* Add Section */}
-          <div className="border-2 border-dashed border-[#E2E8F0] dark:border-[#334155] rounded-xl p-4">
-            <p className="text-sm text-[#64748B] dark:text-[#94A3B8] mb-3">Add a section</p>
-            <div className="flex flex-wrap gap-2">
-              {ADDABLE_TYPES.map((type) => (
-                <button
-                  key={type.type}
-                  onClick={() => handleAddSection(type.type)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-[#F1F5F9] dark:bg-[#1E293B] text-[#0F172A] dark:text-white rounded-lg hover:bg-[#E2E8F0] dark:hover:bg-[#334155] transition-colors"
-                >
-                  {type.icon}
-                  {type.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </>
-  );
-}
-
-// Section Card Component
-function SectionCard({ title, icon, children, isExpanded, onToggle, onRemove }: {
-  title: React.ReactNode;
-  icon: React.ReactNode;
-  children: React.ReactNode;
-  isExpanded: boolean;
-  onToggle: () => void;
-  onRemove?: () => void;
-}) {
-  return (
-    <div className="border border-[#E2E8F0] dark:border-[#334155] rounded-xl overflow-hidden">
-      <div className="w-full flex items-center justify-between px-4 py-3 hover:bg-[#F8FAFC] dark:hover:bg-[#1E293B] transition-colors cursor-pointer">
-        <div className="flex items-center gap-2 flex-1 min-w-0" onClick={onToggle}>
-          <span className="text-[#64748B] dark:text-[#94A3B8] flex-shrink-0">{icon}</span>
-          <span className="text-sm font-medium text-[#0F172A] dark:text-white truncate">{title}</span>
-        </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
-          {onRemove && (
-            <button onClick={(e) => { e.stopPropagation(); onRemove(); }} className="p-1 text-[#94A3B8] hover:text-[#EF4444] transition-colors" type="button">
-              <Trash2 className="h-4 w-4" />
+    <div className="h-full flex flex-col bg-white dark:bg-[#0F172A]">
+      {/* Top Bar */}
+      <div className="sticky top-0 z-10 bg-white dark:bg-[#0F172A] border-b border-[#E2E8F0] dark:border-[#334155] px-6 py-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="lg:hidden p-2 hover:bg-[#F1F5F9] dark:hover:bg-[#1E293B] rounded-lg transition-colors"
+            >
+              <Menu className="h-5 w-5 text-[#64748B]" />
             </button>
-          )}
-          <button onClick={onToggle} className="p-1 text-[#94A3B8] hover:text-[#0F172A] dark:hover:text-white transition-colors" type="button">
-            {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+            <div>
+              <h1 className="text-lg font-semibold text-[#0F172A] dark:text-white">Edit</h1>
+            </div>
+          </div>
+          <button
+            onClick={() => setIsTemplateModalOpen(true)}
+            className="px-3 py-1.5 text-xs font-medium text-white bg-[#2563EB] rounded-lg hover:bg-[#1D4ED8] transition-colors"
+          >
+            Templates
           </button>
         </div>
       </div>
-      {isExpanded && <div className="px-4 pb-4">{children}</div>}
+
+      {/* Content Area */}
+      <div className="flex-1 overflow-y-auto p-6 editor-content">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentStep}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.3 }}
+            className="max-w-3xl mx-auto"
+          >
+            {renderStepContent()}
+          </motion.div>
+        </AnimatePresence>
+      </div>
+
+      {/* Bottom Navigation */}
+      <div className="sticky bottom-0 bg-white dark:bg-[#0F172A] border-t border-[#E2E8F0] dark:border-[#334155] px-6 py-4">
+        <div className="max-w-3xl mx-auto flex items-center justify-between">
+          <button
+            onClick={() => navigateToSection('prev')}
+            disabled={currentStep === 0 || isNavigating}
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[#64748B] dark:text-[#94A3B8] hover:bg-[#F1F5F9] dark:hover:bg-[#1E293B] rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Back
+          </button>
+
+          <div className="flex items-center gap-2 text-sm text-[#64748B] dark:text-[#94A3B8]">
+            <span className="font-medium text-[#0F172A] dark:text-white">{currentStep + 1}</span>
+            <span>/</span>
+            <span>{totalSteps}</span>
+          </div>
+
+          <button
+            onClick={() => navigateToSection('next')}
+            disabled={currentStep === totalSteps - 1 || isNavigating}
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[#8B5CF6] rounded-lg hover:bg-[#7C3AED] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {currentStep === totalSteps - 2 ? 'Finish' : 'Next'}
+            <ChevronRightIcon className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* Template Modal */}
+      <AnimatePresence>
+        {isTemplateModalOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsTemplateModalOpen(false)}
+              className="fixed inset-0 bg-black/50 z-50"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-[#0F172A] rounded-t-2xl shadow-2xl max-h-[80vh] overflow-hidden"
+            >
+              <div className="p-4 sm:p-6 border-b border-[#E2E8F0] dark:border-[#334155] flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-semibold text-[#0F172A] dark:text-white">Choose a Template</h2>
+                  <p className="text-sm text-[#64748B] dark:text-[#94A3B8]">Select a template to customize your resume</p>
+                </div>
+                <button onClick={() => setIsTemplateModalOpen(false)} className="p-2 hover:bg-[#F1F5F9] dark:hover:bg-[#1E293B] rounded-lg transition-colors">
+                  <X className="h-5 w-5 text-[#64748B] dark:text-[#94A3B8]" />
+                </button>
+              </div>
+              <div className="px-4 sm:px-6 py-3 border-b border-[#E2E8F0] dark:border-[#334155] overflow-x-auto">
+                <div className="flex gap-2">
+                  {CATEGORIES.map((category) => (
+                    <button
+                      key={category}
+                      onClick={() => setSelectedCategory(category)}
+                      className={`px-3 py-1.5 text-sm font-medium rounded-lg whitespace-nowrap transition-colors ${
+                        selectedCategory === category
+                          ? "bg-[#2563EB] text-white"
+                          : "bg-[#F1F5F9] dark:bg-[#1E293B] text-[#64748B] dark:text-[#94A3B8] hover:bg-[#E2E8F0] dark:hover:bg-[#334155]"
+                      }`}
+                    >
+                      {category}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="p-4 sm:p-6 overflow-y-auto max-h-[55vh]">
+                <div className="flex gap-4 overflow-x-auto pb-4">
+                  {templates
+                    .filter((template) => selectedCategory === "All" || template.category?.toLowerCase() === selectedCategory.toLowerCase())
+                    .map((template) => (
+                      <div key={template.id} className="min-w-[200px] max-w-[200px] flex-shrink-0">
+                        <TemplateCard
+                          template={template}
+                          onUse={() => {
+                            setIsTemplateModalOpen(false);
+                            onUpdateTemplate(template.id);
+                          }}
+                        />
+                      </div>
+                    ))}
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
 
-// Item Card Component
+// Input Field Component
+function InputField({ label, value, onChange, placeholder, type = "text", autoFocus = false }: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  type?: string;
+  autoFocus?: boolean;
+}) {
+  return (
+    <div>
+      <label className="block text-xs font-medium text-[#64748B] dark:text-[#94A3B8] mb-1.5">{label}</label>
+      <input
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        autoFocus={autoFocus}
+        className="w-full px-3 py-2 text-sm bg-white dark:bg-[#1E293B] border border-[#E2E8F0] dark:border-[#334155] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8B5CF6] focus:border-transparent transition-all"
+      />
+    </div>
+  );
+}
+
+// TextArea Field Component
+function TextAreaField({ label, value, onChange, placeholder, rows = 3 }: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  rows?: number;
+}) {
+  return (
+    <div>
+      <label className="block text-xs font-medium text-[#64748B] dark:text-[#94A3B8] mb-1.5">{label}</label>
+      <textarea
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        rows={rows}
+        className="w-full px-3 py-2 text-sm bg-white dark:bg-[#1E293B] border border-[#E2E8F0] dark:border-[#334155] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8B5CF6] focus:border-transparent transition-all resize-none"
+      />
+    </div>
+  );
+}
+
+// Item Card Component - FIXED VERSION
 function ItemCard({ section, item, index, personalInfo, onUpdateItem, onRemoveItem }: {
   section: Section;
   item: any;
@@ -657,12 +782,21 @@ function ItemCard({ section, item, index, personalInfo, onUpdateItem, onRemoveIt
   }, [section.type, item]);
 
   const getDisplayLabel = () => {
-    if (section.type === "custom" && section.id === "contact") {
-      if (item && typeof item === "object" && "label" in item && "description" in item) {
-        return item.description || item.label || "Untitled";
+    // Handle contact section items
+    if (section.id === "contact") {
+      if (item && typeof item === "object") {
+        // If it has a description, show it
+        if ("description" in item && item.description) {
+          return item.description;
+        }
+        // If it has a label, show the label
+        if ("label" in item && item.label) {
+          return item.label;
+        }
       }
-      return "Untitled";
+      return "Contact Item";
     }
+
     if (section.type === "experience") {
       const exp = item as ExperienceItem;
       if (exp.role && exp.company) return `${exp.role} at ${exp.company}`;
@@ -739,30 +873,54 @@ function ItemCard({ section, item, index, personalInfo, onUpdateItem, onRemoveIt
   };
 
   const renderItemFields = () => {
+    // Handle contact section items
+    if (section.id === "contact") {
+      if (item && typeof item === "object" && "label" in item && "description" in item) {
+        const labelMap: Record<string, string> = {
+          phone: "Phone",
+          email: "Email",
+          website: "Website",
+          location: "Location",
+          web: "Website",
+        };
+        const displayLabel = labelMap[item.label] || item.label || "Email";
+        return (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-[#64748B] dark:text-[#94A3B8] mb-1.5">Type</label>
+              <div className="w-full px-3 py-2 text-sm bg-[#F8FAFC] dark:bg-[#1E293B] border border-[#E2E8F0] dark:border-[#334155] rounded-lg text-[#0F172A] dark:text-white">
+                {displayLabel}
+              </div>
+            </div>
+            <InputField label="Value" value={item.description || ""} onChange={(v) => onUpdateItem({ ...item, description: v })} placeholder="Enter contact value" autoFocus />
+          </div>
+        );
+      }
+      return null;
+    }
+
     switch (section.type) {
       case "experience": {
         const exp = item as ExperienceItem;
         return (
           <div className="space-y-3">
+            <InputField label="Job Title" value={exp.role} onChange={(v) => onUpdateItem({ ...exp, role: v })} placeholder="Software Engineer" />
+            <InputField label="Employer" value={exp.company} onChange={(v) => onUpdateItem({ ...exp, company: v })} placeholder="Google" />
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <InputField label="Job Title" value={exp.role} onChange={(v) => onUpdateItem({ ...exp, role: v })} placeholder="untitled" />
-              <InputField label="Employer" value={exp.company} onChange={(v) => onUpdateItem({ ...exp, company: v })} placeholder="untitled" />
               <InputField label="Start Date" value={exp.start} onChange={(v) => onUpdateItem({ ...exp, start: v })} placeholder="MM / YYYY" type="month" />
               <InputField label="End Date" value={exp.end} onChange={(v) => onUpdateItem({ ...exp, end: v })} placeholder="MM / YYYY" type="month" />
-              <div className="col-span-1 sm:col-span-2">
-                <InputField label="City" value={exp.location || ""} onChange={(v) => onUpdateItem({ ...exp, location: v })} placeholder="untitled" />
-              </div>
             </div>
+            <InputField label="City, State" value={exp.location || ""} onChange={(v) => onUpdateItem({ ...exp, location: v })} placeholder="San Francisco, CA" />
             <div>
               <label className="block text-xs font-medium text-[#64748B] dark:text-[#94A3B8] mb-1.5">Description</label>
               <div className="flex items-center gap-1 mb-2 flex-wrap">
-                <button type="button" onClick={() => applyFormatting("bold")} className={`p-1.5 rounded transition-colors ${isBold ? "bg-[#2563EB] text-white" : "hover:bg-[#F1F5F9] dark:hover:bg-[#1E293B] text-[#64748B] dark:text-[#94A3B8]"}`}>
+                <button type="button" onClick={() => applyFormatting("bold")} className={`p-1.5 rounded transition-colors ${isBold ? "bg-[#8B5CF6] text-white" : "hover:bg-[#F1F5F9] dark:hover:bg-[#1E293B] text-[#64748B] dark:text-[#94A3B8]"}`}>
                   <Bold className="h-4 w-4" />
                 </button>
-                <button type="button" onClick={() => applyFormatting("italic")} className={`p-1.5 rounded transition-colors ${isItalic ? "bg-[#2563EB] text-white" : "hover:bg-[#F1F5F9] dark:hover:bg-[#1E293B] text-[#64748B] dark:text-[#94A3B8]"}`}>
+                <button type="button" onClick={() => applyFormatting("italic")} className={`p-1.5 rounded transition-colors ${isItalic ? "bg-[#8B5CF6] text-white" : "hover:bg-[#F1F5F9] dark:hover:bg-[#1E293B] text-[#64748B] dark:text-[#94A3B8]"}`}>
                   <Italic className="h-4 w-4" />
                 </button>
-                <button type="button" onClick={() => applyFormatting("underline")} className={`p-1.5 rounded transition-colors ${isUnderline ? "bg-[#2563EB] text-white" : "hover:bg-[#F1F5F9] dark:hover:bg-[#1E293B] text-[#64748B] dark:text-[#94A3B8]"}`}>
+                <button type="button" onClick={() => applyFormatting("underline")} className={`p-1.5 rounded transition-colors ${isUnderline ? "bg-[#8B5CF6] text-white" : "hover:bg-[#F1F5F9] dark:hover:bg-[#1E293B] text-[#64748B] dark:text-[#94A3B8]"}`}>
                   <Underline className="h-4 w-4" />
                 </button>
               </div>
@@ -772,7 +930,7 @@ function ItemCard({ section, item, index, personalInfo, onUpdateItem, onRemoveIt
                 onChange={(e) => onUpdateItem({ ...exp, bullets: e.target.value.split("\n").filter((b) => b.trim()) })}
                 placeholder="Describe your responsibilities and achievements..."
                 rows={4}
-                className={`w-full px-3 py-2 text-sm bg-[#F8FAFC] dark:bg-[#1E293B] border border-[#E2E8F0] dark:border-[#334155] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2563EB] transition-all resize-none ${isBold ? "font-bold" : ""} ${isItalic ? "italic" : ""} ${isUnderline ? "underline" : ""}`}
+                className={`w-full px-3 py-2 text-sm bg-white dark:bg-[#1E293B] border border-[#E2E8F0] dark:border-[#334155] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8B5CF6] focus:border-transparent transition-all resize-none ${isBold ? "font-bold" : ""} ${isItalic ? "italic" : ""} ${isUnderline ? "underline" : ""}`}
               />
             </div>
           </div>
@@ -782,11 +940,14 @@ function ItemCard({ section, item, index, personalInfo, onUpdateItem, onRemoveIt
       case "education": {
         const edu = item as EducationItem;
         return (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="space-y-3">
             <InputField label="School" value={edu.school} onChange={(v) => onUpdateItem({ ...edu, school: v })} placeholder="Stanford University" />
             <InputField label="Degree" value={edu.degree} onChange={(v) => onUpdateItem({ ...edu, degree: v })} placeholder="Bachelor's" />
-            <InputField label="Start Date" value={edu.start} onChange={(v) => onUpdateItem({ ...edu, start: v })} placeholder="MM / YYYY" type="month" />
-            <InputField label="End Date" value={edu.end} onChange={(v) => onUpdateItem({ ...edu, end: v })} placeholder="MM / YYYY" type="month" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <InputField label="Start Date" value={edu.start} onChange={(v) => onUpdateItem({ ...edu, start: v })} placeholder="MM / YYYY" type="month" />
+              <InputField label="End Date" value={edu.end} onChange={(v) => onUpdateItem({ ...edu, end: v })} placeholder="MM / YYYY" type="month" />
+            </div>
+            <InputField label="City, State" value={edu.location || ""} onChange={(v) => onUpdateItem({ ...edu, location: v })} placeholder="Stanford, CA" />
           </div>
         );
       }
@@ -802,7 +963,7 @@ function ItemCard({ section, item, index, personalInfo, onUpdateItem, onRemoveIt
                 onChange={(e) => onUpdateItem(e.target.value)}
                 placeholder="Enter a skill (e.g., React, TypeScript)"
                 autoFocus
-                className="w-full px-3 py-2 text-sm bg-[#F8FAFC] dark:bg-[#1E293B] border border-[#E2E8F0] dark:border-[#334155] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2563EB] transition-all"
+                className="w-full px-3 py-2 text-sm bg-white dark:bg-[#1E293B] border border-[#E2E8F0] dark:border-[#334155] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8B5CF6] focus:border-transparent transition-all"
               />
             </div>
           );
@@ -830,7 +991,7 @@ function ItemCard({ section, item, index, personalInfo, onUpdateItem, onRemoveIt
                 max={100}
                 value={rated.level || 50}
                 onChange={(e) => onUpdateItem({ ...rated, level: Number(e.target.value) })}
-                className="w-full h-2 bg-[#E2E8F0] dark:bg-[#334155] rounded-lg appearance-none cursor-pointer accent-[#2563EB]"
+                className="w-full h-2 bg-[#E2E8F0] dark:bg-[#334155] rounded-lg appearance-none cursor-pointer accent-[#8B5CF6]"
               />
               <div className="flex justify-between text-xs text-[#64748B] dark:text-[#94A3B8] mt-1">
                 <span>0%</span>
@@ -845,7 +1006,7 @@ function ItemCard({ section, item, index, personalInfo, onUpdateItem, onRemoveIt
       case "languages": {
         const lang = item as LanguageItem;
         return (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="space-y-3">
             <InputField
               label="Language"
               value={lang.name || ""}
@@ -858,7 +1019,7 @@ function ItemCard({ section, item, index, personalInfo, onUpdateItem, onRemoveIt
               <select
                 value={lang.level || ""}
                 onChange={(e) => onUpdateItem({ ...lang, level: e.target.value })}
-                className="w-full px-3 py-2 text-sm bg-[#F8FAFC] dark:bg-[#1E293B] border border-[#E2E8F0] dark:border-[#334155] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2563EB] transition-all"
+                className="w-full px-3 py-2 text-sm bg-white dark:bg-[#1E293B] border border-[#E2E8F0] dark:border-[#334155] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8B5CF6] focus:border-transparent transition-all"
               >
                 <option value="">Select level</option>
                 <option value="Native">Native</option>
@@ -890,7 +1051,7 @@ function ItemCard({ section, item, index, personalInfo, onUpdateItem, onRemoveIt
                 onChange={(e) => onUpdateItem({ ...achievement, description: e.target.value })}
                 placeholder="Describe the achievement..."
                 rows={3}
-                className="w-full px-3 py-2 text-sm bg-[#F8FAFC] dark:bg-[#1E293B] border border-[#E2E8F0] dark:border-[#334155] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2563EB] transition-all resize-none"
+                className="w-full px-3 py-2 text-sm bg-white dark:bg-[#1E293B] border border-[#E2E8F0] dark:border-[#334155] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8B5CF6] focus:border-transparent transition-all resize-none"
               />
             </div>
             <InputField
@@ -903,30 +1064,19 @@ function ItemCard({ section, item, index, personalInfo, onUpdateItem, onRemoveIt
         );
       }
 
+      case "references": {
+        const ref = item as ReferenceItem;
+        return (
+          <div className="space-y-3">
+            <InputField label="Name" value={ref.name || ""} onChange={(v) => onUpdateItem({ ...ref, name: v })} placeholder="John Smith" autoFocus />
+            <InputField label="Address" value={ref.address || ""} onChange={(v) => onUpdateItem({ ...ref, address: v })} placeholder="New York, NY" />
+            <InputField label="Phone" value={ref.phone || ""} onChange={(v) => onUpdateItem({ ...ref, phone: v })} placeholder="+1 (555) 000-0000" />
+            <InputField label="Email" value={ref.email || ""} onChange={(v) => onUpdateItem({ ...ref, email: v })} placeholder="john@email.com" />
+          </div>
+        );
+      }
+
       case "custom": {
-        if (section.id === "contact") {
-          if (item && typeof item === "object" && "label" in item && "description" in item) {
-            const labelMap: Record<string, string> = {
-              phone: "Phone",
-              email: "Email",
-              website: "Website",
-              location: "Location",
-              web: "Website",
-            };
-            const displayLabel = labelMap[item.label] || item.label || "Email";
-            return (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-medium text-[#64748B] dark:text-[#94A3B8] mb-1.5">Type</label>
-                  <div className="w-full px-3 py-2 text-sm bg-[#F8FAFC] dark:bg-[#1E293B] border border-[#E2E8F0] dark:border-[#334155] rounded-lg text-[#0F172A] dark:text-white">
-                    {displayLabel}
-                  </div>
-                </div>
-                <InputField label="Value" value={item.description || ""} onChange={(v) => onUpdateItem({ ...item, description: v })} placeholder="Enter contact value" autoFocus />
-              </div>
-            );
-          }
-        }
         if (item && typeof item === "object" && "label" in item && "description" in item) {
           return (
             <div className="space-y-3">
@@ -938,95 +1088,36 @@ function ItemCard({ section, item, index, personalInfo, onUpdateItem, onRemoveIt
         return null;
       }
 
-      case "references": {
-        const ref = item as ReferenceItem;
-        return (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <InputField label="Name" value={ref.name || ""} onChange={(v) => onUpdateItem({ ...ref, name: v })} placeholder="John Smith" autoFocus />
-            <InputField label="Address" value={ref.address || ""} onChange={(v) => onUpdateItem({ ...ref, address: v })} placeholder="New York, NY" />
-            <InputField label="Phone" value={ref.phone || ""} onChange={(v) => onUpdateItem({ ...ref, phone: v })} placeholder="+1 (555) 000-0000" />
-            <InputField label="Email" value={ref.email || ""} onChange={(v) => onUpdateItem({ ...ref, email: v })} placeholder="john@email.com" />
-          </div>
-        );
-      }
-
       default:
         return null;
     }
   };
 
   return (
-    <div className="border border-[#E2E8F0] dark:border-[#334155] rounded-lg mb-3 last:mb-0 overflow-hidden">
-      <div className="w-full flex items-center justify-between px-3 py-2 hover:bg-[#F8FAFC] dark:hover:bg-[#1E293B] transition-colors cursor-pointer">
-        <div className="flex-1 min-w-0" onClick={() => setIsExpanded(!isExpanded)}>
-          <span className="text-sm font-medium text-[#0F172A] dark:text-white truncate block">{getDisplayLabel()}</span>
-        </div>
+    <div className="border border-[#E2E8F0] dark:border-[#334155] rounded-lg overflow-hidden">
+      <div
+        className="w-full flex items-center justify-between px-4 py-3 hover:bg-[#F8FAFC] dark:hover:bg-[#1E293B] transition-colors cursor-pointer"
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
+        <span className="text-sm font-medium text-[#0F172A] dark:text-white truncate">{getDisplayLabel()}</span>
         <div className="flex items-center gap-2 flex-shrink-0">
-          <button onClick={(e) => { e.stopPropagation(); onRemoveItem(); }} className="p-1 text-[#94A3B8] hover:text-[#EF4444] transition-colors" type="button">
+          <button
+            onClick={(e) => { e.stopPropagation(); onRemoveItem(); }}
+            className="p-1 text-[#94A3B8] hover:text-[#EF4444] transition-colors"
+            type="button"
+          >
             <X className="h-3.5 w-3.5" />
           </button>
-          <button onClick={() => setIsExpanded(!isExpanded)} className="p-1 text-[#94A3B8] hover:text-[#0F172A] dark:hover:text-white transition-colors" type="button">
+          <button
+            onClick={(e) => { e.stopPropagation(); setIsExpanded(!isExpanded); }}
+            className="p-1 text-[#94A3B8] hover:text-[#0F172A] dark:hover:text-white transition-colors"
+            type="button"
+          >
             {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
           </button>
         </div>
       </div>
-      {isExpanded && <div className="px-3 pb-3">{renderItemFields()}</div>}
+      {isExpanded && <div className="px-4 pb-4">{renderItemFields()}</div>}
     </div>
   );
-}
-// Input Field Component
-function InputField({ label, value, onChange, placeholder, type = "text", autoFocus = false }: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  placeholder?: string;
-  type?: string;
-  autoFocus?: boolean;
-}) {
-  return (
-    <div>
-      <label className="block text-xs font-medium text-[#64748B] dark:text-[#94A3B8] mb-1.5">{label}</label>
-      <input
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        autoFocus={autoFocus}
-        className="w-full px-3 py-2 text-sm bg-[#F8FAFC] dark:bg-[#1E293B] border border-[#E2E8F0] dark:border-[#334155] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2563EB] transition-all"
-      />
-    </div>
-  );
-}
-
-// TextArea Field Component
-function TextAreaField({ label, value, onChange, placeholder, rows = 3 }: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  placeholder?: string;
-  rows?: number;
-}) {
-  return (
-    <div>
-      <label className="block text-xs font-medium text-[#64748B] dark:text-[#94A3B8] mb-1.5">{label}</label>
-      <textarea
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        rows={rows}
-        className="w-full px-3 py-2 text-sm bg-[#F8FAFC] dark:bg-[#1E293B] border border-[#E2E8F0] dark:border-[#334155] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2563EB] transition-all resize-none"
-      />
-    </div>
-  );
-}
-
-// Helper function to get section icon
-function getSectionIcon(type: SectionType): React.ReactNode {
-  switch (type) {
-    case "experience": return <Briefcase className="h-5 w-5" />;
-    case "education": return <GraduationCap className="h-5 w-5" />;
-    case "skills":
-    case "ratedSkills": return <Sparkles className="h-5 w-5" />;
-    default: return <Plus className="h-5 w-5" />;
-  }
 }
