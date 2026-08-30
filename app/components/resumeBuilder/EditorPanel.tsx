@@ -1656,7 +1656,7 @@ ${feedback.tips.map((tip, i) => `${i + 1}. ${tip}`).join('\n')}
               <button
                 onClick={() => navigateToSection("next")}
                 disabled={currentStep === totalSteps - 1 || isNavigating}
-                className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-white bg-gradient-to-r from-[#8B5CF6] to-[#6D28D9] rounded-lg hover:shadow-lg hover:shadow-purple-500/30 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-2 py-1.5 text-sm font-medium text-white bg-gradient-to-r from-[#2563EB] to-[#1D4ED8] rounded-lg hover:shadow-lg hover:shadow-purple-500/30 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <span className="hidden sm:inline">Next</span>
                 <span className="sm:hidden">Next</span>

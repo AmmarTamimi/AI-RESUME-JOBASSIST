@@ -35,7 +35,6 @@ export default function TemplatesPage() {
     { id: 'modern', label: 'Modern' },
     { id: 'professional', label: 'Professional' },
     { id: 'minimal', label: 'Minimal' },
-    { id: 'creative', label: 'Creative' },
     { id: 'business', label: 'Business' },
     { id: 'ats-friendly', label: 'ATS Friendly' },
   ];
@@ -100,7 +99,7 @@ export default function TemplatesPage() {
   return (
     <div className="flex min-h-screen bg-[#F8FAFC] dark:bg-[#0F172A]">
       <Sidebar />
-      <div className="flex-1 ml-0 lg:ml-64">
+      <div className="flex-1 ml-0">
         <DashboardHeader user={user} />
         <main className="p-6 lg:p-8">
           <motion.div
