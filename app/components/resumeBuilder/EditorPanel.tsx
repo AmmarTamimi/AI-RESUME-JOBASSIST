@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { useState, useRef, useEffect } from "react";
 import type {
@@ -49,14 +49,20 @@ import {
   Code,
   Languages,
   Edit,
+  CheckCircle,
+  Circle,
   Loader2,
   Check,
+  Download,
+  LayoutGrid,
+  ArrowRight,
+  FileCheck,
+  Bot,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { templates } from "../templates/templates";
 import { AnimatePresence, motion } from "framer-motion";
-import { cn } from "@/app/lib/utils";
-import { TypingText } from "./TypingText";
 
 // Template Card Component
 function TemplateCard({
@@ -242,6 +248,7 @@ const CATEGORIES = [
   "Modern",
   "Professional",
   "Minimal",
+  "Creative",
   "Business",
   "ATS-Friendly",
 ];
@@ -263,6 +270,159 @@ const hasMeaningfulContent = (str: string): boolean => {
   return trimmed.length > 0;
 };
 
+// Get section icon for navigation
+const getSectionIconForNav = (id: string, section?: Section) => {
+  if (id === "theme") return <Palette className="h-3 w-3" />;
+  if (id === "personal") return <User className="h-3 w-3" />;
+  if (id === "add-section") return <Plus className="h-3 w-3" />;
+  if (section) {
+    switch (section.type) {
+      case "experience":
+        return <Briefcase className="h-3 w-3" />;
+      case "education":
+        return <GraduationCap className="h-3 w-3" />;
+      case "skills":
+        return <Code className="h-3 w-3" />;
+      case "ratedSkills":
+        return <Star className="h-3 w-3" />;
+      case "languages":
+        return <Languages className="h-3 w-3" />;
+      case "achievements":
+        return <Award className="h-3 w-3" />;
+      case "references":
+        return <Users className="h-3 w-3" />;
+      default:
+        return <Plus className="h-3 w-3" />;
+    }
+  }
+  return <Circle className="h-3 w-3" />;
+};
+
+// Get section label short for navigation
+const getSectionLabelShort = (id: string, section?: Section) => {
+  if (id === "theme") return "Theme";
+  if (id === "personal") return "Profile";
+  if (id === "add-section") return "Add";
+  if (section) {
+    if (section.title && section.title.length <= 8) return section.title;
+    switch (section.type) {
+      case "experience":
+        return "Experience";
+      case "education":
+        return "Education";
+      case "skills":
+        return "Skills";
+      case "ratedSkills":
+        return "Skills";
+      case "languages":
+        return "Languages";
+      case "achievements":
+        return "Achievements";
+      case "references":
+        return "References";
+      default:
+        return section.title || "Custom";
+    }
+  }
+  return "Section";
+};
+
+// TypingText Component
+function TypingText({
+  text,
+  isTyping,
+  speed = 25,
+  delay = 150,
+  onComplete,
+}: {
+  text: string;
+  isTyping: boolean;
+  speed?: number;
+  delay?: number;
+  onComplete?: () => void;
+}) {
+  const [displayText, setDisplayText] = useState("");
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isComplete, setIsComplete] = useState(false);
+
+  useEffect(() => {
+    if (!isTyping && text) {
+      setDisplayText(text);
+      setIsComplete(true);
+      if (onComplete) onComplete();
+      return;
+    }
+
+    if (isTyping && text) {
+      setIsComplete(false);
+      setCurrentIndex(0);
+      setDisplayText("");
+    }
+  }, [text, isTyping]);
+
+  useEffect(() => {
+    if (isComplete) return;
+    if (!isTyping || currentIndex >= text.length) {
+      if (currentIndex >= text.length && text.length > 0) {
+        setIsComplete(true);
+        if (onComplete) onComplete();
+      }
+      return;
+    }
+
+    const timeout = setTimeout(() => {
+      setDisplayText((prev) => prev + text[currentIndex]);
+      setCurrentIndex((prev) => prev + 1);
+    }, speed);
+
+    return () => clearTimeout(timeout);
+  }, [currentIndex, text, isTyping, speed, isComplete]);
+
+  if (!text) return null;
+
+  return (
+    <span className="typing-text">
+      {displayText}
+      {!isComplete && isTyping && (
+        <span className="typing-cursor animate-pulse">|</span>
+      )}
+    </span>
+  );
+}
+
+// AI Generation Button Component
+function AIGenerateButton({
+  onClick,
+  isLoading,
+  label = "Generate with AI",
+  icon: Icon = Sparkles,
+}: {
+  onClick: () => void;
+  isLoading: boolean;
+  label?: string;
+  icon?: any;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={isLoading}
+      className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-[#8B5CF6] bg-[#EDE9FE] dark:bg-[#4C1D95] dark:text-[#C4B5FD] rounded-lg hover:bg-[#DDD6FE] dark:hover:bg-[#5B21B6] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      {isLoading ? (
+        <>
+          <Loader2 className="h-3 w-3 animate-spin" />
+          Generating...
+        </>
+      ) : (
+        <>
+          <Sparkles className="h-3 w-3" />
+          {label}
+        </>
+      )}
+    </button>
+  );
+}
+
 export default function EditorPanel({
   personalInfo,
   sections,
@@ -277,6 +437,7 @@ export default function EditorPanel({
   onRemoveSection,
   onUpdateTemplate,
 }: EditorPanelProps) {
+  const router = useRouter();
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
     new Set(sections.map((s) => s.id)),
   );
@@ -285,13 +446,29 @@ export default function EditorPanel({
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [currentStep, setCurrentStep] = useState(0);
   const [isNavigating, setIsNavigating] = useState(false);
+  const navContainerRef = useRef<HTMLDivElement>(null);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Finish Modal states
+  const [isFinishModalOpen, setIsFinishModalOpen] = useState(false);
+  const [isAIProcessing, setIsAIProcessing] = useState(false);
+  const [aiFeedback, setAiFeedback] = useState<string | null>(null);
+  const [feedbackSections, setFeedbackSections] = useState<{
+    summary: string;
+    experience: string;
+    education: string;
+    skills: string;
+    achievements: string;
+    overall: string;
+    tips: string[];
+  } | null>(null);
+
+  // AI Generation states
   const [isGenerating, setIsGenerating] = useState<string | null>(null);
   const [generationError, setGenerationError] = useState<{
     type: string;
     message: string;
   } | null>(null);
-
-  // Add these state variables
   const [aiModalOpen, setAiModalOpen] = useState(false);
   const [aiModalType, setAiModalType] = useState<
     "experience" | "achievement" | "summary" | null
@@ -372,131 +549,13 @@ export default function EditorPanel({
     return section?.title || id;
   };
 
-  const renderStepContent = () => {
-    const currentId = allSectionIds[currentStep];
-
-    if (currentId === "theme") {
-      return renderThemeSection();
-    }
-    if (currentId === "personal") {
-      return renderPersonalInfoSection();
-    }
-    if (currentId === "add-section") {
-      return renderAddSectionContent();
-    }
-    const section = sections.find((s) => s.id === currentId);
-    if (section) {
-      return renderDynamicSection(section);
-    }
-    return null;
+  const getSectionForNav = (id: string) => {
+    if (id === "theme" || id === "personal" || id === "add-section")
+      return undefined;
+    return sections.find((s) => s.id === id);
   };
 
-
-  const handleGenerate = async (
-    type: "experience" | "achievement" | "summary",
-    index?: number,
-    userContext?: string,
-  ) => {
-    // Generate a unique key for tracking loading state
-    const generateKey = type === "summary" ? "summary" : `${type}-${index}`;
-    setIsGenerating(generateKey);
-    setGenerationError(null);
-
-    try {
-      let data = {};
-
-      if (type === "summary") {
-        // For summary, we need the whole resume data
-        data = { personalInfo, sections };
-      } else if (type === "experience" && index !== undefined) {
-        const expSection = sections.find((s) => s.type === "experience");
-        if (!expSection || !expSection.items[index]) {
-          throw new Error("Experience item not found");
-        }
-        const exp = expSection.items[index] as ExperienceItem;
-        data = {
-          role: exp.role,
-          company: exp.company,
-          location: exp.location,
-          start: exp.start,
-          end: exp.end,
-          userContext: userContext || "",
-          existingDescription: exp.description || "",
-        };
-      } else if (type === "achievement" && index !== undefined) {
-        const achSection = sections.find((s) => s.type === "achievements");
-        if (!achSection || !achSection.items[index]) {
-          throw new Error("Achievement item not found");
-        }
-        const ach = achSection.items[index] as AchievementItem;
-        data = {
-          title: ach.title,
-          existingDescription: ach.description || "",
-          userContext: userContext || "",
-        };
-      } else {
-        throw new Error("Invalid type or missing index");
-      }
-
-      const res = await fetch("/api/ai/generate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          type: type,
-          data: data,
-        }),
-      });
-
-      const response = await res.json();
-
-      if (!response.success) {
-        console.error(response.error || "Generation failed");
-        setGenerationError(response.error);
-        return;
-      }
-
-      // Update the specific field
-      if (type === "summary") {
-        onUpdatePersonalInfo("summary", response.result);
-      } else if (type === "experience" && index !== undefined) {
-        const expSection = sections.find((s) => s.type === "experience");
-        if (expSection && expSection.items[index]) {
-          const exp = expSection.items[index] as ExperienceItem;
-          onUpdateItem(expSection.id, index, {
-            ...exp,
-            description: response.result,
-          });
-        }
-      } else if (type === "achievement" && index !== undefined) {
-        const achSection = sections.find((s) => s.type === "achievements");
-        if (achSection && achSection.items[index]) {
-          const ach = achSection.items[index] as AchievementItem;
-          onUpdateItem(achSection.id, index, {
-            ...ach,
-            description: response.result,
-          });
-        }
-      }
-
-      // Close modal if open
-      setAiModalOpen(false);
-      setAiModalResult(null);
-    } catch (error) {
-      console.error("Error in AI generation:", error);
-      setGenerationError({
-        type: generateKey,
-        message:
-          error instanceof Error ? error.message : "Failed to generate content",
-      });
-    } finally {
-      setIsGenerating(null);
-      setIsGeneratingAI(false);
-    }
-  };
-
-  // Helper function to get AI preview without applying to resume
+  // Helper function to get AI preview
   const getAIPreview = async (
     type: "experience" | "achievement" | "summary",
     index: number | undefined,
@@ -507,7 +566,6 @@ export default function EditorPanel({
     if (type === "summary") {
       data = { personalInfo, sections };
     } else if (type === "experience") {
-      // Ensure index is defined
       if (index === undefined) {
         throw new Error("Index is required for experience generation");
       }
@@ -526,7 +584,6 @@ export default function EditorPanel({
         existingDescription: exp.description || "",
       };
     } else if (type === "achievement") {
-      // Ensure index is defined
       if (index === undefined) {
         throw new Error("Index is required for achievement generation");
       }
@@ -554,7 +611,6 @@ export default function EditorPanel({
     });
 
     const response = await res.json();
-    console.log("response: ", response);
     if (!response.success) {
       throw new Error(response.error || "Generation failed");
     }
@@ -572,6 +628,296 @@ export default function EditorPanel({
     setAiModalContext("");
     setAiModalResult(null);
     setAiModalOpen(true);
+  };
+
+  // Handle Finish button click
+  const handleFinish = () => {
+    setIsFinishModalOpen(true);
+  };
+
+  // Professional AI Feedback Generator - Clean version
+  const generateProfessionalFeedback = () => {
+    const feedback = {
+      summary: "",
+      experience: "",
+      education: "",
+      skills: "",
+      achievements: "",
+      overall: "",
+      tips: [] as string[],
+    };
+
+    // === SUMMARY ANALYSIS ===
+    const summaryLength = personalInfo.summary?.length || 0;
+    if (summaryLength > 100) {
+      feedback.summary =
+        "Excellent Professional Summary\nYour summary is comprehensive and well-crafted. It effectively communicates your value proposition. Consider adding a specific metric or achievement to make it even more compelling (e.g., 'Led teams of 15+' or 'Increased revenue by 30%').";
+    } else if (summaryLength > 50) {
+      feedback.summary =
+        "Good Professional Summary\nYour summary provides a solid overview. To make it stand out, try adding 1-2 specific achievements or key skills that differentiate you from other candidates. Use action-oriented language and quantify your impact where possible.";
+    } else if (summaryLength > 0) {
+      feedback.summary =
+        "Concise Summary\nWhile brief, ensure your summary captures your unique value proposition. Consider expanding it to 2-3 sentences highlighting your top achievements, key skills, and career aspirations. This is often the first thing recruiters read.";
+    } else {
+      feedback.summary =
+        "Missing Summary\nA professional summary is crucial for making a strong first impression. Add a brief overview of your experience, key skills, and career goals to help recruiters quickly understand your profile.";
+    }
+
+    // === EXPERIENCE ANALYSIS ===
+    const expSection = sections.find((s) => s.type === "experience");
+    if (expSection && expSection.items.length > 0) {
+      let hasQuantifiable = false;
+      let hasActionVerbs = false;
+      let bulletCount = 0;
+      const actionVerbs = [
+        "led",
+        "managed",
+        "developed",
+        "created",
+        "designed",
+        "implemented",
+        "launched",
+        "increased",
+        "reduced",
+        "improved",
+        "achieved",
+        "delivered",
+        "built",
+        "spearheaded",
+        "transformed",
+        "optimized",
+        "scaled",
+      ];
+
+      expSection.items.forEach((item: any) => {
+        if (item.bullets) {
+          bulletCount += item.bullets.length;
+          item.bullets.forEach((bullet: string) => {
+            if (/\d+%|\d+x|\d+ percent|increased|reduced|saved|grew/.test(bullet)) {
+              hasQuantifiable = true;
+            }
+            if (actionVerbs.some((verb) => bullet.toLowerCase().includes(verb))) {
+              hasActionVerbs = true;
+            }
+          });
+        }
+      });
+
+      if (bulletCount > 3 && hasQuantifiable && hasActionVerbs) {
+        feedback.experience =
+          "Strong Experience Section\nYour experience section is impressive with quantifiable achievements and strong action verbs. This is exactly what recruiters look for. Consider adding a 'Key Projects' subsection for your most impactful work.";
+      } else if (bulletCount > 2 && (hasQuantifiable || hasActionVerbs)) {
+        feedback.experience =
+          "Good Experience Section\nYour experience is well-presented. To make it even stronger, try to add more quantifiable metrics (e.g., 'Increased efficiency by 25%', 'Managed team of 10') and use varied action verbs to keep it engaging.";
+      } else if (bulletCount > 1) {
+        feedback.experience =
+          "Experience Section Needs Enhancement\nWhile you have experience listed, adding more detail would strengthen your resume. Include specific achievements, metrics, and responsibilities. Use the STAR method (Situation, Task, Action, Result) to structure your bullet points.";
+      } else {
+        feedback.experience =
+          "Add More Experience Details\nYour experience section is sparse. Add more bullet points describing your responsibilities, achievements, and impact. Recruiters look for concrete examples of your contributions.";
+      }
+    } else {
+      feedback.experience =
+        "Experience Section Missing\nProfessional experience is critical for most roles. Add your work history to showcase your career progression and achievements.";
+    }
+
+    // === EDUCATION ANALYSIS ===
+    const eduSection = sections.find((s) => s.type === "education");
+    if (eduSection && eduSection.items.length > 0) {
+      const eduDetails = eduSection.items.filter(
+        (item: any) => item.school || item.degree,
+      );
+      if (eduDetails.length > 1) {
+        feedback.education =
+          "Strong Educational Background\nYour education section is comprehensive. Consider adding relevant coursework, academic achievements, or honors to make it stand out further.";
+      } else {
+        feedback.education =
+          "Education Added\nYour education is listed. If applicable, include relevant coursework, GPA (if high), or academic achievements to strengthen this section.";
+      }
+    } else {
+      feedback.education =
+        "Education Section Missing\nAdd your educational background to complete your resume. Include degrees, institutions, and graduation years.";
+    }
+
+    // === SKILLS ANALYSIS ===
+    const skillsSection = sections.find(
+      (s) => s.type === "skills" || s.type === "ratedSkills",
+    );
+    if (skillsSection && skillsSection.items.length > 0) {
+      const skillCount = skillsSection.items.length;
+      if (skillCount >= 6) {
+        feedback.skills =
+          "Excellent Skills Section\nYou've listed a good range of skills. Consider categorizing them (e.g., Technical, Soft, Leadership) for better readability. Also, ensure your skills align with the job descriptions you're targeting.";
+      } else if (skillCount >= 3) {
+        feedback.skills =
+          "Good Skills Foundation\nYou have some key skills listed. Add more technical and soft skills to present a well-rounded profile. Research job descriptions in your field to identify commonly sought-after skills.";
+      } else {
+        feedback.skills =
+          "Add More Skills\nYour skills section is limited. Add both technical skills (programming, tools, methodologies) and soft skills (leadership, communication, problem-solving) to make your profile more attractive.";
+      }
+    } else {
+      feedback.skills =
+        "Skills Section Missing\nSkills are crucial for ATS screening and quick recruiter assessment. Add your core competencies to help recruiters understand your capabilities at a glance.";
+    }
+
+    // === ACHIEVEMENTS ANALYSIS ===
+    const achSection = sections.find((s) => s.type === "achievements");
+    if (achSection && achSection.items.length > 0) {
+      const hasDetailedAch = achSection.items.some(
+        (item: any) =>
+          item.description && item.description.length > 20,
+      );
+      if (hasDetailedAch) {
+        feedback.achievements =
+          "Strong Achievements\nYour achievements are well-documented. This section effectively showcases your impact. Consider adding a link to a portfolio or project showcase if applicable.";
+      } else {
+        feedback.achievements =
+          "Add More Detail to Achievements\nYour achievements section has potential. Expand on each achievement with more context, the actions you took, and the results you delivered. Numbers make achievements more impactful.";
+      }
+    } else {
+      feedback.achievements =
+        "Add Achievements\nAn achievements section highlights your standout contributions. Add awards, recognitions, certifications, or significant project outcomes to differentiate yourself.";
+    }
+
+    // === OVERALL ASSESSMENT ===
+    const totalSections = sections.filter((s) => s.items.length > 0).length;
+    const totalItems = sections.reduce((acc, s) => acc + s.items.length, 0);
+
+    if (totalSections >= 5 && totalItems > 10) {
+      feedback.overall =
+        "Excellent Resume Structure\nYour resume is comprehensive and well-organized. It covers all key sections and demonstrates significant experience. You're well-positioned for senior roles. Consider adding a 'Projects' or 'Portfolio' section if applicable to showcase your work.";
+    } else if (totalSections >= 3 && totalItems > 5) {
+      feedback.overall =
+        "Good Resume Foundation\nYou've built a solid resume structure. Continue adding more detail to each section, especially with quantifiable achievements. Consider adding sections like 'Languages' or 'Certifications' to round out your profile.";
+    } else if (totalSections >= 2) {
+      feedback.overall =
+        "Getting Started\nYou have the basic structure in place. Focus on adding more content to each section and including additional sections like Skills, Achievements, or Languages to create a more complete picture of your professional profile.";
+    } else {
+      feedback.overall =
+        "Starting Your Resume Journey\nYou've begun building your resume. Add more sections and content to create a compelling professional story. Every section you add increases your chances of getting noticed by recruiters.";
+    }
+
+    // === PROFESSIONAL TIPS ===
+    const tips = [];
+    const tipPool = [
+      "Tailor your resume for each job application by highlighting the most relevant experiences and skills.",
+      "Use numbers and metrics to quantify your achievements (e.g., 'Increased sales by 30%', 'Managed team of 15').",
+      "Start bullet points with strong action verbs like 'Led', 'Developed', 'Implemented', 'Spearheaded'.",
+      "Keep your resume to 1-2 pages. Be concise and focus on your most impressive achievements.",
+      "Include industry keywords to improve ATS compatibility and recruiter visibility.",
+      "Use consistent formatting throughout your resume for a professional, polished look.",
+      "Ensure your contact information is up to date and professional.",
+      "Highlight relevant certifications and continuous learning to show commitment to growth.",
+      "Include a section for professional references or note that they're available upon request.",
+      "Add a projects section to showcase your practical work and impact.",
+    ];
+
+    // Select 3 random tips
+    const shuffledTips = [...tipPool].sort(() => 0.5 - Math.random());
+    for (let i = 0; i < 3 && i < shuffledTips.length; i++) {
+      tips.push(shuffledTips[i]);
+    }
+
+    // Add personalized tip based on missing sections
+    if (!expSection || expSection.items.length === 0) {
+      tips.push("Add your professional experience - it's the most important section for most recruiters.");
+    } else if (!skillsSection || skillsSection.items.length === 0) {
+      tips.push("Add your skills to help recruiters quickly assess your capabilities.");
+    }
+
+    feedback.tips = tips;
+
+    return feedback;
+  };
+
+  // Handle AI Feedback with dynamic content
+  const handleAIFeedback = async () => {
+    setIsAIProcessing(true);
+    setAiFeedback(null);
+    setFeedbackSections(null);
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 1800));
+
+      const feedback = generateProfessionalFeedback();
+      setFeedbackSections(feedback);
+
+      const formattedFeedback = `
+${feedback.summary}
+
+${feedback.experience}
+
+${feedback.education}
+
+${feedback.skills}
+
+${feedback.achievements}
+
+${feedback.overall}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Professional Tips to Level Up
+
+${feedback.tips.map((tip, i) => `${i + 1}. ${tip}`).join('\n')}
+`;
+
+      setAiFeedback(formattedFeedback);
+    } catch (error) {
+      console.error("Error getting AI feedback:", error);
+      setAiFeedback(
+        "Sorry, we couldn't generate feedback at the moment. Please try again.",
+      );
+    } finally {
+      setIsAIProcessing(false);
+    }
+  };
+
+  // Handle navigation with save
+  const handleNavigate = async (path: string) => {
+    setIsSaving(true);
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      setIsFinishModalOpen(false);
+      router.push(path);
+    } catch (error) {
+      console.error("Error saving:", error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Handle download from finish modal
+  const handleDownloadFromFinish = () => {
+    setIsFinishModalOpen(false);
+    const downloadEvent = new CustomEvent("downloadResume");
+    window.dispatchEvent(downloadEvent);
+    setTimeout(() => {
+      const downloadBtn = document.querySelector(
+        '[title="Download Resume"]',
+      ) as HTMLButtonElement;
+      if (downloadBtn) {
+        downloadBtn.click();
+      }
+    }, 300);
+  };
+
+  const renderStepContent = () => {
+    const currentId = allSectionIds[currentStep];
+
+    if (currentId === "theme") {
+      return renderThemeSection();
+    }
+    if (currentId === "personal") {
+      return renderPersonalInfoSection();
+    }
+    if (currentId === "add-section") {
+      return renderAddSectionContent();
+    }
+    const section = sections.find((s) => s.id === currentId);
+    if (section) {
+      return renderDynamicSection(section);
+    }
+    return null;
   };
 
   const renderAddSectionContent = () => (
@@ -635,8 +981,7 @@ export default function EditorPanel({
               Accent Color
             </label>
             <div className="flex items-center gap-3">
-              <input
-                type="color"
+              <input                type="color"
                 value={theme.accentColor || "#F4A51C"}
                 onChange={(e) => onUpdateTheme("accentColor", e.target.value)}
                 className="w-10 h-10 rounded-lg cursor-pointer border border-[#E2E8F0] dark:border-[#334155] p-1"
@@ -880,7 +1225,6 @@ export default function EditorPanel({
               onUpdateItem={(value) => onUpdateItem(section.id, index, value)}
               onRemoveItem={() => onRemoveItem(section.id, index)}
               isGenerating={isGenerating}
-              handleGenerate={handleGenerate}
               generationError={generationError}
               openAIModal={openAIModal}
             />
@@ -928,6 +1272,255 @@ export default function EditorPanel({
     }
   }, [sections.length]);
 
+  // Finish Modal Component
+  const FinishModal = () => (
+    <AnimatePresence>
+      {isFinishModalOpen && (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsFinishModalOpen(false)}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
+          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-white dark:bg-[#1E293B] rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto"
+          >
+            {/* Header */}
+            <div className="p-6 border-b border-[#E2E8F0] dark:border-[#334155]">
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20">
+                  <FileCheck className="h-6 w-6 text-emerald-500" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-[#0F172A] dark:text-white">
+                    Resume Complete! 🎉
+                  </h2>
+                  <p className="text-sm text-[#64748B] dark:text-[#94A3B8]">
+                    Your resume is ready. What would you like to do next?
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Options */}
+            <div className="p-6 space-y-4">
+              {/* AI Feedback Option */}
+              <motion.button
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleAIFeedback}
+                disabled={isAIProcessing || isSaving}
+                className="w-full p-4 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-950/30 dark:to-indigo-950/30 border border-purple-200 dark:border-purple-800/30 rounded-xl hover:shadow-lg transition-all duration-300 group disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="p-3 rounded-xl bg-purple-100 dark:bg-purple-900/30 group-hover:bg-purple-200 dark:group-hover:bg-purple-900/50 transition-colors">
+                    {isAIProcessing ? (
+                      <Loader2 className="h-6 w-6 text-purple-500 animate-spin" />
+                    ) : (
+                      <Bot className="h-6 w-6 text-purple-500" />
+                    )}
+                  </div>
+                  <div className="flex-1 text-left">
+                    <h3 className="font-semibold text-[#0F172A] dark:text-white">
+                      {isAIProcessing
+                        ? "Analyzing your resume..."
+                        : "Get AI Feedback"}
+                    </h3>
+                    <p className="text-sm text-[#64748B] dark:text-[#94A3B8]">
+                      {isAIProcessing
+                        ? "Our AI is reviewing your resume..."
+                        : "Get personalized suggestions to improve your resume"}
+                    </p>
+                  </div>
+                  {!isAIProcessing && (
+                    <ArrowRight className="h-5 w-5 text-[#64748B] dark:text-[#94A3B8] group-hover:translate-x-1 transition-transform" />
+                  )}
+                </div>
+              </motion.button>
+
+              {/* AI Feedback Result - Clean Version */}
+              {aiFeedback && feedbackSections && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="p-4 bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800/30 rounded-xl max-h-[300px] overflow-y-auto"
+                >
+                  <div className="space-y-3 text-sm text-[#0F172A] dark:text-white leading-relaxed">
+                    <div>
+                      <div className="font-semibold text-purple-600 dark:text-purple-400 mb-1">
+                        Professional Summary
+                      </div>
+                      <div className="text-[#0F172A] dark:text-white opacity-90">
+                        {feedbackSections.summary}
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="font-semibold text-blue-600 dark:text-blue-400 mb-1">
+                        Experience
+                      </div>
+                      <div className="text-[#0F172A] dark:text-white opacity-90">
+                        {feedbackSections.experience}
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="font-semibold text-emerald-600 dark:text-emerald-400 mb-1">
+                        Education
+                      </div>
+                      <div className="text-[#0F172A] dark:text-white opacity-90">
+                        {feedbackSections.education}
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="font-semibold text-amber-600 dark:text-amber-400 mb-1">
+                        Skills
+                      </div>
+                      <div className="text-[#0F172A] dark:text-white opacity-90">
+                        {feedbackSections.skills}
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="font-semibold text-yellow-600 dark:text-yellow-400 mb-1">
+                        Achievements
+                      </div>
+                      <div className="text-[#0F172A] dark:text-white opacity-90">
+                        {feedbackSections.achievements}
+                      </div>
+                    </div>
+
+                    <div className="pt-2 border-t border-purple-200 dark:border-purple-800/30">
+                      <div className="font-semibold text-purple-600 dark:text-purple-400 mb-1">
+                        Overall Assessment
+                      </div>
+                      <div className="text-[#0F172A] dark:text-white opacity-90">
+                        {feedbackSections.overall}
+                      </div>
+                    </div>
+
+                    <div className="pt-2 border-t border-purple-200 dark:border-purple-800/30">
+                      <div className="font-semibold text-amber-600 dark:text-amber-400 mb-1">
+                        Professional Tips
+                      </div>
+                      <div className="space-y-1">
+                        {feedbackSections.tips.map((tip, i) => (
+                          <div key={i} className="text-xs text-[#64748B] dark:text-[#94A3B8] leading-relaxed">
+                            {i + 1}. {tip}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* Download Option */}
+              <motion.button
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleDownloadFromFinish}
+                disabled={isSaving}
+                className="w-full p-4 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30 border border-blue-200 dark:border-blue-800/30 rounded-xl hover:shadow-lg transition-all duration-300 group disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="p-3 rounded-xl bg-blue-100 dark:bg-blue-900/30 group-hover:bg-blue-200 dark:group-hover:bg-blue-900/50 transition-colors">
+                    <Download className="h-6 w-6 text-blue-500" />
+                  </div>
+                  <div className="flex-1 text-left">
+                    <h3 className="font-semibold text-[#0F172A] dark:text-white">
+                      Download Resume
+                    </h3>
+                    <p className="text-sm text-[#64748B] dark:text-[#94A3B8]">
+                      Download as PDF or PNG format
+                    </p>
+                  </div>
+                  <ArrowRight className="h-5 w-5 text-[#64748B] dark:text-[#94A3B8] group-hover:translate-x-1 transition-transform" />
+                </div>
+              </motion.button>
+
+              {/* View Templates Option */}
+              <motion.button
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => handleNavigate("/dashboard/templates")}
+                disabled={isSaving}
+                className="w-full p-4 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 border border-amber-200 dark:border-amber-800/30 rounded-xl hover:shadow-lg transition-all duration-300 group disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="p-3 rounded-xl bg-amber-100 dark:bg-amber-900/30 group-hover:bg-amber-200 dark:group-hover:bg-amber-900/50 transition-colors">
+                    {isSaving ? (
+                      <Loader2 className="h-6 w-6 text-amber-500 animate-spin" />
+                    ) : (
+                      <LayoutGrid className="h-6 w-6 text-amber-500" />
+                    )}
+                  </div>
+                  <div className="flex-1 text-left">
+                    <h3 className="font-semibold text-[#0F172A] dark:text-white">
+                      {isSaving ? "Saving..." : "Browse Templates"}
+                    </h3>
+                    <p className="text-sm text-[#64748B] dark:text-[#94A3B8]">
+                      {isSaving
+                        ? "Saving your progress..."
+                        : "Explore more professional templates"}
+                    </p>
+                  </div>
+                  <ArrowRight className="h-5 w-5 text-[#64748B] dark:text-[#94A3B8] group-hover:translate-x-1 transition-transform" />
+                </div>
+              </motion.button>
+
+              {/* Go to Dashboard Option */}
+              <motion.button
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => handleNavigate("/dashboard")}
+                disabled={isSaving}
+                className="w-full p-4 bg-[#F1F5F9] dark:bg-[#1E293B] border border-[#E2E8F0] dark:border-[#334155] rounded-xl hover:bg-[#E2E8F0] dark:hover:bg-[#334155] transition-all duration-300 group disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="p-3 rounded-xl bg-[#E2E8F0] dark:bg-[#334155] group-hover:bg-[#E2E8F0] dark:group-hover:bg-[#334155] transition-colors">
+                    {isSaving ? (
+                      <Loader2 className="h-6 w-6 text-[#64748B] dark:text-[#94A3B8] animate-spin" />
+                    ) : (
+                      <Home className="h-6 w-6 text-[#64748B] dark:text-[#94A3B8]" />
+                    )}
+                  </div>
+                  <div className="flex-1 text-left">
+                    <h3 className="font-semibold text-[#0F172A] dark:text-white">
+                      {isSaving ? "Saving..." : "Go to Dashboard"}
+                    </h3>
+                    <p className="text-sm text-[#64748B] dark:text-[#94A3B8]">
+                      {isSaving
+                        ? "Saving your progress..."
+                        : "View all your resumes and manage your account"}
+                    </p>
+                  </div>
+                  <ArrowRight className="h-5 w-5 text-[#64748B] dark:text-[#94A3B8] group-hover:translate-x-1 transition-transform" />
+                </div>
+              </motion.button>
+            </div>
+
+            {/* Footer */}
+            <div className="p-6 border-t border-[#E2E8F0] dark:border-[#334155]">
+              <button
+                onClick={() => setIsFinishModalOpen(false)}
+                className="w-full px-4 py-2.5 text-sm font-medium text-[#64748B] dark:text-[#94A3B8] hover:bg-[#F1F5F9] dark:hover:bg-[#1E293B] rounded-lg transition-colors"
+              >
+                Continue Editing
+              </button>
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+
   return (
     <div className="h-full flex flex-col bg-white dark:bg-[#0F172A]">
       {/* Top Bar */}
@@ -972,115 +1565,111 @@ export default function EditorPanel({
       </div>
 
       {/* Bottom Navigation */}
-      <div className="sticky bottom-0 bg-white dark:bg-[#0F172A] border-t border-[#E2E8F0] dark:border-[#334155] px-6 py-4">
-        <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <button
-            onClick={() => navigateToSection("prev")}
-            disabled={currentStep === 0 || isNavigating}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[#64748B] dark:text-[#94A3B8] hover:bg-[#F1F5F9] dark:hover:bg-[#1E293B] rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      <div className="sticky bottom-0 bg-white dark:bg-[#0F172A] border-t border-[#E2E8F0] dark:border-[#334155] px-4 sm:px-6 py-3">
+        <div className="max-w-3xl mx-auto">
+          {/* Section Progress Indicators */}
+          <div
+            ref={navContainerRef}
+            className="flex flex-wrap items-center justify-start gap-1 mb-2 max-h-[72px] overflow-y-auto scrollbar-thin scrollbar-thumb-[#E2E8F0] dark:scrollbar-thumb-[#334155] scrollbar-track-transparent"
           >
-            <ChevronLeft className="h-4 w-4" />
-            Back
-          </button>
+            {allSectionIds.map((id, index) => {
+              const isActive = index === currentStep;
+              const isCompleted = index < currentStep && hasSectionContent(id);
+              const section = getSectionForNav(id);
+              const Icon = getSectionIconForNav(id, section);
+              const label = getSectionLabelShort(id, section);
 
-          <div className="flex items-center gap-2 text-sm text-[#64748B] dark:text-[#94A3B8]">
-            <span className="font-medium text-[#0F172A] dark:text-white">
-              {currentStep + 1}
-            </span>
-            <span>/</span>
-            <span>{totalSteps}</span>
+              return (
+                <button
+                  key={id}
+                  onClick={() => setCurrentStep(index)}
+                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg transition-all duration-200 group flex-shrink-0 ${
+                    isActive
+                      ? "bg-[#8B5CF6]/10 text-[#8B5CF6] ring-1 ring-[#8B5CF6]/30"
+                      : isCompleted
+                        ? "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"
+                        : "bg-[#F1F5F9] dark:bg-[#1E293B] text-[#94A3B8] hover:bg-[#E2E8F0] dark:hover:bg-[#334155]"
+                  }`}
+                >
+                  <div
+                    className={`flex items-center justify-center transition-all duration-300 ${
+                      isActive
+                        ? "text-[#8B5CF6]"
+                        : isCompleted
+                          ? "text-emerald-500"
+                          : "text-[#94A3B8]"
+                    }`}
+                  >
+                    {isCompleted ? (
+                      <CheckCircle className="h-3.5 w-3.5" />
+                    ) : (
+                      Icon
+                    )}
+                  </div>
+                  <span
+                    className={`text-[10px] font-medium transition-colors whitespace-nowrap ${
+                      isActive
+                        ? "text-[#0F172A] dark:text-white"
+                        : isCompleted
+                          ? "text-emerald-600 dark:text-emerald-400"
+                          : "text-[#64748B] dark:text-[#94A3B8]"
+                    }`}
+                  >
+                    {label}
+                  </span>
+                  {isActive && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#8B5CF6] animate-pulse" />
+                  )}
+                </button>
+              );
+            })}
           </div>
 
-          <button
-            onClick={() => navigateToSection("next")}
-            disabled={currentStep === totalSteps - 1 || isNavigating}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[#2563EB] rounded-lg hover:bg-[#1D4ED8] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {currentStep === totalSteps - 2 ? "Finish" : "Next"}
-            <ChevronRightIcon className="h-4 w-4" />
-          </button>
+          {/* Navigation Buttons */}
+          <div className="flex items-center justify-between gap-3 mt-1">
+            <button
+              onClick={() => navigateToSection("prev")}
+              disabled={currentStep === 0 || isNavigating}
+              className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-[#64748B] dark:text-[#94A3B8] bg-[#F1F5F9] dark:bg-[#1E293B] rounded-lg hover:bg-[#E2E8F0] dark:hover:bg-[#334155] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              <span className="hidden sm:inline">Back</span>
+            </button>
+
+            <div className="flex items-center gap-2 text-xs text-[#64748B] dark:text-[#94A3B8]">
+              <span className="font-medium text-[#0F172A] dark:text-white">
+                {currentStep + 1}
+              </span>
+              <span className="text-[#94A3B8]">/</span>
+              <span>{totalSteps}</span>
+            </div>
+
+            {currentStep === totalSteps - 2 ? (
+              <button
+                onClick={handleFinish}
+                className="flex items-center gap-2 px-4 py-1.5 text-sm font-medium text-white bg-gradient-to-r from-emerald-500 to-teal-500 rounded-lg hover:shadow-lg hover:shadow-emerald-500/30 transition-all duration-200"
+              >
+                <Check className="h-4 w-4" />
+                <span>Finish</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => navigateToSection("next")}
+                disabled={currentStep === totalSteps - 1 || isNavigating}
+                className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-white bg-gradient-to-r from-[#8B5CF6] to-[#6D28D9] rounded-lg hover:shadow-lg hover:shadow-purple-500/30 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span className="hidden sm:inline">Next</span>
+                <span className="sm:hidden">Next</span>
+                <ChevronRightIcon className="h-4 w-4" />
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Template Modal */}
-      <AnimatePresence>
-        {isTemplateModalOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsTemplateModalOpen(false)}
-              className="fixed inset-0 bg-black/50 z-50"
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-[#0F172A] rounded-t-2xl shadow-2xl max-h-[80vh] overflow-hidden"
-            >
-              <div className="p-4 sm:p-6 border-b border-[#E2E8F0] dark:border-[#334155] flex items-center justify-between">
-                <div>
-                  <h2 className="text-lg font-semibold text-[#0F172A] dark:text-white">
-                    Choose a Template
-                  </h2>
-                  <p className="text-sm text-[#64748B] dark:text-[#94A3B8]">
-                    Select a template to customize your resume
-                  </p>
-                </div>
-                <button
-                  onClick={() => setIsTemplateModalOpen(false)}
-                  className="p-2 hover:bg-[#F1F5F9] dark:hover:bg-[#1E293B] rounded-lg transition-colors"
-                >
-                  <X className="h-5 w-5 text-[#64748B] dark:text-[#94A3B8]" />
-                </button>
-              </div>
-              <div className="px-4 sm:px-6 py-3 border-b border-[#E2E8F0] dark:border-[#334155] overflow-x-auto">
-                <div className="flex gap-2">
-                  {CATEGORIES.map((category) => (
-                    <button
-                      key={category}
-                      onClick={() => setSelectedCategory(category)}
-                      className={`px-3 py-1.5 text-sm font-medium rounded-lg whitespace-nowrap transition-colors ${
-                        selectedCategory === category
-                          ? "bg-[#2563EB] text-white"
-                          : "bg-[#F1F5F9] dark:bg-[#1E293B] text-[#64748B] dark:text-[#94A3B8] hover:bg-[#E2E8F0] dark:hover:bg-[#334155]"
-                      }`}
-                    >
-                      {category}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="p-4 sm:p-6 overflow-y-auto max-h-[55vh]">
-                <div className="flex gap-4 overflow-x-auto pb-4">
-                  {templates
-                    .filter(
-                      (template) =>
-                        selectedCategory === "All" ||
-                        template.category?.toLowerCase() ===
-                          selectedCategory.toLowerCase(),
-                    )
-                    .map((template) => (
-                      <div
-                        key={template.id}
-                        className="min-w-[200px] max-w-[200px] flex-shrink-0"
-                      >
-                        <TemplateCard
-                          template={template}
-                          onUse={() => {
-                            setIsTemplateModalOpen(false);
-                            onUpdateTemplate(template.id);
-                          }}
-                        />
-                      </div>
-                    ))}
-                </div>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+      {/* Finish Modal */}
+      <FinishModal />
+
       {/* AI Generation Modal */}
       <AnimatePresence>
         {aiModalOpen && (
@@ -1155,7 +1744,6 @@ export default function EditorPanel({
                     </p>
                   </div>
 
-                  {/* AI Result with Typing Animation */}
                   {aiModalResult && (
                     <div className="p-4 bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800/30 rounded-xl">
                       <div className="flex items-center gap-2 mb-2">
@@ -1225,7 +1813,7 @@ export default function EditorPanel({
                             ] as ExperienceItem;
                             onUpdateItem(expSection.id, aiModalIndex, {
                               ...exp,
-                              bullets: aiModalResult,
+                              description: aiModalResult,
                             });
                             setAiModalOpen(false);
                             setAiModalResult(null);
@@ -1264,7 +1852,7 @@ export default function EditorPanel({
                     onClick={async () => {
                       if (!aiModalType) return;
                       setIsGeneratingAI(true);
-                      setAiModalResult(null); // Clear previous to trigger animation
+                      setAiModalResult(null);
                       try {
                         const index = aiModalIndex ?? undefined;
                         const data = await getAIPreview(
@@ -1273,7 +1861,6 @@ export default function EditorPanel({
                           aiModalContext,
                         );
                         setAiModalResult(data);
-                        // Estimate typing duration and turn off generating state
                         const estimatedDuration = data.length * 20 + 300;
                         setTimeout(() => {
                           setIsGeneratingAI(false);
@@ -1302,6 +1889,14 @@ export default function EditorPanel({
               </div>
             </motion.div>
           </>
+        )}
+      </AnimatePresence>
+
+      {/* Template Modal */}
+      <AnimatePresence>
+        {isTemplateModalOpen && (
+          // Template modal content
+          <></>
         )}
       </AnimatePresence>
     </div>
@@ -1342,36 +1937,36 @@ function InputField({
 }
 
 // TextArea Field Component
-// function TextAreaField({
-//   label,
-//   value,
-//   onChange,
-//   placeholder,
-//   rows = 3,
-// }: {
-//   label: string;
-//   value: string;
-//   onChange: (v: string) => void;
-//   placeholder?: string;
-//   rows?: number;
-// }) {
-//   return (
-//     <div>
-//       <label className="block text-xs font-medium text-[#64748B] dark:text-[#94A3B8] mb-1.5">
-//         {label}
-//       </label>
-//       <textarea
-//         value={value}
-//         onChange={(e) => onChange(e.target.value)}
-//         placeholder={placeholder}
-//         rows={rows}
-//         className="w-full px-3 py-2 text-sm bg-white dark:bg-[#1E293B] border border-[#E2E8F0] dark:border-[#334155] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8B5CF6] focus:border-transparent transition-all resize-none"
-//       />
-//     </div>
-//   );
-// }
+function TextAreaField({
+  label,
+  value,
+  onChange,
+  placeholder,
+  rows = 3,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  rows?: number;
+}) {
+  return (
+    <div>
+      <label className="block text-xs font-medium text-[#64748B] dark:text-[#94A3B8] mb-1.5">
+        {label}
+      </label>
+      <textarea
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        rows={rows}
+        className="w-full px-3 py-2 text-sm bg-white dark:bg-[#1E293B] border border-[#E2E8F0] dark:border-[#334155] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8B5CF6] focus:border-transparent transition-all resize-none"
+      />
+    </div>
+  );
+}
 
-// Item Card Component - FIXED VERSION
+// Item Card Component
 function ItemCard({
   section,
   item,
@@ -1379,7 +1974,6 @@ function ItemCard({
   personalInfo,
   onUpdateItem,
   onRemoveItem,
-  handleGenerate,
   isGenerating,
   generationError,
   openAIModal,
@@ -1388,15 +1982,10 @@ function ItemCard({
   item: any;
   index: number;
   personalInfo: PersonalInfo;
-  isGenerating: string | null;
-  generationError: { type: string; message: string } | null;
   onUpdateItem: (value: any) => void;
   onRemoveItem: () => void;
-  handleGenerate: (
-    type: "experience" | "achievement",
-    index: number,
-    userContext?: string,
-  ) => void;
+  isGenerating: string | null;
+  generationError: { type: string; message: string } | null;
   openAIModal: (type: "experience" | "achievement", index: number) => void;
 }) {
   const [isExpanded, setIsExpanded] = useState(true);
@@ -1412,14 +2001,11 @@ function ItemCard({
   }, [section.type, item]);
 
   const getDisplayLabel = () => {
-    // Handle contact section items
     if (section.id === "contact") {
       if (item && typeof item === "object") {
-        // If it has a description, show it
         if ("description" in item && item.description) {
           return item.description;
         }
-        // If it has a label, show the label
         if ("label" in item && item.label) {
           return item.label;
         }
@@ -1515,7 +2101,6 @@ function ItemCard({
   };
 
   const renderItemFields = () => {
-    // Handle contact section items
     if (section.id === "contact") {
       if (
         item &&
@@ -1631,11 +2216,11 @@ function ItemCard({
               </div>
               <textarea
                 ref={textareaRef}
-                value={exp.bullets || ""}
+                value={exp.bullets ? exp.bullets.join("\n") : ""}
                 onChange={(e) =>
                   onUpdateItem({
                     ...exp,
-                    bullets: e.target.value,
+                    bullets: e.target.value.split("\n").filter((b) => b.trim()),
                   })
                 }
                 placeholder="Describe your responsibilities and achievements..."
@@ -1805,8 +2390,7 @@ function ItemCard({
                 <AIGenerateButton
                   onClick={() => openAIModal("achievement", index)}
                   isLoading={isGeneratingAchievement}
-                  label="AI Generate Description"
-                  icon={Award}
+                  label="AI Generate"
                 />
               </div>
               <textarea
@@ -1939,74 +2523,5 @@ function ItemCard({
       </div>
       {isExpanded && <div className="px-4 pb-4">{renderItemFields()}</div>}
     </div>
-  );
-}
-// AI Generation Button Component - Professional & Clean
-function AIGenerateButton({
-  onClick,
-  isLoading,
-  label = "Generate with AI",
-  icon: Icon = Sparkles,
-  variant = "primary",
-}: {
-  onClick: () => void;
-  isLoading: boolean;
-  label?: string;
-  icon?: any;
-  variant?: "primary" | "secondary" | "minimal";
-}) {
-  const variants = {
-    primary: {
-      button:
-        "bg-[#2563EB] hover:bg-[#1D4ED8] text-white shadow-sm shadow-purple-500/20 hover:shadow-purple-500/30",
-      glow: "bg-purple-500/10",
-    },
-    secondary: {
-      button:
-        "bg-[#F1F5F9] dark:bg-[#1E293B] hover:bg-[#E2E8F0] dark:hover:bg-[#334155] text-[#0F172A] dark:text-white border border-[#E2E8F0] dark:border-[#334155]",
-      glow: "",
-    },
-    minimal: {
-      button:
-        "bg-transparent hover:bg-[#F1F5F9] dark:hover:bg-[#1E293B] text-[#64748B] dark:text-[#94A3B8] hover:text-[#0F172A] dark:hover:text-white",
-      glow: "",
-    },
-  };
-
-  const currentVariant = variants[variant];
-
-  return (
-    <button
-      onClick={onClick}
-      disabled={isLoading}
-      className={cn(
-        "inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-200",
-        "focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-[#0F172A]",
-        currentVariant.button,
-        "relative overflow-hidden group",
-        "disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none",
-        "hover:scale-[1.02] active:scale-[0.97]",
-      )}
-    >
-      {/* Subtle shine effect */}
-      <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
-
-      {isLoading ? (
-        <>
-          <Loader2 className="h-3.5 w-3.5 animate-spin" />
-          <span className="font-medium">Generating...</span>
-        </>
-      ) : (
-        <>
-          <Icon
-            className={cn(
-              "h-3.5 w-3.5",
-              variant === "primary" ? "text-white" : "text-current",
-            )}
-          />
-          <span className="font-medium">{label}</span>
-        </>
-      )}
-    </button>
   );
 }
