@@ -160,6 +160,16 @@ const ADDABLE_TYPES: {
     icon: <Code className="h-4 w-4" />,
   },
   {
+    type: "experience",
+    label: "Experience",
+    icon: <Briefcase className="h-4 w-4" />,
+  },
+  {
+    type: "education",
+    label: "Education",
+    icon: <GraduationCap className="h-4 w-4" />,
+  },
+  {
     type: "custom",
     label: "Custom",
     icon: <Plus className="h-4 w-4" />,
@@ -635,7 +645,7 @@ export default function EditorPanel({
     setIsFinishModalOpen(true);
   };
 
-  // Professional AI Feedback Generator - Clean version
+  // Professional AI Feedback Generator
   const generateProfessionalFeedback = () => {
     const feedback = {
       summary: "",
@@ -981,7 +991,8 @@ ${feedback.tips.map((tip, i) => `${i + 1}. ${tip}`).join('\n')}
               Accent Color
             </label>
             <div className="flex items-center gap-3">
-              <input                type="color"
+              <input
+                type="color"
                 value={theme.accentColor || "#F4A51C"}
                 onChange={(e) => onUpdateTheme("accentColor", e.target.value)}
                 className="w-10 h-10 rounded-lg cursor-pointer border border-[#E2E8F0] dark:border-[#334155] p-1"
@@ -1343,7 +1354,7 @@ ${feedback.tips.map((tip, i) => `${i + 1}. ${tip}`).join('\n')}
                 </div>
               </motion.button>
 
-              {/* AI Feedback Result - Clean Version */}
+              {/* AI Feedback Result */}
               {aiFeedback && feedbackSections && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
@@ -1656,7 +1667,7 @@ ${feedback.tips.map((tip, i) => `${i + 1}. ${tip}`).join('\n')}
               <button
                 onClick={() => navigateToSection("next")}
                 disabled={currentStep === totalSteps - 1 || isNavigating}
-                className="flex items-center gap-2 px-2 py-1.5 text-sm font-medium text-white bg-gradient-to-r from-[#2563EB] to-[#1D4ED8] rounded-lg hover:shadow-lg hover:shadow-purple-500/30 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-white bg-gradient-to-r from-[#8B5CF6] to-[#6D28D9] rounded-lg hover:shadow-lg hover:shadow-purple-500/30 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <span className="hidden sm:inline">Next</span>
                 <span className="sm:hidden">Next</span>
@@ -1690,7 +1701,7 @@ ${feedback.tips.map((tip, i) => `${i + 1}. ${tip}`).join('\n')}
               <div className="p-6 border-b border-[#E2E8F0] dark:border-[#334155] flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-xl bg-gradient-to-br from-purple-500/20 to-indigo-500/20">
-                    <Sparkles className="h-5 w-5 text-[#1D4ED8]" />
+                    <Sparkles className="h-5 w-5 text-purple-500" />
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-[#0F172A] dark:text-white">
@@ -1892,11 +1903,88 @@ ${feedback.tips.map((tip, i) => `${i + 1}. ${tip}`).join('\n')}
         )}
       </AnimatePresence>
 
-      {/* Template Modal */}
+      {/* Templates Modal - COMPLETED */}
       <AnimatePresence>
         {isTemplateModalOpen && (
-          // Template modal content
-          <></>
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsTemplateModalOpen(false)}
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-[#0F172A] rounded-t-2xl shadow-2xl max-h-[80vh] overflow-hidden"
+              style={{ maxWidth: "100%" }}
+            >
+              <div className="p-4 sm:p-6 border-b border-[#E2E8F0] dark:border-[#334155] flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-semibold text-[#0F172A] dark:text-white">
+                    Choose a Template
+                  </h2>
+                  <p className="text-sm text-[#64748B] dark:text-[#94A3B8]">
+                    Select a template to customize your resume
+                  </p>
+                </div>
+                <button
+                  onClick={() => setIsTemplateModalOpen(false)}
+                  className="p-2 hover:bg-[#F1F5F9] dark:hover:bg-[#1E293B] rounded-lg transition-colors"
+                >
+                  <X className="h-5 w-5 text-[#64748B] dark:text-[#94A3B8]" />
+                </button>
+              </div>
+
+              {/* Categories */}
+              <div className="px-4 sm:px-6 py-3 border-b border-[#E2E8F0] dark:border-[#334155] overflow-x-auto">
+                <div className="flex gap-2">
+                  {CATEGORIES.map((category) => (
+                    <button
+                      key={category}
+                      onClick={() => setSelectedCategory(category)}
+                      className={`px-3 py-1.5 text-sm font-medium rounded-lg whitespace-nowrap transition-colors ${
+                        selectedCategory === category
+                          ? "bg-[#2563EB] text-white"
+                          : "bg-[#F1F5F9] dark:bg-[#1E293B] text-[#64748B] dark:text-[#94A3B8] hover:bg-[#E2E8F0] dark:hover:bg-[#334155]"
+                      }`}
+                    >
+                      {category}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Templates Grid */}
+              <div className="p-4 sm:p-6 overflow-y-auto max-h-[55vh]">
+                <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-[#CBD5E1] dark:scrollbar-thumb-[#334155] scrollbar-track-transparent">
+                  {templates
+                    .filter(
+                      (template) =>
+                        selectedCategory === "All" ||
+                        template.category?.toLowerCase() ===
+                          selectedCategory.toLowerCase(),
+                    )
+                    .map((template) => (
+                      <div
+                        key={template.id}
+                        className="min-w-[200px] max-w-[200px] flex-shrink-0"
+                      >
+                        <TemplateCard
+                          template={template}
+                          onUse={() => {
+                            setIsTemplateModalOpen(false);
+                            onUpdateTemplate(template.id);
+                          }}
+                        />
+                      </div>
+                    ))}
+                </div>
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
     </div>
@@ -1931,36 +2019,6 @@ function InputField({
         placeholder={placeholder}
         autoFocus={autoFocus}
         className="w-full px-3 py-2 text-sm bg-white dark:bg-[#1E293B] border border-[#E2E8F0] dark:border-[#334155] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8B5CF6] focus:border-transparent transition-all"
-      />
-    </div>
-  );
-}
-
-// TextArea Field Component
-function TextAreaField({
-  label,
-  value,
-  onChange,
-  placeholder,
-  rows = 3,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  placeholder?: string;
-  rows?: number;
-}) {
-  return (
-    <div>
-      <label className="block text-xs font-medium text-[#64748B] dark:text-[#94A3B8] mb-1.5">
-        {label}
-      </label>
-      <textarea
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        rows={rows}
-        className="w-full px-3 py-2 text-sm bg-white dark:bg-[#1E293B] border border-[#E2E8F0] dark:border-[#334155] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8B5CF6] focus:border-transparent transition-all resize-none"
       />
     </div>
   );
