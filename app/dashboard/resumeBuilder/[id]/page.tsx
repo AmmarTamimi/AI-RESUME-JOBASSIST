@@ -269,6 +269,7 @@ export default function ResumeBuilderPage() {
     <div className="flex h-screen overflow-hidden bg-[#F8FAFC] dark:bg-[#0F172A]">
       <div className="w-[480px] flex-shrink-0 border-r border-[#E2E8F0] dark:border-[#334155] overflow-y-auto">
         <EditorPanel
+          resumeId={resume.id}
           personalInfo={resume.content.personalInfo}
           sections={orderedSections}
           theme={resume.theme}

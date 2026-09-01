@@ -63,6 +63,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { templates } from "../templates/templates";
 import { AnimatePresence, motion } from "framer-motion";
+import { saveResumeLocal } from "@/app/lib/resumeStore";
 
 // Template Card Component
 function TemplateCard({
@@ -113,6 +114,7 @@ function TemplateCard({
 }
 
 interface EditorPanelProps {
+  resumeId:string;
   personalInfo: PersonalInfo;
   sections: Section[];
   theme: ResumeTheme;
@@ -424,6 +426,7 @@ function AIGenerateButton({
 }
 
 export default function EditorPanel({
+  resumeId,
   personalInfo,
   sections,
   theme,
@@ -631,9 +634,21 @@ export default function EditorPanel({
   };
 
   // Handle Finish button click
-  const handleFinish = () => {
-    setIsFinishModalOpen(true);
-  };
+  const handleFinish = async () => {
+  setIsSaving(true);
+  try {
+    saveResumeLocal({
+      id: resumeId,
+      userId: "user_1", // swap for real auth later
+      templateId: currentTemplateId, // see note below
+      theme,
+      content: { personalInfo, sections, sectionOrder: sections.map(s => s.id) },
+    });
+    router.push(`/dashboard/resume/${resumeId}/complete`);
+  } finally {
+    setIsSaving(false);
+  }
+};
 
   // Professional AI Feedback Generator - Clean version
   const generateProfessionalFeedback = () => {
@@ -1273,253 +1288,253 @@ ${feedback.tips.map((tip, i) => `${i + 1}. ${tip}`).join('\n')}
   }, [sections.length]);
 
   // Finish Modal Component
-  const FinishModal = () => (
-    <AnimatePresence>
-      {isFinishModalOpen && (
-        <>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setIsFinishModalOpen(false)}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
-          />
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-white dark:bg-[#1E293B] rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto"
-          >
-            {/* Header */}
-            <div className="p-6 border-b border-[#E2E8F0] dark:border-[#334155]">
-              <div className="flex items-center gap-3">
-                <div className="p-3 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20">
-                  <FileCheck className="h-6 w-6 text-emerald-500" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold text-[#0F172A] dark:text-white">
-                    Resume Complete! 🎉
-                  </h2>
-                  <p className="text-sm text-[#64748B] dark:text-[#94A3B8]">
-                    Your resume is ready. What would you like to do next?
-                  </p>
-                </div>
-              </div>
-            </div>
+  // const FinishModal = () => (
+  //   <AnimatePresence>
+  //     {isFinishModalOpen && (
+  //       <>
+  //         <motion.div
+  //           initial={{ opacity: 0 }}
+  //           animate={{ opacity: 1 }}
+  //           exit={{ opacity: 0 }}
+  //           onClick={() => setIsFinishModalOpen(false)}
+  //           className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
+  //         />
+  //         <motion.div
+  //           initial={{ opacity: 0, scale: 0.95, y: 20 }}
+  //           animate={{ opacity: 1, scale: 1, y: 0 }}
+  //           exit={{ opacity: 0, scale: 0.95, y: 20 }}
+  //           className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-white dark:bg-[#1E293B] rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto"
+  //         >
+  //           {/* Header */}
+  //           <div className="p-6 border-b border-[#E2E8F0] dark:border-[#334155]">
+  //             <div className="flex items-center gap-3">
+  //               <div className="p-3 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20">
+  //                 <FileCheck className="h-6 w-6 text-emerald-500" />
+  //               </div>
+  //               <div>
+  //                 <h2 className="text-xl font-bold text-[#0F172A] dark:text-white">
+  //                   Resume Complete! 🎉
+  //                 </h2>
+  //                 <p className="text-sm text-[#64748B] dark:text-[#94A3B8]">
+  //                   Your resume is ready. What would you like to do next?
+  //                 </p>
+  //               </div>
+  //             </div>
+  //           </div>
 
-            {/* Options */}
-            <div className="p-6 space-y-4">
-              {/* AI Feedback Option */}
-              <motion.button
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={handleAIFeedback}
-                disabled={isAIProcessing || isSaving}
-                className="w-full p-4 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-950/30 dark:to-indigo-950/30 border border-purple-200 dark:border-purple-800/30 rounded-xl hover:shadow-lg transition-all duration-300 group disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="p-3 rounded-xl bg-purple-100 dark:bg-purple-900/30 group-hover:bg-purple-200 dark:group-hover:bg-purple-900/50 transition-colors">
-                    {isAIProcessing ? (
-                      <Loader2 className="h-6 w-6 text-purple-500 animate-spin" />
-                    ) : (
-                      <Bot className="h-6 w-6 text-purple-500" />
-                    )}
-                  </div>
-                  <div className="flex-1 text-left">
-                    <h3 className="font-semibold text-[#0F172A] dark:text-white">
-                      {isAIProcessing
-                        ? "Analyzing your resume..."
-                        : "Get AI Feedback"}
-                    </h3>
-                    <p className="text-sm text-[#64748B] dark:text-[#94A3B8]">
-                      {isAIProcessing
-                        ? "Our AI is reviewing your resume..."
-                        : "Get personalized suggestions to improve your resume"}
-                    </p>
-                  </div>
-                  {!isAIProcessing && (
-                    <ArrowRight className="h-5 w-5 text-[#64748B] dark:text-[#94A3B8] group-hover:translate-x-1 transition-transform" />
-                  )}
-                </div>
-              </motion.button>
+  //           {/* Options */}
+  //           <div className="p-6 space-y-4">
+  //             {/* AI Feedback Option */}
+  //             <motion.button
+  //               whileHover={{ scale: 1.01 }}
+  //               whileTap={{ scale: 0.98 }}
+  //               onClick={handleAIFeedback}
+  //               disabled={isAIProcessing || isSaving}
+  //               className="w-full p-4 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-950/30 dark:to-indigo-950/30 border border-purple-200 dark:border-purple-800/30 rounded-xl hover:shadow-lg transition-all duration-300 group disabled:opacity-50 disabled:cursor-not-allowed"
+  //             >
+  //               <div className="flex items-center gap-4">
+  //                 <div className="p-3 rounded-xl bg-purple-100 dark:bg-purple-900/30 group-hover:bg-purple-200 dark:group-hover:bg-purple-900/50 transition-colors">
+  //                   {isAIProcessing ? (
+  //                     <Loader2 className="h-6 w-6 text-purple-500 animate-spin" />
+  //                   ) : (
+  //                     <Bot className="h-6 w-6 text-purple-500" />
+  //                   )}
+  //                 </div>
+  //                 <div className="flex-1 text-left">
+  //                   <h3 className="font-semibold text-[#0F172A] dark:text-white">
+  //                     {isAIProcessing
+  //                       ? "Analyzing your resume..."
+  //                       : "Get AI Feedback"}
+  //                   </h3>
+  //                   <p className="text-sm text-[#64748B] dark:text-[#94A3B8]">
+  //                     {isAIProcessing
+  //                       ? "Our AI is reviewing your resume..."
+  //                       : "Get personalized suggestions to improve your resume"}
+  //                   </p>
+  //                 </div>
+  //                 {!isAIProcessing && (
+  //                   <ArrowRight className="h-5 w-5 text-[#64748B] dark:text-[#94A3B8] group-hover:translate-x-1 transition-transform" />
+  //                 )}
+  //               </div>
+  //             </motion.button>
 
-              {/* AI Feedback Result - Clean Version */}
-              {aiFeedback && feedbackSections && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="p-4 bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800/30 rounded-xl max-h-[300px] overflow-y-auto"
-                >
-                  <div className="space-y-3 text-sm text-[#0F172A] dark:text-white leading-relaxed">
-                    <div>
-                      <div className="font-semibold text-purple-600 dark:text-purple-400 mb-1">
-                        Professional Summary
-                      </div>
-                      <div className="text-[#0F172A] dark:text-white opacity-90">
-                        {feedbackSections.summary}
-                      </div>
-                    </div>
+  //             {/* AI Feedback Result - Clean Version */}
+  //             {aiFeedback && feedbackSections && (
+  //               <motion.div
+  //                 initial={{ opacity: 0, y: 10 }}
+  //                 animate={{ opacity: 1, y: 0 }}
+  //                 className="p-4 bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800/30 rounded-xl max-h-[300px] overflow-y-auto"
+  //               >
+  //                 <div className="space-y-3 text-sm text-[#0F172A] dark:text-white leading-relaxed">
+  //                   <div>
+  //                     <div className="font-semibold text-purple-600 dark:text-purple-400 mb-1">
+  //                       Professional Summary
+  //                     </div>
+  //                     <div className="text-[#0F172A] dark:text-white opacity-90">
+  //                       {feedbackSections.summary}
+  //                     </div>
+  //                   </div>
 
-                    <div>
-                      <div className="font-semibold text-blue-600 dark:text-blue-400 mb-1">
-                        Experience
-                      </div>
-                      <div className="text-[#0F172A] dark:text-white opacity-90">
-                        {feedbackSections.experience}
-                      </div>
-                    </div>
+  //                   <div>
+  //                     <div className="font-semibold text-blue-600 dark:text-blue-400 mb-1">
+  //                       Experience
+  //                     </div>
+  //                     <div className="text-[#0F172A] dark:text-white opacity-90">
+  //                       {feedbackSections.experience}
+  //                     </div>
+  //                   </div>
 
-                    <div>
-                      <div className="font-semibold text-emerald-600 dark:text-emerald-400 mb-1">
-                        Education
-                      </div>
-                      <div className="text-[#0F172A] dark:text-white opacity-90">
-                        {feedbackSections.education}
-                      </div>
-                    </div>
+  //                   <div>
+  //                     <div className="font-semibold text-emerald-600 dark:text-emerald-400 mb-1">
+  //                       Education
+  //                     </div>
+  //                     <div className="text-[#0F172A] dark:text-white opacity-90">
+  //                       {feedbackSections.education}
+  //                     </div>
+  //                   </div>
 
-                    <div>
-                      <div className="font-semibold text-amber-600 dark:text-amber-400 mb-1">
-                        Skills
-                      </div>
-                      <div className="text-[#0F172A] dark:text-white opacity-90">
-                        {feedbackSections.skills}
-                      </div>
-                    </div>
+  //                   <div>
+  //                     <div className="font-semibold text-amber-600 dark:text-amber-400 mb-1">
+  //                       Skills
+  //                     </div>
+  //                     <div className="text-[#0F172A] dark:text-white opacity-90">
+  //                       {feedbackSections.skills}
+  //                     </div>
+  //                   </div>
 
-                    <div>
-                      <div className="font-semibold text-yellow-600 dark:text-yellow-400 mb-1">
-                        Achievements
-                      </div>
-                      <div className="text-[#0F172A] dark:text-white opacity-90">
-                        {feedbackSections.achievements}
-                      </div>
-                    </div>
+  //                   <div>
+  //                     <div className="font-semibold text-yellow-600 dark:text-yellow-400 mb-1">
+  //                       Achievements
+  //                     </div>
+  //                     <div className="text-[#0F172A] dark:text-white opacity-90">
+  //                       {feedbackSections.achievements}
+  //                     </div>
+  //                   </div>
 
-                    <div className="pt-2 border-t border-purple-200 dark:border-purple-800/30">
-                      <div className="font-semibold text-purple-600 dark:text-purple-400 mb-1">
-                        Overall Assessment
-                      </div>
-                      <div className="text-[#0F172A] dark:text-white opacity-90">
-                        {feedbackSections.overall}
-                      </div>
-                    </div>
+  //                   <div className="pt-2 border-t border-purple-200 dark:border-purple-800/30">
+  //                     <div className="font-semibold text-purple-600 dark:text-purple-400 mb-1">
+  //                       Overall Assessment
+  //                     </div>
+  //                     <div className="text-[#0F172A] dark:text-white opacity-90">
+  //                       {feedbackSections.overall}
+  //                     </div>
+  //                   </div>
 
-                    <div className="pt-2 border-t border-purple-200 dark:border-purple-800/30">
-                      <div className="font-semibold text-amber-600 dark:text-amber-400 mb-1">
-                        Professional Tips
-                      </div>
-                      <div className="space-y-1">
-                        {feedbackSections.tips.map((tip, i) => (
-                          <div key={i} className="text-xs text-[#64748B] dark:text-[#94A3B8] leading-relaxed">
-                            {i + 1}. {tip}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
+  //                   <div className="pt-2 border-t border-purple-200 dark:border-purple-800/30">
+  //                     <div className="font-semibold text-amber-600 dark:text-amber-400 mb-1">
+  //                       Professional Tips
+  //                     </div>
+  //                     <div className="space-y-1">
+  //                       {feedbackSections.tips.map((tip, i) => (
+  //                         <div key={i} className="text-xs text-[#64748B] dark:text-[#94A3B8] leading-relaxed">
+  //                           {i + 1}. {tip}
+  //                         </div>
+  //                       ))}
+  //                     </div>
+  //                   </div>
+  //                 </div>
+  //               </motion.div>
+  //             )}
 
-              {/* Download Option */}
-              <motion.button
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={handleDownloadFromFinish}
-                disabled={isSaving}
-                className="w-full p-4 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30 border border-blue-200 dark:border-blue-800/30 rounded-xl hover:shadow-lg transition-all duration-300 group disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="p-3 rounded-xl bg-blue-100 dark:bg-blue-900/30 group-hover:bg-blue-200 dark:group-hover:bg-blue-900/50 transition-colors">
-                    <Download className="h-6 w-6 text-blue-500" />
-                  </div>
-                  <div className="flex-1 text-left">
-                    <h3 className="font-semibold text-[#0F172A] dark:text-white">
-                      Download Resume
-                    </h3>
-                    <p className="text-sm text-[#64748B] dark:text-[#94A3B8]">
-                      Download as PDF or PNG format
-                    </p>
-                  </div>
-                  <ArrowRight className="h-5 w-5 text-[#64748B] dark:text-[#94A3B8] group-hover:translate-x-1 transition-transform" />
-                </div>
-              </motion.button>
+  //             {/* Download Option */}
+  //             <motion.button
+  //               whileHover={{ scale: 1.01 }}
+  //               whileTap={{ scale: 0.98 }}
+  //               onClick={handleDownloadFromFinish}
+  //               disabled={isSaving}
+  //               className="w-full p-4 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30 border border-blue-200 dark:border-blue-800/30 rounded-xl hover:shadow-lg transition-all duration-300 group disabled:opacity-50 disabled:cursor-not-allowed"
+  //             >
+  //               <div className="flex items-center gap-4">
+  //                 <div className="p-3 rounded-xl bg-blue-100 dark:bg-blue-900/30 group-hover:bg-blue-200 dark:group-hover:bg-blue-900/50 transition-colors">
+  //                   <Download className="h-6 w-6 text-blue-500" />
+  //                 </div>
+  //                 <div className="flex-1 text-left">
+  //                   <h3 className="font-semibold text-[#0F172A] dark:text-white">
+  //                     Download Resume
+  //                   </h3>
+  //                   <p className="text-sm text-[#64748B] dark:text-[#94A3B8]">
+  //                     Download as PDF or PNG format
+  //                   </p>
+  //                 </div>
+  //                 <ArrowRight className="h-5 w-5 text-[#64748B] dark:text-[#94A3B8] group-hover:translate-x-1 transition-transform" />
+  //               </div>
+  //             </motion.button>
 
-              {/* View Templates Option */}
-              <motion.button
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => handleNavigate("/dashboard/templates")}
-                disabled={isSaving}
-                className="w-full p-4 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 border border-amber-200 dark:border-amber-800/30 rounded-xl hover:shadow-lg transition-all duration-300 group disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="p-3 rounded-xl bg-amber-100 dark:bg-amber-900/30 group-hover:bg-amber-200 dark:group-hover:bg-amber-900/50 transition-colors">
-                    {isSaving ? (
-                      <Loader2 className="h-6 w-6 text-amber-500 animate-spin" />
-                    ) : (
-                      <LayoutGrid className="h-6 w-6 text-amber-500" />
-                    )}
-                  </div>
-                  <div className="flex-1 text-left">
-                    <h3 className="font-semibold text-[#0F172A] dark:text-white">
-                      {isSaving ? "Saving..." : "Browse Templates"}
-                    </h3>
-                    <p className="text-sm text-[#64748B] dark:text-[#94A3B8]">
-                      {isSaving
-                        ? "Saving your progress..."
-                        : "Explore more professional templates"}
-                    </p>
-                  </div>
-                  <ArrowRight className="h-5 w-5 text-[#64748B] dark:text-[#94A3B8] group-hover:translate-x-1 transition-transform" />
-                </div>
-              </motion.button>
+  //             {/* View Templates Option */}
+  //             <motion.button
+  //               whileHover={{ scale: 1.01 }}
+  //               whileTap={{ scale: 0.98 }}
+  //               onClick={() => handleNavigate("/dashboard/templates")}
+  //               disabled={isSaving}
+  //               className="w-full p-4 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 border border-amber-200 dark:border-amber-800/30 rounded-xl hover:shadow-lg transition-all duration-300 group disabled:opacity-50 disabled:cursor-not-allowed"
+  //             >
+  //               <div className="flex items-center gap-4">
+  //                 <div className="p-3 rounded-xl bg-amber-100 dark:bg-amber-900/30 group-hover:bg-amber-200 dark:group-hover:bg-amber-900/50 transition-colors">
+  //                   {isSaving ? (
+  //                     <Loader2 className="h-6 w-6 text-amber-500 animate-spin" />
+  //                   ) : (
+  //                     <LayoutGrid className="h-6 w-6 text-amber-500" />
+  //                   )}
+  //                 </div>
+  //                 <div className="flex-1 text-left">
+  //                   <h3 className="font-semibold text-[#0F172A] dark:text-white">
+  //                     {isSaving ? "Saving..." : "Browse Templates"}
+  //                   </h3>
+  //                   <p className="text-sm text-[#64748B] dark:text-[#94A3B8]">
+  //                     {isSaving
+  //                       ? "Saving your progress..."
+  //                       : "Explore more professional templates"}
+  //                   </p>
+  //                 </div>
+  //                 <ArrowRight className="h-5 w-5 text-[#64748B] dark:text-[#94A3B8] group-hover:translate-x-1 transition-transform" />
+  //               </div>
+  //             </motion.button>
 
-              {/* Go to Dashboard Option */}
-              <motion.button
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => handleNavigate("/dashboard")}
-                disabled={isSaving}
-                className="w-full p-4 bg-[#F1F5F9] dark:bg-[#1E293B] border border-[#E2E8F0] dark:border-[#334155] rounded-xl hover:bg-[#E2E8F0] dark:hover:bg-[#334155] transition-all duration-300 group disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="p-3 rounded-xl bg-[#E2E8F0] dark:bg-[#334155] group-hover:bg-[#E2E8F0] dark:group-hover:bg-[#334155] transition-colors">
-                    {isSaving ? (
-                      <Loader2 className="h-6 w-6 text-[#64748B] dark:text-[#94A3B8] animate-spin" />
-                    ) : (
-                      <Home className="h-6 w-6 text-[#64748B] dark:text-[#94A3B8]" />
-                    )}
-                  </div>
-                  <div className="flex-1 text-left">
-                    <h3 className="font-semibold text-[#0F172A] dark:text-white">
-                      {isSaving ? "Saving..." : "Go to Dashboard"}
-                    </h3>
-                    <p className="text-sm text-[#64748B] dark:text-[#94A3B8]">
-                      {isSaving
-                        ? "Saving your progress..."
-                        : "View all your resumes and manage your account"}
-                    </p>
-                  </div>
-                  <ArrowRight className="h-5 w-5 text-[#64748B] dark:text-[#94A3B8] group-hover:translate-x-1 transition-transform" />
-                </div>
-              </motion.button>
-            </div>
+  //             {/* Go to Dashboard Option */}
+  //             <motion.button
+  //               whileHover={{ scale: 1.01 }}
+  //               whileTap={{ scale: 0.98 }}
+  //               onClick={() => handleNavigate("/dashboard")}
+  //               disabled={isSaving}
+  //               className="w-full p-4 bg-[#F1F5F9] dark:bg-[#1E293B] border border-[#E2E8F0] dark:border-[#334155] rounded-xl hover:bg-[#E2E8F0] dark:hover:bg-[#334155] transition-all duration-300 group disabled:opacity-50 disabled:cursor-not-allowed"
+  //             >
+  //               <div className="flex items-center gap-4">
+  //                 <div className="p-3 rounded-xl bg-[#E2E8F0] dark:bg-[#334155] group-hover:bg-[#E2E8F0] dark:group-hover:bg-[#334155] transition-colors">
+  //                   {isSaving ? (
+  //                     <Loader2 className="h-6 w-6 text-[#64748B] dark:text-[#94A3B8] animate-spin" />
+  //                   ) : (
+  //                     <Home className="h-6 w-6 text-[#64748B] dark:text-[#94A3B8]" />
+  //                   )}
+  //                 </div>
+  //                 <div className="flex-1 text-left">
+  //                   <h3 className="font-semibold text-[#0F172A] dark:text-white">
+  //                     {isSaving ? "Saving..." : "Go to Dashboard"}
+  //                   </h3>
+  //                   <p className="text-sm text-[#64748B] dark:text-[#94A3B8]">
+  //                     {isSaving
+  //                       ? "Saving your progress..."
+  //                       : "View all your resumes and manage your account"}
+  //                   </p>
+  //                 </div>
+  //                 <ArrowRight className="h-5 w-5 text-[#64748B] dark:text-[#94A3B8] group-hover:translate-x-1 transition-transform" />
+  //               </div>
+  //             </motion.button>
+  //           </div>
 
-            {/* Footer */}
-            <div className="p-6 border-t border-[#E2E8F0] dark:border-[#334155]">
-              <button
-                onClick={() => setIsFinishModalOpen(false)}
-                className="w-full px-4 py-2.5 text-sm font-medium text-[#64748B] dark:text-[#94A3B8] hover:bg-[#F1F5F9] dark:hover:bg-[#1E293B] rounded-lg transition-colors"
-              >
-                Continue Editing
-              </button>
-            </div>
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
-  );
+  //           {/* Footer */}
+  //           <div className="p-6 border-t border-[#E2E8F0] dark:border-[#334155]">
+  //             <button
+  //               onClick={() => setIsFinishModalOpen(false)}
+  //               className="w-full px-4 py-2.5 text-sm font-medium text-[#64748B] dark:text-[#94A3B8] hover:bg-[#F1F5F9] dark:hover:bg-[#1E293B] rounded-lg transition-colors"
+  //             >
+  //               Continue Editing
+  //             </button>
+  //           </div>
+  //         </motion.div>
+  //       </>
+  //     )}
+  //   </AnimatePresence>
+  // );
 
   return (
     <div className="h-full flex flex-col bg-white dark:bg-[#0F172A]">
@@ -1668,7 +1683,7 @@ ${feedback.tips.map((tip, i) => `${i + 1}. ${tip}`).join('\n')}
       </div>
 
       {/* Finish Modal */}
-      <FinishModal />
+      {/* <FinishModal /> */}
 
       {/* AI Generation Modal */}
       <AnimatePresence>
