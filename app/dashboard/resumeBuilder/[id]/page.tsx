@@ -1,12 +1,13 @@
 'use client';
 
 import React, { useCallback, useMemo, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import type { Resume, PersonalInfo, ResumeTheme, Section, SectionType } from '@/app/types/Content';
 import { createBlankSection, createBlankItem, makeId } from '../../../lib/sectionFactory';
 import EditorPanel from '../../../components/resumeBuilder/EditorPanel';
 import PreviewPanel from '../../../components/resumeBuilder/PreviewPanel';
 import { templates } from '../../../components/templates/templates';
+import { saveResumeLocal } from '@/app/lib/resumeStore';
 
 function createResumeFromTemplate(templateId: string): Resume {
   const template = templates.find(t => t.id === templateId);
@@ -157,6 +158,7 @@ function createResumeFromTemplate(templateId: string): Resume {
 export default function ResumeBuilderPage() {
   const params = useParams();
   const templateId = params.id as string;
+  const router = useRouter();
   console.log("template id: ", templateId);
   
   const [resume, setResume] = useState<Resume>(() => {
@@ -265,10 +267,17 @@ export default function ResumeBuilderPage() {
       .filter((s): s is Section => Boolean(s));
   }, [resume.content.sections, resume.content.sectionOrder]);
 
+  const handleFinish = useCallback(() => {
+    if (!resume) return;
+    saveResumeLocal({ ...resume, content: { ...resume.content, sections: orderedSections } });
+    router.push(`/dashboard/resumeBuilder/${resume.id}/complete`);
+  }, [resume, orderedSections, router]);
+
   return (
     <div className="flex h-screen overflow-hidden bg-[#F8FAFC] dark:bg-[#0F172A]">
       <div className="w-[480px] flex-shrink-0 border-r border-[#E2E8F0] dark:border-[#334155] overflow-y-auto">
         <EditorPanel
+          templateId={resume.templateId}
           resumeId={resume.id}
           personalInfo={resume.content.personalInfo}
           sections={orderedSections}
@@ -283,6 +292,7 @@ export default function ResumeBuilderPage() {
           onRemoveSection={removeSection}
           onReorderSections={reorderSections}
           onUpdateTemplate={switchTemplate}
+          onFinish={handleFinish}
         />
       </div>
 

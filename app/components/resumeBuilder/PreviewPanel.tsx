@@ -26,6 +26,7 @@ interface PreviewPanelProps {
   theme: ResumeTheme;
   content: ResumeContent;
   onSwitchTemplate: (templateId: string) => void;
+  variant?: "full" | "minimal";
 }
 
 const PAPER_WIDTH = 794;
@@ -143,7 +144,14 @@ function computeSafeBreakpoints(
   return breakpoints;
 }
 
-export default function PreviewPanel({ templateId, theme, content, onSwitchTemplate }: PreviewPanelProps) {
+export default function PreviewPanel({
+  templateId,
+  theme,
+  content,
+  onSwitchTemplate,
+  variant = "full",
+}: PreviewPanelProps) {
+  const isMinimal = variant === "minimal";
   const containerRef = useRef<HTMLDivElement>(null);
   // Pure measurement mount: renders the resume at its natural, unconstrained
   // height so we can find out exactly how tall the real content is, and where
@@ -197,7 +205,13 @@ export default function PreviewPanel({ templateId, theme, content, onSwitchTempl
       const totalHeight = Math.max(1, Math.ceil(h));
       setNaturalHeight(totalHeight);
       setPageBreaks(
-        computeSafeBreakpoints(el, PAPER_HEIGHT, PAGE_TEXT_TOP_PADDING, PAGE_TEXT_BOTTOM_PADDING, totalHeight),
+        computeSafeBreakpoints(
+          el,
+          PAPER_HEIGHT,
+          PAGE_TEXT_TOP_PADDING,
+          PAGE_TEXT_BOTTOM_PADDING,
+          totalHeight,
+        ),
       );
     };
 
@@ -208,12 +222,19 @@ export default function PreviewPanel({ templateId, theme, content, onSwitchTempl
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [templateId, theme, content]);
 
-  // ---- Fit-to-viewport scaling ----
+  // In the scale calculation useEffect, add:
+  // In the scale calculation useEffect:
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
 
     const recalc = () => {
+      // For minimal mode, we want the resume to fill the container naturally
+      if (isMinimal) {
+        setScale(1);
+        return;
+      }
+
       const padding = isFullscreen ? 24 : 48;
       const availableWidth = el.clientWidth - padding;
       const availableHeight = el.clientHeight - padding;
@@ -221,12 +242,14 @@ export default function PreviewPanel({ templateId, theme, content, onSwitchTempl
       if (pageCount === 1) {
         const scaleX = availableWidth / PAPER_WIDTH;
         const scaleY = availableHeight / PAPER_HEIGHT;
-        const nextScale = Math.min(scaleX, scaleY, 1);
+        const maxScale = 1;
+        const nextScale = Math.min(scaleX, scaleY, maxScale);
         setScale(nextScale > 0 ? nextScale : 1);
       } else {
         const scaleX = availableWidth / PAPER_WIDTH;
         const scaleY = availableHeight / PAPER_HEIGHT;
-        const nextScale = Math.min(scaleX, scaleY, 1.2);
+        const maxScale = 1.2;
+        const nextScale = Math.min(scaleX, scaleY, maxScale);
         setScale(nextScale > 0 ? nextScale : 1);
       }
     };
@@ -235,7 +258,7 @@ export default function PreviewPanel({ templateId, theme, content, onSwitchTempl
     const observer = new ResizeObserver(recalc);
     observer.observe(el);
     return () => observer.disconnect();
-  }, [isFullscreen, pageCount]);
+  }, [isFullscreen, pageCount, isMinimal]);
 
   if (!template) {
     return <div className="pp-empty">Unknown template: {templateId}</div>;
@@ -272,7 +295,10 @@ export default function PreviewPanel({ templateId, theme, content, onSwitchTempl
       // Use the real browser viewport size (not PAPER_WIDTH) so responsive
       // CSS/media queries resolve exactly as they do in the live preview.
       windowWidth: document.documentElement.clientWidth,
-      windowHeight: Math.max(document.documentElement.clientHeight, node.scrollHeight),
+      windowHeight: Math.max(
+        document.documentElement.clientHeight,
+        node.scrollHeight,
+      ),
     });
   };
 
@@ -292,7 +318,10 @@ export default function PreviewPanel({ templateId, theme, content, onSwitchTempl
   // background (text-hidden) layer fills the ENTIRE remaining page height,
   // and the real text is drawn on top of it, clipped to exactly this page's
   // slice — mirroring the two-layer structure used in the live preview.
-  const sliceCanvasIntoPages = (fgCanvas: HTMLCanvasElement, bgCanvas: HTMLCanvasElement): HTMLCanvasElement[] => {
+  const sliceCanvasIntoPages = (
+    fgCanvas: HTMLCanvasElement,
+    bgCanvas: HTMLCanvasElement,
+  ): HTMLCanvasElement[] => {
     const pageWidthPx = PAPER_WIDTH * CAPTURE_SCALE;
     const pageHeightPx = PAPER_HEIGHT * CAPTURE_SCALE;
     const topPadPx = PAGE_TEXT_TOP_PADDING * CAPTURE_SCALE;
@@ -314,15 +343,41 @@ export default function PreviewPanel({ templateId, theme, content, onSwitchTempl
       const sourceY = breaksPx[i];
 
       // 1) Background/layout layer — fills the whole remaining page height.
-      const bgSourceHeight = Math.max(0, Math.min(availableBoxPx, bgCanvas.height - sourceY));
+      const bgSourceHeight = Math.max(
+        0,
+        Math.min(availableBoxPx, bgCanvas.height - sourceY),
+      );
       if (bgSourceHeight > 0) {
-        ctx.drawImage(bgCanvas, 0, sourceY, pageWidthPx, bgSourceHeight, 0, topPad, pageWidthPx, bgSourceHeight);
+        ctx.drawImage(
+          bgCanvas,
+          0,
+          sourceY,
+          pageWidthPx,
+          bgSourceHeight,
+          0,
+          topPad,
+          pageWidthPx,
+          bgSourceHeight,
+        );
       }
 
       // 2) Real text layer — drawn on top, clipped to exactly this page's slice.
-      const fgSourceHeight = Math.max(0, Math.min(breaksPx[i + 1] - breaksPx[i], fgCanvas.height - sourceY));
+      const fgSourceHeight = Math.max(
+        0,
+        Math.min(breaksPx[i + 1] - breaksPx[i], fgCanvas.height - sourceY),
+      );
       if (fgSourceHeight > 0) {
-        ctx.drawImage(fgCanvas, 0, sourceY, pageWidthPx, fgSourceHeight, 0, topPad, pageWidthPx, fgSourceHeight);
+        ctx.drawImage(
+          fgCanvas,
+          0,
+          sourceY,
+          pageWidthPx,
+          fgSourceHeight,
+          0,
+          topPad,
+          pageWidthPx,
+          fgSourceHeight,
+        );
       }
 
       pages.push(pageCanvas);
@@ -331,7 +386,10 @@ export default function PreviewPanel({ templateId, theme, content, onSwitchTempl
   };
 
   const generatePagedPDFBlob = async (): Promise<Blob> => {
-    const [fgCanvas, bgCanvas] = await Promise.all([captureFullCanvas(), captureBgOnlyCanvas()]);
+    const [fgCanvas, bgCanvas] = await Promise.all([
+      captureFullCanvas(),
+      captureBgOnlyCanvas(),
+    ]);
     const pageCanvases = sliceCanvasIntoPages(fgCanvas, bgCanvas);
 
     const { jsPDF } = await import("jspdf");
@@ -351,7 +409,10 @@ export default function PreviewPanel({ templateId, theme, content, onSwitchTempl
   };
 
   const generatePagedPNGBlobs = async (): Promise<Blob[]> => {
-    const [fgCanvas, bgCanvas] = await Promise.all([captureFullCanvas(), captureBgOnlyCanvas()]);
+    const [fgCanvas, bgCanvas] = await Promise.all([
+      captureFullCanvas(),
+      captureBgOnlyCanvas(),
+    ]);
     const pageCanvases = sliceCanvasIntoPages(fgCanvas, bgCanvas);
 
     return Promise.all(
@@ -374,7 +435,10 @@ export default function PreviewPanel({ templateId, theme, content, onSwitchTempl
       const blobs = await generatePagedPNGBlobs();
       blobs.forEach((blob, i) => {
         const link = document.createElement("a");
-        link.download = blobs.length > 1 ? `resume-${templateId}-page-${i + 1}.png` : `resume-${templateId}.png`;
+        link.download =
+          blobs.length > 1
+            ? `resume-${templateId}-page-${i + 1}.png`
+            : `resume-${templateId}.png`;
         link.href = URL.createObjectURL(blob);
         document.body.appendChild(link);
         link.click();
@@ -417,7 +481,9 @@ export default function PreviewPanel({ templateId, theme, content, onSwitchTempl
       window.open(whatsappUrl, "_blank", "noopener,noreferrer");
     } catch (error) {
       console.error("Error sharing via WhatsApp:", error);
-      alert("Failed to open WhatsApp. Please make sure WhatsApp is installed or try again.");
+      alert(
+        "Failed to open WhatsApp. Please make sure WhatsApp is installed or try again.",
+      );
     }
   };
 
@@ -471,7 +537,9 @@ export default function PreviewPanel({ templateId, theme, content, onSwitchTempl
     setIsLoading(true);
     try {
       const blob = await generatePagedPDFBlob();
-      const file = new File([blob], `resume-${templateId}.pdf`, { type: "application/pdf" });
+      const file = new File([blob], `resume-${templateId}.pdf`, {
+        type: "application/pdf",
+      });
 
       if (navigator.share && navigator.canShare?.({ files: [file] })) {
         await navigator.share({ title: "My Resume", files: [file] });
@@ -503,11 +571,15 @@ export default function PreviewPanel({ templateId, theme, content, onSwitchTempl
     setShowShareMenu(false);
   };
 
+  // Update the handleFullscreen function:
   const handleFullscreen = () => {
     if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch((err) => {
-        console.error("Error entering fullscreen:", err);
-      });
+      const root = document.querySelector(".pp-root");
+      if (root) {
+        root.requestFullscreen().catch((err) => {
+          console.error("Error entering fullscreen:", err);
+        });
+      }
       setIsFullscreen(true);
     } else {
       document.exitFullscreen();
@@ -515,12 +587,15 @@ export default function PreviewPanel({ templateId, theme, content, onSwitchTempl
     }
   };
 
+  // Update the fullscreen useEffect:
   useEffect(() => {
     const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
+      const isFS = !!document.fullscreenElement;
+      setIsFullscreen(isFS);
     };
     document.addEventListener("fullscreenchange", handleFullscreenChange);
-    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    return () =>
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
   }, []);
 
   const zoomIn = () => setZoom((prev) => Math.min(prev + 10, 200));
@@ -539,49 +614,81 @@ export default function PreviewPanel({ templateId, theme, content, onSwitchTempl
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
-  const stackNaturalHeight = pageCount * PAPER_HEIGHT + (pageCount - 1) * PAGE_GAP;
+  const stackNaturalHeight =
+    pageCount * PAPER_HEIGHT + (pageCount - 1) * PAGE_GAP;
 
   return (
     <div className={`pp-root ${isFullscreen ? "fullscreen" : ""}`}>
       {/* Toolbar */}
-      <div className="pp-toolbar">
+      <div className={`pp-toolbar ${isMinimal ? "pp-toolbar-minimal" : ""}`}>
+        {/* Left side - Preview label and zoom controls */}
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <Eye className="h-4 w-4 text-[#64748B]" />
-            <span className="text-sm font-medium text-[#0F172A] dark:text-white">Preview</span>
-          </div>
-          {pageCount > 1 && (
-            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#EDE9FE] dark:bg-[#4C1D95] text-[#7C3AED] dark:text-[#C4B5FD] text-xs font-medium">
-              <Files className="h-3.5 w-3.5" />
-              {pageCount} pages
+          {!isMinimal && (
+            <div>
+              <div className="flex items-center gap-2">
+                <Eye className="h-4 w-4 text-[#64748B]" />
+                <span className="text-sm font-medium text-[#0F172A] dark:text-white">
+                  Preview
+                </span>
+              </div>
+              {pageCount > 1 && (
+                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#EDE9FE] dark:bg-[#4C1D95] text-[#7C3AED] dark:text-[#C4B5FD] text-xs font-medium">
+                  <Files className="h-3.5 w-3.5" />
+                  {pageCount} pages
+                </div>
+              )}
             </div>
           )}
-          <div className="flex items-center gap-2 text-xs text-[#64748B] dark:text-[#94A3B8]">
-            <span>{zoom}%</span>
-            <button onClick={zoomOut} className="p-1 rounded hover:bg-[#F1F5F9] dark:hover:bg-[#1E293B] transition-colors" title="Zoom Out">
-              <span className="text-sm">−</span>
-            </button>
-            <button onClick={resetZoom} className="px-2 py-0.5 text-xs bg-[#F1F5F9] dark:bg-[#1E293B] rounded hover:bg-[#E2E8F0] dark:hover:bg-[#334155] transition-colors" title="Reset Zoom">
-              100%
-            </button>
-            <button onClick={zoomIn} className="p-1 rounded hover:bg-[#F1F5F9] dark:hover:bg-[#1E293B] transition-colors" title="Zoom In">
-              <span className="text-sm">+</span>
-            </button>
-          </div>
+          {/* Show zoom controls only in full mode OR when in fullscreen */}
+          {(!isMinimal || isFullscreen) && (
+            <div
+              className={`flex items-center gap-2 text-xs text-[#64748B] dark:text-[#94A3B8] ${isMinimal ? "ml-auto" : ""}`}
+            >
+              <span>{zoom}%</span>
+              <button
+                onClick={zoomOut}
+                className="p-1 rounded hover:bg-[#F1F5F9] dark:hover:bg-[#1E293B] transition-colors"
+                title="Zoom Out"
+              >
+                <span className="text-sm">−</span>
+              </button>
+              <button
+                onClick={resetZoom}
+                className="px-2 py-0.5 text-xs bg-[#F1F5F9] dark:bg-[#1E293B] rounded hover:bg-[#E2E8F0] dark:hover:bg-[#334155] transition-colors"
+                title="Reset Zoom"
+              >
+                100%
+              </button>
+              <button
+                onClick={zoomIn}
+                className="p-1 rounded hover:bg-[#F1F5F9] dark:hover:bg-[#1E293B] transition-colors"
+                title="Zoom In"
+              >
+                <span className="text-sm">+</span>
+              </button>
+            </div>
+          )}
         </div>
 
+        {/* Right side - Action buttons */}
         <div className="flex items-center gap-2 relative">
           {/* Download Button */}
           <div className="dropdown-container relative">
             <button
               onClick={handleDownload}
               disabled={isLoading}
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[#2563EB] hover:bg-[#1D4ED8] rounded-lg transition-all duration-200 shadow-sm shadow-blue-500/25 hover:shadow-blue-500/40 disabled:opacity-50 disabled:cursor-not-allowed group"
+              className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-[#2563EB] hover:bg-[#1D4ED8] rounded-lg transition-all duration-200 shadow-sm shadow-blue-500/25 hover:shadow-blue-500/40 disabled:opacity-50 disabled:cursor-not-allowed group ${isMinimal ? "px-3" : ""}`}
               title="Download Resume"
             >
-              <Download className={`h-4 w-4 ${isLoading ? "animate-pulse" : "group-hover:scale-110 transition-transform"}`} />
-              <span>Download</span>
-              <ChevronDown className="h-3.5 w-3.5 ml-0.5 group-hover:rotate-180 transition-transform duration-200" />
+              <Download
+                className={`h-4 w-4 ${isLoading ? "animate-pulse" : "group-hover:scale-110 transition-transform"}`}
+              />
+              {!isMinimal && (
+                <>
+                  <span>Download</span>
+                  <ChevronDown className="h-3.5 w-3.5 ml-0.5 group-hover:rotate-180 transition-transform duration-200" />
+                </>
+              )}
             </button>
 
             {showDownloadMenu && (
@@ -594,8 +701,12 @@ export default function PreviewPanel({ templateId, theme, content, onSwitchTempl
                     <FileImage className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                   </div>
                   <div>
-                    <p className="font-medium text-[#0F172A] dark:text-white">PNG Image</p>
-                    <p className="text-xs text-[#64748B] dark:text-[#94A3B8]">{pageCount > 1 ? `${pageCount} files` : "Single image"}</p>
+                    <p className="font-medium text-[#0F172A] dark:text-white">
+                      PNG Image
+                    </p>
+                    <p className="text-xs text-[#64748B] dark:text-[#94A3B8]">
+                      {pageCount > 1 ? `${pageCount} files` : "Single image"}
+                    </p>
                   </div>
                 </button>
                 <button
@@ -606,8 +717,12 @@ export default function PreviewPanel({ templateId, theme, content, onSwitchTempl
                     <FileText className="h-4 w-4 text-red-600 dark:text-red-400" />
                   </div>
                   <div>
-                    <p className="font-medium text-[#0F172A] dark:text-white">PDF Document</p>
-                    <p className="text-xs text-[#64748B] dark:text-[#94A3B8]">{pageCount > 1 ? `${pageCount} pages` : "Single page"}</p>
+                    <p className="font-medium text-[#0F172A] dark:text-white">
+                      PDF Document
+                    </p>
+                    <p className="text-xs text-[#64748B] dark:text-[#94A3B8]">
+                      {pageCount > 1 ? `${pageCount} pages` : "Single page"}
+                    </p>
                   </div>
                 </button>
               </div>
@@ -618,16 +733,21 @@ export default function PreviewPanel({ templateId, theme, content, onSwitchTempl
           <div className="dropdown-container relative">
             <button
               onClick={handleShare}
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-[#0F172A] dark:text-white bg-[#F1F5F9] dark:bg-[#1E293B] hover:bg-[#E2E8F0] dark:hover:bg-[#334155] rounded-lg transition-all duration-200 border border-[#E2E8F0] dark:border-[#334155] group"
+              className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-[#0F172A] dark:text-white bg-[#F1F5F9] dark:bg-[#1E293B] hover:bg-[#E2E8F0] dark:hover:bg-[#334155] rounded-lg transition-all duration-200 border border-[#E2E8F0] dark:border-[#334155] group ${isMinimal ? "px-3" : ""}`}
               title="Share Resume"
             >
               <Share2 className="h-4 w-4 group-hover:scale-110 transition-transform" />
-              <span>Share</span>
-              <ChevronDown className="h-3.5 w-3.5 ml-0.5 group-hover:rotate-180 transition-transform duration-200" />
+              {!isMinimal && (
+                <>
+                  <span>Share</span>
+                  <ChevronDown className="h-3.5 w-3.5 ml-0.5 group-hover:rotate-180 transition-transform duration-200" />
+                </>
+              )}
             </button>
 
             {showShareMenu && (
               <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-[#1E293B] rounded-lg shadow-lg border border-[#E2E8F0] dark:border-[#334155] overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                {/* Share menu content */}
                 <div className="p-1">
                   <button
                     onClick={shareViaWhatsApp}
@@ -637,8 +757,12 @@ export default function PreviewPanel({ templateId, theme, content, onSwitchTempl
                       <MessageCircle className="h-4 w-4 text-[#25D366]" />
                     </div>
                     <div>
-                      <p className="font-medium text-[#0F172A] dark:text-white">WhatsApp</p>
-                      <p className="text-xs text-[#64748B] dark:text-[#94A3B8]">Share via WhatsApp</p>
+                      <p className="font-medium text-[#0F172A] dark:text-white">
+                        WhatsApp
+                      </p>
+                      <p className="text-xs text-[#64748B] dark:text-[#94A3B8]">
+                        Share via WhatsApp
+                      </p>
                     </div>
                   </button>
 
@@ -650,8 +774,12 @@ export default function PreviewPanel({ templateId, theme, content, onSwitchTempl
                       <Mail className="h-4 w-4 text-[#EA4335]" />
                     </div>
                     <div>
-                      <p className="font-medium text-[#0F172A] dark:text-white">Gmail</p>
-                      <p className="text-xs text-[#64748B] dark:text-[#94A3B8]">Share via Gmail</p>
+                      <p className="font-medium text-[#0F172A] dark:text-white">
+                        Gmail
+                      </p>
+                      <p className="text-xs text-[#64748B] dark:text-[#94A3B8]">
+                        Share via Gmail
+                      </p>
                     </div>
                   </button>
 
@@ -663,8 +791,12 @@ export default function PreviewPanel({ templateId, theme, content, onSwitchTempl
                       <Mail className="h-4 w-4 text-[#64748B]" />
                     </div>
                     <div>
-                      <p className="font-medium text-[#0F172A] dark:text-white">Email</p>
-                      <p className="text-xs text-[#64748B] dark:text-[#94A3B8]">Default email client</p>
+                      <p className="font-medium text-[#0F172A] dark:text-white">
+                        Email
+                      </p>
+                      <p className="text-xs text-[#64748B] dark:text-[#94A3B8]">
+                        Default email client
+                      </p>
                     </div>
                   </button>
 
@@ -676,8 +808,12 @@ export default function PreviewPanel({ templateId, theme, content, onSwitchTempl
                       <LinkIcon className="h-4 w-4 text-[#8B5CF6]" />
                     </div>
                     <div className="flex-1">
-                      <p className="font-medium text-[#0F172A] dark:text-white">Copy Link</p>
-                      <p className="text-xs text-[#64748B] dark:text-[#94A3B8]">Copy resume link</p>
+                      <p className="font-medium text-[#0F172A] dark:text-white">
+                        Copy Link
+                      </p>
+                      <p className="text-xs text-[#64748B] dark:text-[#94A3B8]">
+                        Copy resume link
+                      </p>
                     </div>
                     {copied && <Check className="h-4 w-4 text-green-500" />}
                   </button>
@@ -693,20 +829,26 @@ export default function PreviewPanel({ templateId, theme, content, onSwitchTempl
                       <FileText className="h-4 w-4 text-[#2563EB]" />
                     </div>
                     <div className="flex-1">
-                      <p className="font-medium text-[#0F172A] dark:text-white">Share as PDF</p>
-                      <p className="text-xs text-[#64748B] dark:text-[#94A3B8]">{pageCount > 1 ? `${pageCount} pages` : "Single page"}</p>
+                      <p className="font-medium text-[#0F172A] dark:text-white">
+                        Share as PDF
+                      </p>
+                      <p className="text-xs text-[#64748B] dark:text-[#94A3B8]">
+                        {pageCount > 1 ? `${pageCount} pages` : "Single page"}
+                      </p>
                     </div>
-                    {isLoading && <div className="w-4 h-4 border-2 border-[#2563EB] border-t-transparent rounded-full animate-spin" />}
+                    {isLoading && (
+                      <div className="w-4 h-4 border-2 border-[#2563EB] border-t-transparent rounded-full animate-spin" />
+                    )}
                   </button>
                 </div>
               </div>
             )}
           </div>
 
-          {/* Fullscreen Button */}
+          {/* Fullscreen Button - always visible */}
           <button
             onClick={handleFullscreen}
-            className="inline-flex items-center justify-center p-2 text-[#64748B] dark:text-[#94A3B8] hover:text-[#0F172A] dark:hover:text-white hover:bg-[#F1F5F9] dark:hover:bg-[#1E293B] rounded-lg transition-all duration-200 border border-[#E2E8F0] dark:border-[#334155] hover:border-[#8B5CF6] dark:hover:border-[#8B5CF6] group"
+            className={`inline-flex items-center justify-center p-2 text-[#64748B] dark:text-[#94A3B8] hover:text-[#0F172A] dark:hover:text-white hover:bg-[#F1F5F9] dark:hover:bg-[#1E293B] rounded-lg transition-all duration-200 border border-[#E2E8F0] dark:border-[#334155] hover:border-[#8B5CF6] dark:hover:border-[#8B5CF6] group ${isMinimal ? "border-transparent hover:border-[#E2E8F0] dark:hover:border-[#334155]" : ""}`}
             title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
           >
             {isFullscreen ? (
@@ -719,21 +861,31 @@ export default function PreviewPanel({ templateId, theme, content, onSwitchTempl
       </div>
 
       {/* Viewport */}
-      <div className={`pp-viewport ${pageCount > 1 ? "pp-viewport-multi" : ""}`} ref={containerRef}>
+      <div
+        className={`pp-viewport ${pageCount > 1 ? "pp-viewport-multi" : ""} ${isMinimal ? "pp-viewport-minimal" : ""}`}
+        ref={containerRef}
+      >
         <div
           className="pp-scaled-box"
           style={{
-            width: PAPER_WIDTH * totalScale,
-            height: pageCount === 1 ? PAPER_HEIGHT * totalScale : stackNaturalHeight * totalScale,
+            width:
+              isMinimal && !isFullscreen ? "100%" : PAPER_WIDTH * totalScale,
+            height:
+              isMinimal && !isFullscreen
+                ? "auto"
+                : pageCount === 1
+                  ? PAPER_HEIGHT * totalScale
+                  : stackNaturalHeight * totalScale,
           }}
         >
           <div
             className="pp-pages-stack"
             style={{
-              width: PAPER_WIDTH,
-              transform: `scale(${totalScale})`,
+              width: isMinimal && !isFullscreen ? "100%" : PAPER_WIDTH,
+              transform:
+                isMinimal && !isFullscreen ? "none" : `scale(${totalScale})`,
               transformOrigin: "top left",
-              gap: PAGE_GAP,
+              gap: isMinimal && !isFullscreen ? 0 : PAGE_GAP,
             }}
           >
             {Array.from({ length: pageCount }).map((_, i) => {
@@ -746,17 +898,31 @@ export default function PreviewPanel({ templateId, theme, content, onSwitchTempl
               // Exact amount of real text that belongs on this page — the
               // TEXT layer is clipped to this, and nothing more, so it never
               // repeats the next page's content.
-              const sliceHeight = Math.max(0, Math.min(sliceBottom - sliceTop, availableBox));
+              const sliceHeight = Math.max(
+                0,
+                Math.min(sliceBottom - sliceTop, availableBox),
+              );
 
               return (
                 <div key={i} className="pp-page">
-                  <div className="pp-page-clip" style={{ width: PAPER_WIDTH, height: PAPER_HEIGHT }}>
+                  <div
+                    className="pp-page-clip"
+                    style={{
+                      width: isMinimal ? "100%" : PAPER_WIDTH,
+                      height: isMinimal ? "auto" : PAPER_HEIGHT,
+                      minHeight: isMinimal ? "1123px" : "auto",
+                    }}
+                  >
                     {/* Layer 1 — background/layout only (text invisible). Fills
                         the entire remaining page height so sidebars, colored
                         panels, etc. always look like a complete, full page. */}
                     <div
                       className="pp-page-window-mask"
-                      style={{ top: topPad, width: PAPER_WIDTH, height: availableBox }}
+                      style={{
+                        top: topPad,
+                        width: PAPER_WIDTH,
+                        height: availableBox,
+                      }}
                     >
                       <div
                         className="pp-text-hidden"
@@ -781,7 +947,11 @@ export default function PreviewPanel({ templateId, theme, content, onSwitchTempl
                         the safe-break calculation), drawn on top of Layer 1. */}
                     <div
                       className="pp-page-window-mask"
-                      style={{ top: topPad, width: PAPER_WIDTH, height: sliceHeight }}
+                      style={{
+                        top: topPad,
+                        width: PAPER_WIDTH,
+                        height: sliceHeight,
+                      }}
                     >
                       <div
                         className="pp-page-window"
@@ -816,7 +986,10 @@ export default function PreviewPanel({ templateId, theme, content, onSwitchTempl
       {/* Hidden, unconstrained render used ONLY to measure the resume's true
           natural content height and safe break points. Never padded/stretched. */}
       <div className="pp-measure-host" aria-hidden="true">
-        <div ref={measureOnlyRef} style={{ width: PAPER_WIDTH, background: "#ffffff" }}>
+        <div
+          ref={measureOnlyRef}
+          style={{ width: PAPER_WIDTH, background: "#ffffff" }}
+        >
           <TemplateRenderer
             key={`measure-${templateId}-${contentKey}`}
             templateComponent={template.component}
@@ -829,7 +1002,14 @@ export default function PreviewPanel({ templateId, theme, content, onSwitchTempl
 
       {/* Hidden render used for the real-text (foreground) PDF/PNG capture. */}
       <div className="pp-measure-host" aria-hidden="true">
-        <div ref={fullContentRef} style={{ width: PAPER_WIDTH, height: paddedHeight, background: "#ffffff" }}>
+        <div
+          ref={fullContentRef}
+          style={{
+            width: PAPER_WIDTH,
+            height: paddedHeight,
+            background: "#ffffff",
+          }}
+        >
           <TemplateRenderer
             key={`full-${templateId}-${contentKey}`}
             templateComponent={template.component}
@@ -845,7 +1025,11 @@ export default function PreviewPanel({ templateId, theme, content, onSwitchTempl
         <div
           ref={bgOnlyContentRef}
           className="pp-text-hidden"
-          style={{ width: PAPER_WIDTH, height: paddedHeight, background: "#ffffff" }}
+          style={{
+            width: PAPER_WIDTH,
+            height: paddedHeight,
+            background: "#ffffff",
+          }}
         >
           <TemplateRenderer
             key={`bgcapture-${templateId}-${contentKey}`}
@@ -859,21 +1043,117 @@ export default function PreviewPanel({ templateId, theme, content, onSwitchTempl
 
       <style>{`
         .pp-root {
-          height: 100%;
-          display: flex;
-          flex-direction: column;
-          background: #F1F5F9;
-          position: relative;
-        }
-        .pp-root.fullscreen {
-          position: fixed;
-          inset: 0;
-          z-index: 9999;
-          background: #F1F5F9;
-        }
-        .dark .pp-root {
-          background: #0F172A;
-        }
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: #F1F5F9;
+    position: relative;
+  }
+ .pp-root.fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #F1F5F9;
+  width: 100vw;
+  height: 100vh;
+}
+  .pp-root.fullscreen .pp-toolbar {
+  background: rgba(255,255,255,0.95) !important;
+  backdrop-filter: blur(8px) !important;
+  border-bottom: 1px solid rgba(226,232,240,0.8) !important;
+}
+
+.dark .pp-root.fullscreen .pp-toolbar {
+  background: rgba(15,23,42,0.95) !important;
+  border-bottom: 1px solid rgba(51,65,85,0.8) !important;
+}
+    /* Fullscreen minimal - remove all backgrounds */
+  .pp-root.fullscreen .pp-viewport {
+  background: #F1F5F9 !important;
+  padding: 24px !important;
+}
+
+.pp-root.fullscreen .pp-viewport-minimal {
+  background: transparent !important;
+  padding: 16px !important;
+}
+
+.dark .pp-root.fullscreen .pp-viewport {
+  background: #0F172A !important;
+}
+  
+.pp-root.fullscreen .pp-toolbar-minimal {
+  background: rgba(255,255,255,0.9) !important;
+  backdrop-filter: blur(8px) !important;
+  border-bottom: 1px solid rgba(226,232,240,0.5) !important;
+}
+
+.dark .pp-root.fullscreen .pp-toolbar-minimal {
+  background: rgba(15,23,42,0.9) !important;
+  border-bottom: 1px solid rgba(51,65,85,0.5) !important;
+}
+         .dark .pp-root {
+    background: #0F172A;
+  }
+  
+  .pp-toolbar-minimal {
+    background: transparent !important;
+    border-bottom: none !important;
+    padding: 8px 12px 4px !important;
+    min-height: auto !important;
+  }
+.pp-viewport-minimal {
+  background: transparent !important;
+  padding: 0 !important;
+  align-items: flex-start !important;
+  overflow: visible !important;
+}
+  
+.pp-viewport-minimal .pp-page-clip {
+  width: 100% !important;
+  height: auto !important;
+  min-height: 1123px;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+    .pp-viewport-minimal .pp-page {
+  width: 100% !important;
+}
+  .pp-viewport-minimal .pp-page-window-mask,
+.pp-viewport-minimal .pp-page-window {
+  position: relative !important;
+  width: 100% !important;
+  height: auto !important;
+  transform: none !important;
+  overflow: visible !important;
+  top: 0 !important;
+}
+
+.dark .pp-viewport-minimal {
+  background: transparent !important;
+}
+
+
+/* Hide page badges in minimal mode */
+.pp-viewport-minimal .pp-page-badge {
+  display: none !important;
+}
+.pp-viewport-minimal .pp-scaled-box {
+  width: 100% !important;
+  height: auto !important;
+  position: relative !important;
+}
+  
+.pp-viewport-minimal .pp-pages-stack {
+  position: relative !important;
+  width: 100% !important;
+  gap: 0 !important;
+  transform: none !important;
+}
+
+  .pp-viewport-minimal .pp-text-hidden {
+  display: none !important;
+}
         .pp-toolbar {
           display: flex;
           align-items: center;

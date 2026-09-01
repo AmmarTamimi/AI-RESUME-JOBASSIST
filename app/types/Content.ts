@@ -136,6 +136,7 @@ export interface TemplateLayoutConfig {
 
 export interface Resume {
   id: string;
+  title?: string;
   userId: string;
   templateId: string;
   theme: ResumeTheme;

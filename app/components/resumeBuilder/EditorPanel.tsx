@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import React, { useState, useRef, useEffect } from "react";
 import type {
@@ -114,7 +114,8 @@ function TemplateCard({
 }
 
 interface EditorPanelProps {
-  resumeId:string;
+  templateId: string;
+  resumeId: string;
   personalInfo: PersonalInfo;
   sections: Section[];
   theme: ResumeTheme;
@@ -134,6 +135,7 @@ interface EditorPanelProps {
   onRemoveSection: (sectionId: string) => void;
   onReorderSections: (sectionOrder: string[]) => void;
   onUpdateTemplate: (templateId: string) => void;
+  onFinish: () => void;
 }
 
 const ADDABLE_TYPES: {
@@ -426,6 +428,7 @@ function AIGenerateButton({
 }
 
 export default function EditorPanel({
+  templateId,
   resumeId,
   personalInfo,
   sections,
@@ -439,6 +442,7 @@ export default function EditorPanel({
   onAddSection,
   onRemoveSection,
   onUpdateTemplate,
+  onFinish,
 }: EditorPanelProps) {
   const router = useRouter();
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
@@ -450,21 +454,6 @@ export default function EditorPanel({
   const [currentStep, setCurrentStep] = useState(0);
   const [isNavigating, setIsNavigating] = useState(false);
   const navContainerRef = useRef<HTMLDivElement>(null);
-  const [isSaving, setIsSaving] = useState(false);
-
-  // Finish Modal states
-  const [isFinishModalOpen, setIsFinishModalOpen] = useState(false);
-  const [isAIProcessing, setIsAIProcessing] = useState(false);
-  const [aiFeedback, setAiFeedback] = useState<string | null>(null);
-  const [feedbackSections, setFeedbackSections] = useState<{
-    summary: string;
-    experience: string;
-    education: string;
-    skills: string;
-    achievements: string;
-    overall: string;
-    tips: string[];
-  } | null>(null);
 
   // AI Generation states
   const [isGenerating, setIsGenerating] = useState<string | null>(null);
@@ -635,20 +624,8 @@ export default function EditorPanel({
 
   // Handle Finish button click
   const handleFinish = async () => {
-  setIsSaving(true);
-  try {
-    saveResumeLocal({
-      id: resumeId,
-      userId: "user_1", // swap for real auth later
-      templateId: currentTemplateId, // see note below
-      theme,
-      content: { personalInfo, sections, sectionOrder: sections.map(s => s.id) },
-    });
-    router.push(`/dashboard/resume/${resumeId}/complete`);
-  } finally {
-    setIsSaving(false);
-  }
-};
+    onFinish();
+  };
 
   // Professional AI Feedback Generator - Clean version
   const generateProfessionalFeedback = () => {
@@ -708,10 +685,14 @@ export default function EditorPanel({
         if (item.bullets) {
           bulletCount += item.bullets.length;
           item.bullets.forEach((bullet: string) => {
-            if (/\d+%|\d+x|\d+ percent|increased|reduced|saved|grew/.test(bullet)) {
+            if (
+              /\d+%|\d+x|\d+ percent|increased|reduced|saved|grew/.test(bullet)
+            ) {
               hasQuantifiable = true;
             }
-            if (actionVerbs.some((verb) => bullet.toLowerCase().includes(verb))) {
+            if (
+              actionVerbs.some((verb) => bullet.toLowerCase().includes(verb))
+            ) {
               hasActionVerbs = true;
             }
           });
@@ -779,8 +760,7 @@ export default function EditorPanel({
     const achSection = sections.find((s) => s.type === "achievements");
     if (achSection && achSection.items.length > 0) {
       const hasDetailedAch = achSection.items.some(
-        (item: any) =>
-          item.description && item.description.length > 20,
+        (item: any) => item.description && item.description.length > 20,
       );
       if (hasDetailedAch) {
         feedback.achievements =
@@ -835,85 +815,18 @@ export default function EditorPanel({
 
     // Add personalized tip based on missing sections
     if (!expSection || expSection.items.length === 0) {
-      tips.push("Add your professional experience - it's the most important section for most recruiters.");
+      tips.push(
+        "Add your professional experience - it's the most important section for most recruiters.",
+      );
     } else if (!skillsSection || skillsSection.items.length === 0) {
-      tips.push("Add your skills to help recruiters quickly assess your capabilities.");
+      tips.push(
+        "Add your skills to help recruiters quickly assess your capabilities.",
+      );
     }
 
     feedback.tips = tips;
 
     return feedback;
-  };
-
-  // Handle AI Feedback with dynamic content
-  const handleAIFeedback = async () => {
-    setIsAIProcessing(true);
-    setAiFeedback(null);
-    setFeedbackSections(null);
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1800));
-
-      const feedback = generateProfessionalFeedback();
-      setFeedbackSections(feedback);
-
-      const formattedFeedback = `
-${feedback.summary}
-
-${feedback.experience}
-
-${feedback.education}
-
-${feedback.skills}
-
-${feedback.achievements}
-
-${feedback.overall}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Professional Tips to Level Up
-
-${feedback.tips.map((tip, i) => `${i + 1}. ${tip}`).join('\n')}
-`;
-
-      setAiFeedback(formattedFeedback);
-    } catch (error) {
-      console.error("Error getting AI feedback:", error);
-      setAiFeedback(
-        "Sorry, we couldn't generate feedback at the moment. Please try again.",
-      );
-    } finally {
-      setIsAIProcessing(false);
-    }
-  };
-
-  // Handle navigation with save
-  const handleNavigate = async (path: string) => {
-    setIsSaving(true);
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      setIsFinishModalOpen(false);
-      router.push(path);
-    } catch (error) {
-      console.error("Error saving:", error);
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  // Handle download from finish modal
-  const handleDownloadFromFinish = () => {
-    setIsFinishModalOpen(false);
-    const downloadEvent = new CustomEvent("downloadResume");
-    window.dispatchEvent(downloadEvent);
-    setTimeout(() => {
-      const downloadBtn = document.querySelector(
-        '[title="Download Resume"]',
-      ) as HTMLButtonElement;
-      if (downloadBtn) {
-        downloadBtn.click();
-      }
-    }, 300);
   };
 
   const renderStepContent = () => {
@@ -996,7 +909,8 @@ ${feedback.tips.map((tip, i) => `${i + 1}. ${tip}`).join('\n')}
               Accent Color
             </label>
             <div className="flex items-center gap-3">
-              <input                type="color"
+              <input
+                type="color"
                 value={theme.accentColor || "#F4A51C"}
                 onChange={(e) => onUpdateTheme("accentColor", e.target.value)}
                 className="w-10 h-10 rounded-lg cursor-pointer border border-[#E2E8F0] dark:border-[#334155] p-1"
@@ -1910,8 +1824,85 @@ ${feedback.tips.map((tip, i) => `${i + 1}. ${tip}`).join('\n')}
       {/* Template Modal */}
       <AnimatePresence>
         {isTemplateModalOpen && (
-          // Template modal content
-          <></>
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsTemplateModalOpen(false)}
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-[#0F172A] rounded-t-2xl shadow-2xl max-h-[80vh] overflow-hidden"
+              style={{ maxWidth: "100%" }}
+            >
+              <div className="p-4 sm:p-6 border-b border-[#E2E8F0] dark:border-[#334155] flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-semibold text-[#0F172A] dark:text-white">
+                    Choose a Template
+                  </h2>
+                  <p className="text-sm text-[#64748B] dark:text-[#94A3B8]">
+                    Select a template to customize your resume
+                  </p>
+                </div>
+                <button
+                  onClick={() => setIsTemplateModalOpen(false)}
+                  className="p-2 hover:bg-[#F1F5F9] dark:hover:bg-[#1E293B] rounded-lg transition-colors"
+                >
+                  <X className="h-5 w-5 text-[#64748B] dark:text-[#94A3B8]" />
+                </button>
+              </div>
+
+              {/* Categories */}
+              <div className="px-4 sm:px-6 py-3 border-b border-[#E2E8F0] dark:border-[#334155] overflow-x-auto">
+                <div className="flex gap-2">
+                  {CATEGORIES.map((category) => (
+                    <button
+                      key={category}
+                      onClick={() => setSelectedCategory(category)}
+                      className={`px-3 py-1.5 text-sm font-medium rounded-lg whitespace-nowrap transition-colors ${
+                        selectedCategory === category
+                          ? "bg-[#2563EB] text-white"
+                          : "bg-[#F1F5F9] dark:bg-[#1E293B] text-[#64748B] dark:text-[#94A3B8] hover:bg-[#E2E8F0] dark:hover:bg-[#334155]"
+                      }`}
+                    >
+                      {category}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Templates Grid */}
+              <div className="p-4 sm:p-6 overflow-y-auto max-h-[55vh]">
+                <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-[#CBD5E1] dark:scrollbar-thumb-[#334155] scrollbar-track-transparent">
+                  {templates
+                    .filter(
+                      (template) =>
+                        selectedCategory === "All" ||
+                        template.category?.toLowerCase() ===
+                          selectedCategory.toLowerCase(),
+                    )
+                    .map((template) => (
+                      <div
+                        key={template.id}
+                        className="min-w-[200px] max-w-[200px] flex-shrink-0"
+                      >
+                        <TemplateCard
+                          template={template}
+                          onUse={() => {
+                            setIsTemplateModalOpen(false);
+                            onUpdateTemplate(template.id);
+                          }}
+                        />
+                      </div>
+                    ))}
+                </div>
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
     </div>
