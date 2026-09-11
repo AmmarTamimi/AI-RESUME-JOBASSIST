@@ -539,7 +539,7 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
 
         .contactItem {
           display: flex;
-          align-items: flex-start;
+          align-items: center;   /* was: flex-start */
           gap: 12px;
           font-size: 12.5px;
           line-height: 1.5;
@@ -549,9 +549,9 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
         .contactItem .ic {
           color: ${t.accentColor || '#f4a51c'};
           font-size: 14px;
-          margin-top: 2px;
           flex-shrink: 0;
           width: 18px;
+          height: 18px;           /* new: explicit height instead of relying on content */
           display: flex;
           align-items: center;
           justify-content: center;

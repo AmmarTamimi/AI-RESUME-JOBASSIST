@@ -17,6 +17,7 @@ function createResumeFromTemplate(templateId: string): Resume {
     id: `resume_${Date.now()}`,
     userId: 'user_1',
     templateId: templateId,
+    thumbnail_url: '',
     theme: template?.defaultTheme || {
       primaryColor: '#2B2B2B',
       accentColor: '#F2A93B',
