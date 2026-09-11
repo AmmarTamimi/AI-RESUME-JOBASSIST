@@ -25,6 +25,7 @@ interface JobPosting {
   applyMethod: string;
   extensions: any;
   postedAt: string;
+  postedAtDisplay: string;
   salary: string | null;
   employmentType: string | null;
   scheduleType: string | null;
@@ -88,6 +89,7 @@ export default function JobsPage() {
         type: selectedTypes.join(","),
       });
       const res = await fetch(`/api/job-search?${params}`);
+      console.log("Jobs response: ",res)
       const data = await res.json();
       setJobs(data.jobs || []);
     } catch (err) {
@@ -268,20 +270,20 @@ export default function JobsPage() {
 
             <div className="space-y-3">
               <AnimatePresence>
-                {jobs.map((job, index) => (
-                  <motion.div
-                    key={job.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    transition={{ delay: index * 0.05 }}
-                    onClick={() => setSelectedJob(job)}
-                    className={`group block bg-white/80 dark:bg-[#1E293B]/80 backdrop-blur-sm border rounded-2xl p-4 hover:shadow-xl hover:shadow-[#0F172A]/10 dark:hover:shadow-[#0F172A]/50 transition-all duration-300 cursor-pointer ${
-                      selectedJob?.id === job.id
-                        ? "border-[#2563EB] shadow-lg shadow-[#2563EB]/10"
-                        : "border-[#E2E8F0] dark:border-[#334155] hover:border-[#2563EB]/50"
-                    }`}
-                  >
+                 {jobs.map((job, index) => (
+      <motion.div
+        key={job.id}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        transition={{ delay: index * 0.05 }}
+        onClick={() => setSelectedJob(job)}
+        className={`group block bg-white/80 dark:bg-[#1E293B]/80 backdrop-blur-sm border rounded-2xl p-4 hover:shadow-xl hover:shadow-[#0F172A]/10 dark:hover:shadow-[#0F172A]/50 transition-all duration-300 cursor-pointer ${
+          selectedJob?.id === job.id
+            ? "border-[#2563EB] shadow-lg shadow-[#2563EB]/10"
+            : "border-[#E2E8F0] dark:border-[#334155] hover:border-[#2563EB]/50"
+        }`}
+      >
                     <div className="flex items-start gap-4">
                       <div className="flex-shrink-0">
                         {job.companyLogo ? (
@@ -395,7 +397,7 @@ export default function JobsPage() {
                     </span>
                     <span className="inline-flex items-center gap-1 px-3 py-1 text-xs bg-[#F1F5F9] dark:bg-[#0F172A] rounded-full text-[#64748B] dark:text-[#94A3B8]">
                       <Clock className="h-3 w-3" />
-                      {selectedJob.postedAt || "Recently"}
+                      {selectedJob.postedAtDisplay || "Recently"}
                     </span>
                     {selectedJob.salary && (
                       <span className="inline-flex items-center gap-1 px-3 py-1 text-xs bg-[#F1F5F9] dark:bg-[#0F172A] rounded-full text-[#64748B] dark:text-[#94A3B8]">
