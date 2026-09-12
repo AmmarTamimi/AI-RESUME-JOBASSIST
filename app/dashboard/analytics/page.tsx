@@ -1,3 +1,4 @@
+"use client"
 import { Shell } from "../../components/layout/Shell-temp";
 import { motion } from "framer-motion";
 import { 
