@@ -178,3 +178,22 @@
 .typing-cursor {
   animation: blink 0.8s step-end infinite;
 }
+
+
+
+/* 
+:root {
+  --accent: #2563EB;
+  --accent-hover: #1D4ED8;
+  --accent-subtle: #EFF6FF;
+}
+
+html[data-font="sans"] body {
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+html[data-font="serif"] body {
+  font-family: Georgia, Cambria, "Times New Roman", Times, serif;
+}
+html[data-font="mono"] body {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Courier New", monospace;
+} */

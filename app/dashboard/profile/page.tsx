@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useAuth } from '../../providers/auth-provider';
 import { User, Mail, Briefcase, MapPin, Phone, Save, Camera } from 'lucide-react';
-import {Sidebar} from '../../components/dashboard/Sidebar';
+import {Sidebar} from '@/app/components/layout/Sidebar';
 import DashboardHeader from '../../components/dashboard/DashboardHeader';
 import { motion } from 'framer-motion';
 
