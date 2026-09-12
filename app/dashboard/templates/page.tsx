@@ -1,49 +1,62 @@
-'use client';
+"use client";
 
-import { useRouter } from 'next/navigation';
-import { useAuth } from '../../providers/auth-provider';
-import { 
-  FileText, 
-  Search, 
+import { useRouter } from "next/navigation";
+import { useAuth } from "../../providers/auth-provider";
+import {
+  FileText,
+  Search,
   Grid3x3,
   LayoutList,
   X,
   Eye,
   ChevronLeft,
   ChevronRight,
-  Sparkles
-} from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Shell } from '../../components/layout/Shell-temp';
-import { templates } from '../../components/templates/templates';
-import { useState, useEffect } from 'react';
+  Sparkles,
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Shell } from "../../components/layout/Shell-temp";
+import { useState, useEffect } from "react";
+import { TemplateMeta } from "@/app/types/Content";
+import { createClient } from "@/app/lib/supabase/client";
+import { getTemplates } from "@/app/lib/supabase/resume";
 
 export default function TemplatesPage() {
   const { user } = useAuth();
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [activeCategory, setActiveCategory] = useState('all');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeCategory, setActiveCategory] = useState("all");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewIndex, setPreviewIndex] = useState(0);
+  const [templates, setTemplates] = useState<TemplateMeta[]>([]);
 
   // Categories
   const categories = [
-    { id: 'all', label: 'All Templates' },
-    { id: 'modern', label: 'Modern' },
-    { id: 'professional', label: 'Professional' },
-    { id: 'minimal', label: 'Minimal' },
-    { id: 'business', label: 'Business' },
-    { id: 'ats-friendly', label: 'ATS Friendly' },
+    { id: "all", label: "All Templates" },
+    { id: "modern", label: "Modern" },
+    { id: "professional", label: "Professional" },
+    { id: "minimal", label: "Minimal" },
+    { id: "business", label: "Business" },
+    { id: "ats-friendly", label: "ATS Friendly" },
   ];
 
+  const fetchTemplates = async () => {
+    const data = await getTemplates()
+    setTemplates(data)
+  };
+
+  useEffect(() => {
+    fetchTemplates();
+  }, []);
   // Filter templates
-  const filteredTemplates = templates.filter(template => {
-    const matchesSearch = template.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          template.category?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = activeCategory === 'all' || 
-                          template.category?.toLowerCase() === activeCategory.toLowerCase();
+  const filteredTemplates = templates.filter((template) => {
+    const matchesSearch =
+      template.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      template.category?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory =
+      activeCategory === "all" ||
+      template.category?.toLowerCase() === activeCategory.toLowerCase();
     return matchesSearch && matchesCategory;
   });
 
@@ -52,20 +65,20 @@ export default function TemplatesPage() {
     setSelectedTemplate(template);
     setPreviewIndex(templates.indexOf(template));
     setIsPreviewOpen(true);
-    document.body.style.overflow = 'hidden';
+    document.body.style.overflow = "hidden";
   };
 
   const closePreview = () => {
     setIsPreviewOpen(false);
     setSelectedTemplate(null);
-    document.body.style.overflow = 'auto';
+    document.body.style.overflow = "auto";
   };
 
-  const navigatePreview = (direction: 'prev' | 'next') => {
-    if (direction === 'prev' && previewIndex > 0) {
+  const navigatePreview = (direction: "prev" | "next") => {
+    if (direction === "prev" && previewIndex > 0) {
       setPreviewIndex(previewIndex - 1);
       setSelectedTemplate(templates[previewIndex - 1]);
-    } else if (direction === 'next' && previewIndex < templates.length - 1) {
+    } else if (direction === "next" && previewIndex < templates.length - 1) {
       setPreviewIndex(previewIndex + 1);
       setSelectedTemplate(templates[previewIndex + 1]);
     }
@@ -79,20 +92,23 @@ export default function TemplatesPage() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (isPreviewOpen) {
-        if (e.key === 'Escape') closePreview();
-        if (e.key === 'ArrowLeft') navigatePreview('prev');
-        if (e.key === 'ArrowRight') navigatePreview('next');
+        if (e.key === "Escape") closePreview();
+        if (e.key === "ArrowLeft") navigatePreview("prev");
+        if (e.key === "ArrowRight") navigatePreview("next");
       }
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isPreviewOpen, previewIndex]);
 
   // Stats
   const stats = [
-    { label: 'Total Templates', value: templates.length },
-    { label: 'Categories', value: categories.length - 1 },
-    { label: 'ATS Friendly', value: templates.filter(t => t.category === 'ATS-Friendly').length },
+    { label: "Total Templates", value: templates.length },
+    { label: "Categories", value: categories.length - 1 },
+    {
+      label: "ATS Friendly",
+      value: templates.filter((t) => t.category === "ATS-Friendly").length,
+    },
   ];
 
   return (
@@ -124,9 +140,16 @@ export default function TemplatesPage() {
           {/* Stats */}
           <div className="grid grid-cols-3 gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-6">
             {stats.map((stat) => (
-              <div key={stat.label} className="bg-white dark:bg-[#1E293B] border border-[#E2E8F0] dark:border-[#334155] rounded-lg px-3 sm:px-4 py-2.5 sm:py-3">
-                <p className="text-base sm:text-xl font-semibold text-[#0F172A] dark:text-white">{stat.value}</p>
-                <p className="text-[10px] sm:text-xs text-[#64748B] dark:text-[#94A3B8]">{stat.label}</p>
+              <div
+                key={stat.label}
+                className="bg-white dark:bg-[#1E293B] border border-[#E2E8F0] dark:border-[#334155] rounded-lg px-3 sm:px-4 py-2.5 sm:py-3"
+              >
+                <p className="text-base sm:text-xl font-semibold text-[#0F172A] dark:text-white">
+                  {stat.value}
+                </p>
+                <p className="text-[10px] sm:text-xs text-[#64748B] dark:text-[#94A3B8]">
+                  {stat.label}
+                </p>
               </div>
             ))}
           </div>
@@ -144,7 +167,7 @@ export default function TemplatesPage() {
               />
               {searchQuery && (
                 <button
-                  onClick={() => setSearchQuery('')}
+                  onClick={() => setSearchQuery("")}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#64748B]"
                 >
                   <X className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -154,14 +177,14 @@ export default function TemplatesPage() {
             <div className="flex items-center gap-2">
               <div className="flex bg-white dark:bg-[#1E293B] border border-[#E2E8F0] dark:border-[#334155] rounded-lg overflow-hidden">
                 <button
-                  onClick={() => setViewMode('grid')}
-                  className={`p-1.5 sm:p-2 transition-colors ${viewMode === 'grid' ? 'bg-[#2563EB] text-white' : 'text-[#64748B] dark:text-[#94A3B8] hover:bg-[#F1F5F9] dark:hover:bg-[#334155]'}`}
+                  onClick={() => setViewMode("grid")}
+                  className={`p-1.5 sm:p-2 transition-colors ${viewMode === "grid" ? "bg-[#2563EB] text-white" : "text-[#64748B] dark:text-[#94A3B8] hover:bg-[#F1F5F9] dark:hover:bg-[#334155]"}`}
                 >
                   <Grid3x3 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 </button>
                 <button
-                  onClick={() => setViewMode('list')}
-                  className={`p-1.5 sm:p-2 transition-colors ${viewMode === 'list' ? 'bg-[#2563EB] text-white' : 'text-[#64748B] dark:text-[#94A3B8] hover:bg-[#F1F5F9] dark:hover:bg-[#334155]'}`}
+                  onClick={() => setViewMode("list")}
+                  className={`p-1.5 sm:p-2 transition-colors ${viewMode === "list" ? "bg-[#2563EB] text-white" : "text-[#64748B] dark:text-[#94A3B8] hover:bg-[#F1F5F9] dark:hover:bg-[#334155]"}`}
                 >
                   <LayoutList className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 </button>
@@ -177,8 +200,8 @@ export default function TemplatesPage() {
                 onClick={() => setActiveCategory(category.id)}
                 className={`px-3 sm:px-4 py-1 sm:py-1.5 rounded-lg text-[10px] sm:text-sm font-medium transition-all whitespace-nowrap flex-shrink-0 ${
                   activeCategory === category.id
-                    ? 'bg-[#0F172A] dark:bg-white text-white dark:text-[#0F172A]'
-                    : 'bg-white dark:bg-[#1E293B] text-[#64748B] dark:text-[#94A3B8] hover:bg-[#F1F5F9] dark:hover:bg-[#334155] border border-[#E2E8F0] dark:border-[#334155]'
+                    ? "bg-[#0F172A] dark:bg-white text-white dark:text-[#0F172A]"
+                    : "bg-white dark:bg-[#1E293B] text-[#64748B] dark:text-[#94A3B8] hover:bg-[#F1F5F9] dark:hover:bg-[#334155] border border-[#E2E8F0] dark:border-[#334155]"
                 }`}
               >
                 {category.label}
@@ -189,7 +212,9 @@ export default function TemplatesPage() {
           {/* Results count */}
           <div className="flex items-center justify-between mb-4 sm:mb-6">
             <p className="text-xs sm:text-sm text-[#64748B] dark:text-[#94A3B8]">
-              {filteredTemplates.length} {filteredTemplates.length === 1 ? 'template' : 'templates'} available
+              {filteredTemplates.length}{" "}
+              {filteredTemplates.length === 1 ? "template" : "templates"}{" "}
+              available
             </p>
           </div>
 
@@ -197,15 +222,21 @@ export default function TemplatesPage() {
           {filteredTemplates.length === 0 ? (
             <div className="text-center py-8 sm:py-12 bg-white dark:bg-[#1E293B] rounded-xl border border-[#E2E8F0] dark:border-[#334155]">
               <FileText className="h-10 w-10 sm:h-12 sm:w-12 text-[#94A3B8] mx-auto mb-2 sm:mb-3" />
-              <h3 className="text-sm sm:text-base font-medium text-[#0F172A] dark:text-white">No templates found</h3>
-              <p className="text-xs sm:text-sm text-[#64748B] dark:text-[#94A3B8] mt-1">Try adjusting your search or filters</p>
+              <h3 className="text-sm sm:text-base font-medium text-[#0F172A] dark:text-white">
+                No templates found
+              </h3>
+              <p className="text-xs sm:text-sm text-[#64748B] dark:text-[#94A3B8] mt-1">
+                Try adjusting your search or filters
+              </p>
             </div>
           ) : (
-            <div className={`grid gap-4 sm:gap-6 ${viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3' : 'grid-cols-1'}`}>
+            <div
+              className={`grid gap-4 sm:gap-6 ${viewMode === "grid" ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3" : "grid-cols-1"}`}
+            >
               {filteredTemplates.map((template, index) => (
-                <TemplateCard 
-                  key={template.id} 
-                  template={template} 
+                <TemplateCard
+                  key={template.id}
+                  template={template}
                   onUse={() => handleUseTemplate(template.id)}
                   onPreview={() => openPreview(template)}
                   viewMode={viewMode}
@@ -241,19 +272,20 @@ export default function TemplatesPage() {
                     {selectedTemplate.name}
                   </h2>
                   <p className="text-xs sm:text-sm text-[#64748B] dark:text-[#94A3B8] capitalize truncate">
-                    {selectedTemplate.category} • {selectedTemplate.layout?.replace('-', ' ') || 'Standard'}
+                    {selectedTemplate.category} •{" "}
+                    {selectedTemplate.layout?.replace("-", " ") || "Standard"}
                   </p>
                 </div>
                 <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
                   <button
-                    onClick={() => navigatePreview('prev')}
+                    onClick={() => navigatePreview("prev")}
                     disabled={previewIndex === 0}
                     className="p-1.5 sm:p-2 rounded-lg hover:bg-[#F1F5F9] dark:hover:bg-[#1E293B] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5 text-[#64748B]" />
                   </button>
                   <button
-                    onClick={() => navigatePreview('next')}
+                    onClick={() => navigatePreview("next")}
                     disabled={previewIndex === templates.length - 1}
                     className="p-1.5 sm:p-2 rounded-lg hover:bg-[#F1F5F9] dark:hover:bg-[#1E293B] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
@@ -273,12 +305,12 @@ export default function TemplatesPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   {/* Template Preview Image */}
                   <div className="bg-[#F1F5F9] dark:bg-[#1E293B] rounded-xl overflow-hidden aspect-[3/4] relative">
-                    <div 
+                    <div
                       className="w-full h-full bg-cover bg-center"
                       style={{
                         backgroundImage: `url(${selectedTemplate.thumbnail})`,
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
                       }}
                     />
                   </div>
@@ -290,7 +322,11 @@ export default function TemplatesPage() {
                         About this template
                       </h3>
                       <p className="text-sm sm:text-base text-[#0F172A] dark:text-white">
-                        A {selectedTemplate.category} resume template designed for {selectedTemplate.layout?.replace('-', ' ') || 'Standard'} positions.
+                        A {selectedTemplate.category} resume template designed
+                        for{" "}
+                        {selectedTemplate.layout?.replace("-", " ") ||
+                          "Standard"}{" "}
+                        positions.
                       </p>
                     </div>
 
@@ -332,7 +368,9 @@ export default function TemplatesPage() {
                     </div>
 
                     <div className="flex items-center gap-3 sm:gap-4 text-[10px] sm:text-xs text-[#64748B] dark:text-[#94A3B8]">
-                      <span>Template {previewIndex + 1} of {templates.length}</span>
+                      <span>
+                        Template {previewIndex + 1} of {templates.length}
+                      </span>
                       <span>•</span>
                       <span>Category: {selectedTemplate.category}</span>
                     </div>
@@ -348,22 +386,22 @@ export default function TemplatesPage() {
 }
 
 // Template Card Component
-function TemplateCard({ 
-  template, 
+function TemplateCard({
+  template,
   onUse,
   onPreview,
   viewMode,
-  index
-}: { 
-  template: any; 
+  index,
+}: {
+  template: any;
   onUse: () => void;
   onPreview: () => void;
-  viewMode: 'grid' | 'list';
+  viewMode: "grid" | "list";
   index: number;
 }) {
   const [isHovered, setIsHovered] = useState(false);
 
-  if (viewMode === 'list') {
+  if (viewMode === "list") {
     return (
       <motion.div
         initial={{ opacity: 0, y: 10 }}
@@ -373,12 +411,12 @@ function TemplateCard({
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        <div 
+        <div
           className="w-full sm:w-48 h-32 sm:h-auto sm:aspect-[4/5] flex-shrink-0 bg-[#F1F5F9] dark:bg-[#1E293B] relative cursor-pointer"
           style={{
             backgroundImage: `url(${template.thumbnail})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
+            backgroundSize: "cover",
+            backgroundPosition: "center",
           }}
           onClick={onPreview}
         >
@@ -390,20 +428,22 @@ function TemplateCard({
         </div>
         <div className="flex-1 p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="min-w-0">
-            <h3 className="text-sm sm:text-base font-medium text-[#0F172A] dark:text-white truncate">{template.name}</h3>
+            <h3 className="text-sm sm:text-base font-medium text-[#0F172A] dark:text-white truncate">
+              {template.name}
+            </h3>
             <p className="text-xs sm:text-sm text-[#64748B] dark:text-[#94A3B8] mt-0.5">
-              {template.layout?.replace('-', ' ') || 'Standard'}
+              {template.layout?.replace("-", " ") || "Standard"}
             </p>
           </div>
           <div className="flex gap-2 flex-shrink-0">
-            <button 
+            <button
               onClick={onPreview}
               className="px-3 sm:px-4 py-1.5 text-xs sm:text-sm font-medium text-[#64748B] dark:text-[#94A3B8] border border-[#E2E8F0] dark:border-[#334155] rounded-lg hover:bg-[#F1F5F9] dark:hover:bg-[#334155] transition-colors flex items-center gap-1.5"
             >
               <Eye className="h-3.5 w-3.5" />
               Preview
             </button>
-            <button 
+            <button
               onClick={onUse}
               className="px-3 sm:px-4 py-1.5 text-xs sm:text-sm font-medium text-white bg-[#2563EB] rounded-lg hover:bg-[#1D4ED8] transition-colors shadow-sm shadow-blue-500/25 hover:shadow-blue-500/40"
             >
@@ -425,12 +465,12 @@ function TemplateCard({
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Template Preview */}
-      <div 
+      <div
         className="aspect-[4/5] relative bg-[#F1F5F9] dark:bg-[#1E293B] cursor-pointer"
         style={{
           backgroundImage: `url(${template.thumbnail})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
+          backgroundSize: "cover",
+          backgroundPosition: "center",
         }}
         onClick={onPreview}
       >
@@ -442,16 +482,24 @@ function TemplateCard({
         </div>
 
         {/* Hover Overlay with Preview and Use Buttons */}
-        <div className={`absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center gap-3 transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-0'}`}>
-          <button 
-            onClick={(e) => { e.stopPropagation(); onPreview(); }}
+        <div
+          className={`absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center gap-3 transition-opacity duration-300 ${isHovered ? "opacity-100" : "opacity-0"}`}
+        >
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onPreview();
+            }}
             className="px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-medium text-white bg-white/20 hover:bg-white/30 rounded-lg transition-colors flex items-center gap-2 border border-white/30"
           >
             <Eye className="h-4 w-4" />
             Preview
           </button>
-          <button 
-            onClick={(e) => { e.stopPropagation(); onUse(); }}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onUse();
+            }}
             className="px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-medium text-white bg-[#2563EB] hover:bg-[#1D4ED8] rounded-lg transition-colors flex items-center gap-2 shadow-sm shadow-blue-500/25 hover:shadow-blue-500/40"
           >
             <FileText className="h-4 w-4" />
@@ -468,7 +516,7 @@ function TemplateCard({
               {template.name}
             </h3>
             <p className="text-xs sm:text-sm text-[#64748B] dark:text-[#94A3B8] mt-0.5 truncate">
-              {template.layout?.replace('-', ' ') || 'Standard'}
+              {template.layout?.replace("-", " ") || "Standard"}
             </p>
           </div>
           <span className="text-[10px] sm:text-xs px-2 py-0.5 bg-[#F1F5F9] dark:bg-[#334155] text-[#64748B] dark:text-[#94A3B8] rounded-full capitalize flex-shrink-0">

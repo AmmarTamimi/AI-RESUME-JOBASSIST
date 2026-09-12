@@ -141,4 +141,7 @@ export interface Resume {
   templateId: string;
   theme: ResumeTheme;
   content: ResumeContent;
+  thumbnail_url?: string | null;
+  status?: string;
+  updatedAt?: string;
 }

@@ -21,13 +21,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const supabase = createClient();
 
-  useEffect(() => {
-    // Get initial session
-    const getUser = async () => {
+  const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
       setLoading(false);
     };
+  useEffect(() => {
+    // Get initial session
+    
 
     getUser();
 
