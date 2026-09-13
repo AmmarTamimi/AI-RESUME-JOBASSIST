@@ -482,30 +482,33 @@ function TemplateCard({
         </div>
 
         {/* Hover Overlay with Preview and Use Buttons */}
-        <div
-          className={`absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center gap-3 transition-opacity duration-300 ${isHovered ? "opacity-100" : "opacity-0"}`}
-        >
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onPreview();
-            }}
-            className="px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-medium text-white bg-white/20 hover:bg-white/30 rounded-lg transition-colors flex items-center gap-2 border border-white/30"
-          >
-            <Eye className="h-4 w-4" />
-            Preview
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onUse();
-            }}
-            className="px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-medium text-white bg-[#2563EB] hover:bg-[#1D4ED8] rounded-lg transition-colors flex items-center gap-2 shadow-sm shadow-blue-500/25 hover:shadow-blue-500/40"
-          >
-            <FileText className="h-4 w-4" />
-            Use Template
-          </button>
-        </div>
+        {/* Hover Overlay with Preview and Use Buttons */}
+<div
+  className={`absolute inset-0 flex flex-col items-center justify-center gap-3 transition-opacity duration-300 ${
+    isHovered ? "opacity-100" : "opacity-0"
+  } bg-black/40 backdrop-blur-[1px]`}
+>
+  <button
+    onClick={(e) => {
+      e.stopPropagation();
+      onPreview();
+    }}
+    className="px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-medium text-white bg-white/20 hover:bg-white/30 rounded-lg transition-colors flex items-center gap-2 border border-white/30"
+  >
+    <Eye className="h-4 w-4" />
+    Preview
+  </button>
+  <button
+    onClick={(e) => {
+      e.stopPropagation();
+      onUse();
+    }}
+    className="px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-medium text-white bg-[#2563EB] hover:bg-[#1D4ED8] rounded-lg transition-colors flex items-center gap-2 shadow-sm shadow-blue-500/25 hover:shadow-blue-500/40"
+  >
+    <FileText className="h-4 w-4" />
+    Use Template
+  </button>
+</div>
       </div>
 
       {/* Card Footer */}

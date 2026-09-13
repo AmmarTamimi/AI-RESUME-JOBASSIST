@@ -64,6 +64,7 @@ import { useRouter } from "next/navigation";
 import { templates } from "../templates/templates";
 import { AnimatePresence, motion } from "framer-motion";
 import { saveResumeLocal } from "@/app/lib/resumeStore";
+import { resume } from "react-dom/server";
 
 // Template Card Component
 function TemplateCard({
@@ -116,6 +117,7 @@ function TemplateCard({
 interface EditorPanelProps {
   templateId: string;
   resumeId: string;
+  resumeTitle: string;
   personalInfo: PersonalInfo;
   sections: Section[];
   theme: ResumeTheme;
@@ -136,6 +138,7 @@ interface EditorPanelProps {
   onReorderSections: (sectionOrder: string[]) => void;
   onUpdateTemplate: (templateId: string) => void;
   onFinish: () => void;
+  updateResumeTitle: (e:any) => void;
 }
 
 const ADDABLE_TYPES: {
@@ -430,6 +433,7 @@ function AIGenerateButton({
 export default function EditorPanel({
   templateId,
   resumeId,
+  resumeTitle,
   personalInfo,
   sections,
   theme,
@@ -442,6 +446,7 @@ export default function EditorPanel({
   onAddSection,
   onRemoveSection,
   onUpdateTemplate,
+  updateResumeTitle,
   onFinish,
 }: EditorPanelProps) {
   const router = useRouter();
@@ -628,206 +633,206 @@ export default function EditorPanel({
   };
 
   // Professional AI Feedback Generator - Clean version
-  const generateProfessionalFeedback = () => {
-    const feedback = {
-      summary: "",
-      experience: "",
-      education: "",
-      skills: "",
-      achievements: "",
-      overall: "",
-      tips: [] as string[],
-    };
+  // const generateProfessionalFeedback = () => {
+  //   const feedback = {
+  //     summary: "",
+  //     experience: "",
+  //     education: "",
+  //     skills: "",
+  //     achievements: "",
+  //     overall: "",
+  //     tips: [] as string[],
+  //   };
 
-    // === SUMMARY ANALYSIS ===
-    const summaryLength = personalInfo.summary?.length || 0;
-    if (summaryLength > 100) {
-      feedback.summary =
-        "Excellent Professional Summary\nYour summary is comprehensive and well-crafted. It effectively communicates your value proposition. Consider adding a specific metric or achievement to make it even more compelling (e.g., 'Led teams of 15+' or 'Increased revenue by 30%').";
-    } else if (summaryLength > 50) {
-      feedback.summary =
-        "Good Professional Summary\nYour summary provides a solid overview. To make it stand out, try adding 1-2 specific achievements or key skills that differentiate you from other candidates. Use action-oriented language and quantify your impact where possible.";
-    } else if (summaryLength > 0) {
-      feedback.summary =
-        "Concise Summary\nWhile brief, ensure your summary captures your unique value proposition. Consider expanding it to 2-3 sentences highlighting your top achievements, key skills, and career aspirations. This is often the first thing recruiters read.";
-    } else {
-      feedback.summary =
-        "Missing Summary\nA professional summary is crucial for making a strong first impression. Add a brief overview of your experience, key skills, and career goals to help recruiters quickly understand your profile.";
-    }
+  //   // === SUMMARY ANALYSIS ===
+  //   const summaryLength = personalInfo.summary?.length || 0;
+  //   if (summaryLength > 100) {
+  //     feedback.summary =
+  //       "Excellent Professional Summary\nYour summary is comprehensive and well-crafted. It effectively communicates your value proposition. Consider adding a specific metric or achievement to make it even more compelling (e.g., 'Led teams of 15+' or 'Increased revenue by 30%').";
+  //   } else if (summaryLength > 50) {
+  //     feedback.summary =
+  //       "Good Professional Summary\nYour summary provides a solid overview. To make it stand out, try adding 1-2 specific achievements or key skills that differentiate you from other candidates. Use action-oriented language and quantify your impact where possible.";
+  //   } else if (summaryLength > 0) {
+  //     feedback.summary =
+  //       "Concise Summary\nWhile brief, ensure your summary captures your unique value proposition. Consider expanding it to 2-3 sentences highlighting your top achievements, key skills, and career aspirations. This is often the first thing recruiters read.";
+  //   } else {
+  //     feedback.summary =
+  //       "Missing Summary\nA professional summary is crucial for making a strong first impression. Add a brief overview of your experience, key skills, and career goals to help recruiters quickly understand your profile.";
+  //   }
 
-    // === EXPERIENCE ANALYSIS ===
-    const expSection = sections.find((s) => s.type === "experience");
-    if (expSection && expSection.items.length > 0) {
-      let hasQuantifiable = false;
-      let hasActionVerbs = false;
-      let bulletCount = 0;
-      const actionVerbs = [
-        "led",
-        "managed",
-        "developed",
-        "created",
-        "designed",
-        "implemented",
-        "launched",
-        "increased",
-        "reduced",
-        "improved",
-        "achieved",
-        "delivered",
-        "built",
-        "spearheaded",
-        "transformed",
-        "optimized",
-        "scaled",
-      ];
+  //   // === EXPERIENCE ANALYSIS ===
+  //   const expSection = sections.find((s) => s.type === "experience");
+  //   if (expSection && expSection.items.length > 0) {
+  //     let hasQuantifiable = false;
+  //     let hasActionVerbs = false;
+  //     let bulletCount = 0;
+  //     const actionVerbs = [
+  //       "led",
+  //       "managed",
+  //       "developed",
+  //       "created",
+  //       "designed",
+  //       "implemented",
+  //       "launched",
+  //       "increased",
+  //       "reduced",
+  //       "improved",
+  //       "achieved",
+  //       "delivered",
+  //       "built",
+  //       "spearheaded",
+  //       "transformed",
+  //       "optimized",
+  //       "scaled",
+  //     ];
 
-      expSection.items.forEach((item: any) => {
-        if (item.bullets) {
-          bulletCount += item.bullets.length;
-          item.bullets.forEach((bullet: string) => {
-            if (
-              /\d+%|\d+x|\d+ percent|increased|reduced|saved|grew/.test(bullet)
-            ) {
-              hasQuantifiable = true;
-            }
-            if (
-              actionVerbs.some((verb) => bullet.toLowerCase().includes(verb))
-            ) {
-              hasActionVerbs = true;
-            }
-          });
-        }
-      });
+  //     expSection.items.forEach((item: any) => {
+  //       if (item.bullets) {
+  //         bulletCount += item.bullets.length;
+  //         item.bullets.forEach((bullet: string) => {
+  //           if (
+  //             /\d+%|\d+x|\d+ percent|increased|reduced|saved|grew/.test(bullet)
+  //           ) {
+  //             hasQuantifiable = true;
+  //           }
+  //           if (
+  //             actionVerbs.some((verb) => bullet.toLowerCase().includes(verb))
+  //           ) {
+  //             hasActionVerbs = true;
+  //           }
+  //         });
+  //       }
+  //     });
 
-      if (bulletCount > 3 && hasQuantifiable && hasActionVerbs) {
-        feedback.experience =
-          "Strong Experience Section\nYour experience section is impressive with quantifiable achievements and strong action verbs. This is exactly what recruiters look for. Consider adding a 'Key Projects' subsection for your most impactful work.";
-      } else if (bulletCount > 2 && (hasQuantifiable || hasActionVerbs)) {
-        feedback.experience =
-          "Good Experience Section\nYour experience is well-presented. To make it even stronger, try to add more quantifiable metrics (e.g., 'Increased efficiency by 25%', 'Managed team of 10') and use varied action verbs to keep it engaging.";
-      } else if (bulletCount > 1) {
-        feedback.experience =
-          "Experience Section Needs Enhancement\nWhile you have experience listed, adding more detail would strengthen your resume. Include specific achievements, metrics, and responsibilities. Use the STAR method (Situation, Task, Action, Result) to structure your bullet points.";
-      } else {
-        feedback.experience =
-          "Add More Experience Details\nYour experience section is sparse. Add more bullet points describing your responsibilities, achievements, and impact. Recruiters look for concrete examples of your contributions.";
-      }
-    } else {
-      feedback.experience =
-        "Experience Section Missing\nProfessional experience is critical for most roles. Add your work history to showcase your career progression and achievements.";
-    }
+  //     if (bulletCount > 3 && hasQuantifiable && hasActionVerbs) {
+  //       feedback.experience =
+  //         "Strong Experience Section\nYour experience section is impressive with quantifiable achievements and strong action verbs. This is exactly what recruiters look for. Consider adding a 'Key Projects' subsection for your most impactful work.";
+  //     } else if (bulletCount > 2 && (hasQuantifiable || hasActionVerbs)) {
+  //       feedback.experience =
+  //         "Good Experience Section\nYour experience is well-presented. To make it even stronger, try to add more quantifiable metrics (e.g., 'Increased efficiency by 25%', 'Managed team of 10') and use varied action verbs to keep it engaging.";
+  //     } else if (bulletCount > 1) {
+  //       feedback.experience =
+  //         "Experience Section Needs Enhancement\nWhile you have experience listed, adding more detail would strengthen your resume. Include specific achievements, metrics, and responsibilities. Use the STAR method (Situation, Task, Action, Result) to structure your bullet points.";
+  //     } else {
+  //       feedback.experience =
+  //         "Add More Experience Details\nYour experience section is sparse. Add more bullet points describing your responsibilities, achievements, and impact. Recruiters look for concrete examples of your contributions.";
+  //     }
+  //   } else {
+  //     feedback.experience =
+  //       "Experience Section Missing\nProfessional experience is critical for most roles. Add your work history to showcase your career progression and achievements.";
+  //   }
 
-    // === EDUCATION ANALYSIS ===
-    const eduSection = sections.find((s) => s.type === "education");
-    if (eduSection && eduSection.items.length > 0) {
-      const eduDetails = eduSection.items.filter(
-        (item: any) => item.school || item.degree,
-      );
-      if (eduDetails.length > 1) {
-        feedback.education =
-          "Strong Educational Background\nYour education section is comprehensive. Consider adding relevant coursework, academic achievements, or honors to make it stand out further.";
-      } else {
-        feedback.education =
-          "Education Added\nYour education is listed. If applicable, include relevant coursework, GPA (if high), or academic achievements to strengthen this section.";
-      }
-    } else {
-      feedback.education =
-        "Education Section Missing\nAdd your educational background to complete your resume. Include degrees, institutions, and graduation years.";
-    }
+  //   // === EDUCATION ANALYSIS ===
+  //   const eduSection = sections.find((s) => s.type === "education");
+  //   if (eduSection && eduSection.items.length > 0) {
+  //     const eduDetails = eduSection.items.filter(
+  //       (item: any) => item.school || item.degree,
+  //     );
+  //     if (eduDetails.length > 1) {
+  //       feedback.education =
+  //         "Strong Educational Background\nYour education section is comprehensive. Consider adding relevant coursework, academic achievements, or honors to make it stand out further.";
+  //     } else {
+  //       feedback.education =
+  //         "Education Added\nYour education is listed. If applicable, include relevant coursework, GPA (if high), or academic achievements to strengthen this section.";
+  //     }
+  //   } else {
+  //     feedback.education =
+  //       "Education Section Missing\nAdd your educational background to complete your resume. Include degrees, institutions, and graduation years.";
+  //   }
 
-    // === SKILLS ANALYSIS ===
-    const skillsSection = sections.find(
-      (s) => s.type === "skills" || s.type === "ratedSkills",
-    );
-    if (skillsSection && skillsSection.items.length > 0) {
-      const skillCount = skillsSection.items.length;
-      if (skillCount >= 6) {
-        feedback.skills =
-          "Excellent Skills Section\nYou've listed a good range of skills. Consider categorizing them (e.g., Technical, Soft, Leadership) for better readability. Also, ensure your skills align with the job descriptions you're targeting.";
-      } else if (skillCount >= 3) {
-        feedback.skills =
-          "Good Skills Foundation\nYou have some key skills listed. Add more technical and soft skills to present a well-rounded profile. Research job descriptions in your field to identify commonly sought-after skills.";
-      } else {
-        feedback.skills =
-          "Add More Skills\nYour skills section is limited. Add both technical skills (programming, tools, methodologies) and soft skills (leadership, communication, problem-solving) to make your profile more attractive.";
-      }
-    } else {
-      feedback.skills =
-        "Skills Section Missing\nSkills are crucial for ATS screening and quick recruiter assessment. Add your core competencies to help recruiters understand your capabilities at a glance.";
-    }
+  //   // === SKILLS ANALYSIS ===
+  //   const skillsSection = sections.find(
+  //     (s) => s.type === "skills" || s.type === "ratedSkills",
+  //   );
+  //   if (skillsSection && skillsSection.items.length > 0) {
+  //     const skillCount = skillsSection.items.length;
+  //     if (skillCount >= 6) {
+  //       feedback.skills =
+  //         "Excellent Skills Section\nYou've listed a good range of skills. Consider categorizing them (e.g., Technical, Soft, Leadership) for better readability. Also, ensure your skills align with the job descriptions you're targeting.";
+  //     } else if (skillCount >= 3) {
+  //       feedback.skills =
+  //         "Good Skills Foundation\nYou have some key skills listed. Add more technical and soft skills to present a well-rounded profile. Research job descriptions in your field to identify commonly sought-after skills.";
+  //     } else {
+  //       feedback.skills =
+  //         "Add More Skills\nYour skills section is limited. Add both technical skills (programming, tools, methodologies) and soft skills (leadership, communication, problem-solving) to make your profile more attractive.";
+  //     }
+  //   } else {
+  //     feedback.skills =
+  //       "Skills Section Missing\nSkills are crucial for ATS screening and quick recruiter assessment. Add your core competencies to help recruiters understand your capabilities at a glance.";
+  //   }
 
-    // === ACHIEVEMENTS ANALYSIS ===
-    const achSection = sections.find((s) => s.type === "achievements");
-    if (achSection && achSection.items.length > 0) {
-      const hasDetailedAch = achSection.items.some(
-        (item: any) => item.description && item.description.length > 20,
-      );
-      if (hasDetailedAch) {
-        feedback.achievements =
-          "Strong Achievements\nYour achievements are well-documented. This section effectively showcases your impact. Consider adding a link to a portfolio or project showcase if applicable.";
-      } else {
-        feedback.achievements =
-          "Add More Detail to Achievements\nYour achievements section has potential. Expand on each achievement with more context, the actions you took, and the results you delivered. Numbers make achievements more impactful.";
-      }
-    } else {
-      feedback.achievements =
-        "Add Achievements\nAn achievements section highlights your standout contributions. Add awards, recognitions, certifications, or significant project outcomes to differentiate yourself.";
-    }
+  //   // === ACHIEVEMENTS ANALYSIS ===
+  //   const achSection = sections.find((s) => s.type === "achievements");
+  //   if (achSection && achSection.items.length > 0) {
+  //     const hasDetailedAch = achSection.items.some(
+  //       (item: any) => item.description && item.description.length > 20,
+  //     );
+  //     if (hasDetailedAch) {
+  //       feedback.achievements =
+  //         "Strong Achievements\nYour achievements are well-documented. This section effectively showcases your impact. Consider adding a link to a portfolio or project showcase if applicable.";
+  //     } else {
+  //       feedback.achievements =
+  //         "Add More Detail to Achievements\nYour achievements section has potential. Expand on each achievement with more context, the actions you took, and the results you delivered. Numbers make achievements more impactful.";
+  //     }
+  //   } else {
+  //     feedback.achievements =
+  //       "Add Achievements\nAn achievements section highlights your standout contributions. Add awards, recognitions, certifications, or significant project outcomes to differentiate yourself.";
+  //   }
 
-    // === OVERALL ASSESSMENT ===
-    const totalSections = sections.filter((s) => s.items.length > 0).length;
-    const totalItems = sections.reduce((acc, s) => acc + s.items.length, 0);
+  //   // === OVERALL ASSESSMENT ===
+  //   const totalSections = sections.filter((s) => s.items.length > 0).length;
+  //   const totalItems = sections.reduce((acc, s) => acc + s.items.length, 0);
 
-    if (totalSections >= 5 && totalItems > 10) {
-      feedback.overall =
-        "Excellent Resume Structure\nYour resume is comprehensive and well-organized. It covers all key sections and demonstrates significant experience. You're well-positioned for senior roles. Consider adding a 'Projects' or 'Portfolio' section if applicable to showcase your work.";
-    } else if (totalSections >= 3 && totalItems > 5) {
-      feedback.overall =
-        "Good Resume Foundation\nYou've built a solid resume structure. Continue adding more detail to each section, especially with quantifiable achievements. Consider adding sections like 'Languages' or 'Certifications' to round out your profile.";
-    } else if (totalSections >= 2) {
-      feedback.overall =
-        "Getting Started\nYou have the basic structure in place. Focus on adding more content to each section and including additional sections like Skills, Achievements, or Languages to create a more complete picture of your professional profile.";
-    } else {
-      feedback.overall =
-        "Starting Your Resume Journey\nYou've begun building your resume. Add more sections and content to create a compelling professional story. Every section you add increases your chances of getting noticed by recruiters.";
-    }
+  //   if (totalSections >= 5 && totalItems > 10) {
+  //     feedback.overall =
+  //       "Excellent Resume Structure\nYour resume is comprehensive and well-organized. It covers all key sections and demonstrates significant experience. You're well-positioned for senior roles. Consider adding a 'Projects' or 'Portfolio' section if applicable to showcase your work.";
+  //   } else if (totalSections >= 3 && totalItems > 5) {
+  //     feedback.overall =
+  //       "Good Resume Foundation\nYou've built a solid resume structure. Continue adding more detail to each section, especially with quantifiable achievements. Consider adding sections like 'Languages' or 'Certifications' to round out your profile.";
+  //   } else if (totalSections >= 2) {
+  //     feedback.overall =
+  //       "Getting Started\nYou have the basic structure in place. Focus on adding more content to each section and including additional sections like Skills, Achievements, or Languages to create a more complete picture of your professional profile.";
+  //   } else {
+  //     feedback.overall =
+  //       "Starting Your Resume Journey\nYou've begun building your resume. Add more sections and content to create a compelling professional story. Every section you add increases your chances of getting noticed by recruiters.";
+  //   }
 
-    // === PROFESSIONAL TIPS ===
-    const tips = [];
-    const tipPool = [
-      "Tailor your resume for each job application by highlighting the most relevant experiences and skills.",
-      "Use numbers and metrics to quantify your achievements (e.g., 'Increased sales by 30%', 'Managed team of 15').",
-      "Start bullet points with strong action verbs like 'Led', 'Developed', 'Implemented', 'Spearheaded'.",
-      "Keep your resume to 1-2 pages. Be concise and focus on your most impressive achievements.",
-      "Include industry keywords to improve ATS compatibility and recruiter visibility.",
-      "Use consistent formatting throughout your resume for a professional, polished look.",
-      "Ensure your contact information is up to date and professional.",
-      "Highlight relevant certifications and continuous learning to show commitment to growth.",
-      "Include a section for professional references or note that they're available upon request.",
-      "Add a projects section to showcase your practical work and impact.",
-    ];
+  //   // === PROFESSIONAL TIPS ===
+  //   const tips = [];
+  //   const tipPool = [
+  //     "Tailor your resume for each job application by highlighting the most relevant experiences and skills.",
+  //     "Use numbers and metrics to quantify your achievements (e.g., 'Increased sales by 30%', 'Managed team of 15').",
+  //     "Start bullet points with strong action verbs like 'Led', 'Developed', 'Implemented', 'Spearheaded'.",
+  //     "Keep your resume to 1-2 pages. Be concise and focus on your most impressive achievements.",
+  //     "Include industry keywords to improve ATS compatibility and recruiter visibility.",
+  //     "Use consistent formatting throughout your resume for a professional, polished look.",
+  //     "Ensure your contact information is up to date and professional.",
+  //     "Highlight relevant certifications and continuous learning to show commitment to growth.",
+  //     "Include a section for professional references or note that they're available upon request.",
+  //     "Add a projects section to showcase your practical work and impact.",
+  //   ];
 
-    // Select 3 random tips
-    const shuffledTips = [...tipPool].sort(() => 0.5 - Math.random());
-    for (let i = 0; i < 3 && i < shuffledTips.length; i++) {
-      tips.push(shuffledTips[i]);
-    }
+  //   // Select 3 random tips
+  //   const shuffledTips = [...tipPool].sort(() => 0.5 - Math.random());
+  //   for (let i = 0; i < 3 && i < shuffledTips.length; i++) {
+  //     tips.push(shuffledTips[i]);
+  //   }
 
-    // Add personalized tip based on missing sections
-    if (!expSection || expSection.items.length === 0) {
-      tips.push(
-        "Add your professional experience - it's the most important section for most recruiters.",
-      );
-    } else if (!skillsSection || skillsSection.items.length === 0) {
-      tips.push(
-        "Add your skills to help recruiters quickly assess your capabilities.",
-      );
-    }
+  //   // Add personalized tip based on missing sections
+  //   if (!expSection || expSection.items.length === 0) {
+  //     tips.push(
+  //       "Add your professional experience - it's the most important section for most recruiters.",
+  //     );
+  //   } else if (!skillsSection || skillsSection.items.length === 0) {
+  //     tips.push(
+  //       "Add your skills to help recruiters quickly assess your capabilities.",
+  //     );
+  //   }
 
-    feedback.tips = tips;
+  //   feedback.tips = tips;
 
-    return feedback;
-  };
+  //   return feedback;
+  // };
 
   const renderStepContent = () => {
     const currentId = allSectionIds[currentStep];
@@ -1051,7 +1056,7 @@ export default function EditorPanel({
         onChange={(v) => onUpdatePersonalInfo("title", v)}
         placeholder="Software Engineer"
       />
-      <InputField
+      {/* <InputField
         label="Email"
         value={personalInfo.email || ""}
         onChange={(v) => onUpdatePersonalInfo("email", v)}
@@ -1074,7 +1079,7 @@ export default function EditorPanel({
         value={personalInfo.website || ""}
         onChange={(v) => onUpdatePersonalInfo("website", v)}
         placeholder="johndoe.com"
-      />
+      /> */}
       <div className="col-span-1 sm:col-span-2">
         <div className="flex items-center justify-between mb-1.5">
           <label className="block text-xs font-medium text-[#64748B] dark:text-[#94A3B8]">
@@ -1453,29 +1458,59 @@ export default function EditorPanel({
   return (
     <div className="h-full flex flex-col bg-white dark:bg-[#0F172A]">
       {/* Top Bar */}
-      <div className="sticky top-0 z-10 bg-white dark:bg-[#0F172A] border-b border-[#E2E8F0] dark:border-[#334155] px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="lg:hidden p-2 hover:bg-[#F1F5F9] dark:hover:bg-[#1E293B] rounded-lg transition-colors"
-            >
-              <Menu className="h-5 w-5 text-[#64748B]" />
-            </button>
-            <div>
-              <h1 className="text-lg font-semibold text-[#0F172A] dark:text-white">
-                Edit
-              </h1>
-            </div>
-          </div>
-          <button
-            onClick={() => setIsTemplateModalOpen(true)}
-            className="px-3 py-1.5 text-xs font-medium text-white bg-[#2563EB] rounded-lg hover:bg-[#1D4ED8] transition-colors"
-          >
-            Templates
-          </button>
-        </div>
+     <div className="sticky top-0 z-10 bg-white dark:bg-[#0F172A] border-b border-[#E2E8F0] dark:border-[#334155] px-6 py-3">
+  <div className="flex items-center justify-between gap-6">
+    {/* Left cluster: menu button + "Edit" + divider + title input */}
+    <div className="flex items-center gap-4 min-w-0 flex-1">
+      <button
+        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        className="lg:hidden p-2 hover:bg-[#F1F5F9] dark:hover:bg-[#1E293B] rounded-lg transition-colors shrink-0"
+      >
+        <Menu className="h-5 w-5 text-[#64748B]" />
+      </button>
+
+      <h1 className="text-lg font-semibold text-[#0F172A] dark:text-white shrink-0">
+        Edit
+      </h1>
+
+      {/* Divider between "Edit" and the input */}
+      <div className="h-6 w-px bg-[#E2E8F0] dark:bg-[#334155] shrink-0" />
+
+      {/* Floating-label input */}
+      <div className="relative w-full max-w-xs">
+        <input
+          id="resume-title"
+          type="text"
+          value={resumeTitle}
+          onChange={(e) => updateResumeTitle(e)}
+          placeholder=" "
+          maxLength={80}
+          className="peer w-full bg-transparent text-sm text-[#0F172A] dark:text-white 
+            pt-4 pb-1 border-b border-[#E2E8F0] dark:border-[#334155]
+            focus:outline-none focus:border-[#2563EB] 
+            transition-colors"
+        />
+        <label
+          htmlFor="resume-title"
+          className="absolute left-0 top-3 text-sm text-[#64748B] dark:text-[#94A3B8]
+            pointer-events-none transition-all duration-200
+            peer-focus:top-0 peer-focus:text-xs peer-focus:text-[#2563EB]
+            peer-[:not(:placeholder-shown)]:top-0 peer-[:not(:placeholder-shown)]:text-xs"
+        >
+          Resume title
+        </label>
       </div>
+    </div>
+
+    {/* Right cluster: Templates button */}
+    <button
+      onClick={() => setIsTemplateModalOpen(true)}
+      className="px-3 py-1.5 text-xs font-medium text-white bg-[#2563EB] rounded-lg hover:bg-[#1D4ED8] transition-colors shrink-0"
+    >
+      Templates
+    </button>
+  </div>
+</div>
 
       {/* Content Area */}
       <div className="flex-1 overflow-y-auto p-6 editor-content">

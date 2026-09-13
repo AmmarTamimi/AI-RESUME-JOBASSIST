@@ -13,11 +13,10 @@ import {
   ArrowRight,
   Loader2,
   CheckCircle2,
-  Download,
-  Share2,
   Sparkles,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { getResumeById } from "@/app/lib/supabase/resume";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -39,11 +38,19 @@ const cardHoverVariants = {
 
 export default function ResumeCompletePage() {
   const { id } = useParams<{ id: string }>();
+  const [templateId, setTemplateId] = useState("")
   const router = useRouter();
   const [resume, setResume] = useState<Resume | null>(null);
 
   useEffect(() => {
-    setResume(loadResumeLocal(id));
+    const fetchResume = async() => {
+      const r = await getResumeById(id)
+      setResume(r)
+      if(r?.templateId){
+        setTemplateId(r?.templateId)
+      }
+    }
+    fetchResume()
   }, [id]);
 
   if (!resume) {
@@ -159,14 +166,14 @@ export default function ResumeCompletePage() {
                   icon={<Bot className="h-5 w-5" />}
                   title="Get AI Feedback"
                   description="Personalized suggestions to strengthen your resume."
-                  onClick={() => router.push(`/dashboard/resume/${id}/feedback`)}
+                  onClick={() => router.push(`/dashboard/resumeBuilder/${id}/feedback`)}
                   color="indigo"
                 />
                 <ActionCard
                   icon={<Edit3 className="h-5 w-5" />}
                   title="Keep Editing"
                   description="Go back and adjust content, layout, or design."
-                  onClick={() => router.push(`/dashboard/resume/${id}/edit`)}
+                  onClick={() => router.push(`/dashboard/resumeBuilder/${templateId}?resumeId=${id}`)}
                   color="slate"
                 />
               </div>

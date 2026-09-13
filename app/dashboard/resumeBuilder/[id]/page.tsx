@@ -1,14 +1,37 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import type { Resume, PersonalInfo, ResumeTheme, Section, SectionType, ResumeContent } from "@/app/types/Content";
-import { createBlankSection, createBlankItem } from "../../../lib/sectionFactory";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import type {
+  Resume,
+  PersonalInfo,
+  ResumeTheme,
+  Section,
+  SectionType,
+  ResumeContent,
+} from "@/app/types/Content";
+import {
+  createBlankSection,
+  createBlankItem,
+} from "../../../lib/sectionFactory";
 import EditorPanel from "../../../components/resumeBuilder/EditorPanel";
-import PreviewPanel from "../../../components/resumeBuilder/PreviewPanel";
+import PreviewPanel, {
+  PreviewPanelHandle,
+} from "../../../components/resumeBuilder/PreviewPanel";
 import { templates } from "../../../components/templates/templates";
 import { createClient } from "@/app/lib/supabase/client";
-import { createResume, updateResume } from "@/app/lib/supabase/resume";
+import {
+  createResume,
+  getResumeById,
+  updateResume,
+  uploadResumeThumbnail,
+} from "@/app/lib/supabase/resume";
 
 // Put these at the top of your builder page, before the component
 
@@ -150,6 +173,11 @@ const DEFAULT_CONTENT: ResumeContent = {
   ],
 };
 
+const fetchResume = async (resumeId: string) => {
+  const resume = await getResumeById(resumeId);
+  return resume as Resume;
+};
+
 function createResumeFromTemplate(templateId: string): Resume {
   const template = templates.find((t) => t.id === templateId);
   return {
@@ -170,17 +198,54 @@ const DRAFT_TTL_MS = 24 * 60 * 60 * 1000;
 export default function ResumeBuilderPage() {
   const params = useParams();
   const templateId = params.id as string;
+  const searchParams = useSearchParams();
+  const resumeIdFromUrl = searchParams.get("resumeId");
+  const [isHydrating, setIsHydrating] = useState(!!resumeIdFromUrl);
   const router = useRouter();
-
-  const [resume, setResume] = useState<Resume>(() => createResumeFromTemplate(templateId));
+  const previewRef = useRef<PreviewPanelHandle>(null);
+  const [resume, setResume] = useState<Resume>(() =>
+    createResumeFromTemplate(templateId),
+  );
 
   // null until the first successful DB write
   const [persistedId, setPersistedId] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (!resumeIdFromUrl) {
+      setIsHydrating(false);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const existing = await getResumeById(resumeIdFromUrl);
+        if (cancelled) return;
+        if (existing) {
+          setResume(existing);
+          // Seed last-saved hash so autosave doesn't fire immediately
+          lastSavedHashRef.current = JSON.stringify({
+            title: existing.title,
+            theme: existing.theme,
+            content: existing.content,
+          });
+        }
+      } catch (err) {
+        console.error("Failed to load resume:", err);
+      } finally {
+        if (!cancelled) setIsHydrating(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [resumeIdFromUrl]);
+
   // Always-current ref — lets timers and unload handlers see fresh data
   // without re-subscribing on every keystroke.
   const resumeRef = useRef(resume);
-  useEffect(() => { resumeRef.current = resume; }, [resume]);
+  useEffect(() => {
+    resumeRef.current = resume;
+  }, [resume]);
 
   // Track last-saved hash so we skip no-op saves.
   const lastSavedHashRef = useRef<string>("");
@@ -211,14 +276,17 @@ export default function ResumeBuilderPage() {
       if (hash === lastSavedHashRef.current) return;
 
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) {
         router.push("/login");
         return;
       }
 
+      // Determine the id we just saved under
+      let savedId: string;
       if (!persistedId) {
-        // First save — create the row
         const created = await createResume({
           userId: user.id,
           templateId: current.templateId,
@@ -228,19 +296,36 @@ export default function ResumeBuilderPage() {
           thumbnail_url: current.thumbnail_url ?? null,
           status: "draft",
         });
-        setPersistedId(created.id);
-        lastSavedHashRef.current = hash;
+        savedId = created.id;
+        setPersistedId(savedId);
+        // Rewrite URL so refresh keeps editing this resume
+        const url = new URL(window.location.href);
+        url.searchParams.set("resumeId", savedId);
+        window.history.replaceState({}, "", url.toString());
         localStorage.removeItem("resume-draft:new");
       } else {
-        // Subsequent saves — update
-        await updateResume(persistedId, {
+        savedId = persistedId;
+        await updateResume(savedId, {
           title: current.title ?? null,
           theme: current.theme,
           content: current.content,
           status: "draft",
         });
-        lastSavedHashRef.current = hash;
         localStorage.removeItem(`resume-draft:${persistedId}`);
+      }
+
+      lastSavedHashRef.current = hash;
+
+      // Generate + upload thumbnail (non-fatal if it fails)
+      try {
+        if (previewRef.current) {
+          const blob = await previewRef.current.generateThumbnailBlob();
+          const url = await uploadResumeThumbnail(user.id, savedId, blob);
+          await updateResume(savedId, { thumbnail_url: url });
+          setResume((prev) => ({ ...prev, thumbnail_url: url }));
+        }
+      } catch (thumbErr) {
+        console.error("Thumbnail generation failed:", thumbErr);
       }
     } catch (err) {
       console.error("Autosave failed:", err);
@@ -288,7 +373,11 @@ export default function ResumeBuilderPage() {
         localStorage.removeItem(key);
         return;
       }
-      if (confirm("We found unsaved changes from your last session. Restore them?")) {
+      if (
+        confirm(
+          "We found unsaved changes from your last session. Restore them?",
+        )
+      ) {
         setResume((prev) => ({
           ...prev,
           title: snap.title ?? prev.title,
@@ -314,7 +403,9 @@ export default function ResumeBuilderPage() {
   useEffect(() => {
     const handler = () => {
       const current = resumeRef.current;
-      const key = persistedId ? `resume-draft:${persistedId}` : "resume-draft:new";
+      const key = persistedId
+        ? `resume-draft:${persistedId}`
+        : "resume-draft:new";
       try {
         localStorage.setItem(
           key,
@@ -352,7 +443,10 @@ export default function ResumeBuilderPage() {
 
   const updateTheme = useCallback(
     <K extends keyof ResumeTheme>(field: K, value: ResumeTheme[K]) => {
-      setResume((prev) => ({ ...prev, theme: { ...prev.theme, [field]: value } }));
+      setResume((prev) => ({
+        ...prev,
+        theme: { ...prev.theme, [field]: value },
+      }));
     },
     [],
   );
@@ -401,6 +495,13 @@ export default function ResumeBuilderPage() {
     [updateSection],
   );
 
+  const updateResumeTitle = (e: any) => {
+    setResume((prev) => ({
+      ...prev,
+      title: e.target.value,
+    }));
+  };
+
   const addItem = useCallback(
     (sectionId: string) => {
       updateSection(sectionId, (s) => {
@@ -408,7 +509,10 @@ export default function ResumeBuilderPage() {
         if (s.type === "ratedSkills") blankItem = { name: "", level: 50 };
         else if (s.type === "skills") blankItem = "";
         else blankItem = createBlankItem(s.type);
-        return { ...s, items: [...(s.items as unknown[]), blankItem] } as Section;
+        return {
+          ...s,
+          items: [...(s.items as unknown[]), blankItem],
+        } as Section;
       });
     },
     [updateSection],
@@ -444,13 +548,18 @@ export default function ResumeBuilderPage() {
       content: {
         ...prev.content,
         sections: prev.content.sections.filter((s) => s.id !== sectionId),
-        sectionOrder: prev.content.sectionOrder.filter((id) => id !== sectionId),
+        sectionOrder: prev.content.sectionOrder.filter(
+          (id) => id !== sectionId,
+        ),
       },
     }));
   }, []);
 
   const reorderSections = useCallback((sectionOrder: string[]) => {
-    setResume((prev) => ({ ...prev, content: { ...prev.content, sectionOrder } }));
+    setResume((prev) => ({
+      ...prev,
+      content: { ...prev.content, sectionOrder },
+    }));
   }, []);
 
   const orderedSections = useMemo(() => {
@@ -472,7 +581,9 @@ export default function ResumeBuilderPage() {
     }
 
     const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) {
       router.push("/login");
       return;
@@ -511,6 +622,7 @@ export default function ResumeBuilderPage() {
       <div className="w-[480px] flex-shrink-0 border-r border-[#E2E8F0] dark:border-[#334155] overflow-y-auto">
         <EditorPanel
           templateId={resume.templateId}
+          resumeTitle={resume.title ?? ""}
           resumeId={persistedId ?? ""}
           personalInfo={resume.content.personalInfo}
           sections={orderedSections}
@@ -526,11 +638,13 @@ export default function ResumeBuilderPage() {
           onReorderSections={reorderSections}
           onUpdateTemplate={switchTemplate}
           onFinish={handleFinish}
+          updateResumeTitle={updateResumeTitle}
         />
       </div>
 
       <div className="flex-1 overflow-hidden">
         <PreviewPanel
+          ref={previewRef}
           templateId={resume.templateId}
           theme={resume.theme}
           content={{ ...resume.content, sections: orderedSections }}
