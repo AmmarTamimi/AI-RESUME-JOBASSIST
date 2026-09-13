@@ -617,6 +617,21 @@ export default function ResumeBuilderPage() {
     router.push(`/dashboard/resumeBuilder/${finalId}/complete`);
   }, [persistedId, router]);
 
+  const replaceContent = useCallback((content: ResumeContent) => {
+  setResume((prev) => ({
+    ...prev,
+    content,
+    // If the imported resume has a name and we don't have a custom title yet,
+    // adopt it as the resume title too
+    title:
+      prev.title && prev.title !== "Untitled Resume"
+        ? prev.title
+        : content.personalInfo.fullName
+          ? `${content.personalInfo.fullName}'s Resume`
+          : prev.title,
+  }));
+}, []);
+
   return (
     <div className="flex h-screen overflow-hidden bg-[#F8FAFC] dark:bg-[#0F172A]">
       <div className="w-[480px] flex-shrink-0 border-r border-[#E2E8F0] dark:border-[#334155] overflow-y-auto">
@@ -639,6 +654,7 @@ export default function ResumeBuilderPage() {
           onUpdateTemplate={switchTemplate}
           onFinish={handleFinish}
           updateResumeTitle={updateResumeTitle}
+          onReplaceContent={replaceContent}
         />
       </div>
 

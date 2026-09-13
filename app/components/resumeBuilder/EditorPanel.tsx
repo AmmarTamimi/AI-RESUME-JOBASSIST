@@ -13,6 +13,7 @@ import type {
   CustomItem,
   LanguageItem,
   AchievementItem,
+  ResumeContent,
 } from "@/app/types/Content";
 import {
   User,
@@ -58,6 +59,7 @@ import {
   ArrowRight,
   FileCheck,
   Bot,
+  Upload,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -65,6 +67,7 @@ import { templates } from "../templates/templates";
 import { AnimatePresence, motion } from "framer-motion";
 import { saveResumeLocal } from "@/app/lib/resumeStore";
 import { resume } from "react-dom/server";
+import ImportResumeModal, { ImportResult } from "./ImportResumeModal";
 
 // Template Card Component
 function TemplateCard({
@@ -139,6 +142,7 @@ interface EditorPanelProps {
   onUpdateTemplate: (templateId: string) => void;
   onFinish: () => void;
   updateResumeTitle: (e:any) => void;
+  onReplaceContent: (content: ResumeContent) => void;
 }
 
 const ADDABLE_TYPES: {
@@ -448,6 +452,7 @@ export default function EditorPanel({
   onUpdateTemplate,
   updateResumeTitle,
   onFinish,
+  onReplaceContent,
 }: EditorPanelProps) {
   const router = useRouter();
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
@@ -476,6 +481,12 @@ export default function EditorPanel({
   const [aiModalContext, setAiModalContext] = useState("");
   const [aiModalResult, setAiModalResult] = useState<string | null>(null);
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
+  const [isImportOpen, setIsImportOpen] = useState(false);
+
+  const handleImported = ({ content }: ImportResult) => {
+  setIsImportOpen(false);
+  // setResume((prev) => ({ ...prev, content }));
+};
 
   // Get all section IDs for navigation
   const allSectionIds = [
@@ -1503,12 +1514,21 @@ export default function EditorPanel({
     </div>
 
     {/* Right cluster: Templates button */}
-    <button
-      onClick={() => setIsTemplateModalOpen(true)}
-      className="px-3 py-1.5 text-xs font-medium text-white bg-[#2563EB] rounded-lg hover:bg-[#1D4ED8] transition-colors shrink-0"
-    >
-      Templates
-    </button>
+    <div className="flex items-center gap-2">
+  <button
+    onClick={() => setIsImportOpen(true)}
+    className="px-3 py-1.5 text-xs font-medium text-[#64748B] dark:text-[#94A3B8] border border-[#E2E8F0] dark:border-[#334155] rounded-lg hover:bg-[#F1F5F9] dark:hover:bg-[#334155] transition-colors flex items-center gap-1.5"
+  >
+    <Upload className="h-3.5 w-3.5" />
+    Import
+  </button>
+  <button
+    onClick={() => setIsTemplateModalOpen(true)}
+    className="px-3 py-1.5 text-xs font-medium text-white bg-[#2563EB] rounded-lg hover:bg-[#1D4ED8] transition-colors"
+  >
+    Templates
+  </button>
+</div>
   </div>
 </div>
 
@@ -1940,6 +1960,14 @@ export default function EditorPanel({
           </>
         )}
       </AnimatePresence>
+      <ImportResumeModal
+  open={isImportOpen}
+  onClose={() => setIsImportOpen(false)}
+  onImported={({ content }) => {
+    setIsImportOpen(false);
+    onReplaceContent(content);
+  }}
+/>
     </div>
   );
 }

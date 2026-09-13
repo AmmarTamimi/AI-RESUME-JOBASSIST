@@ -12,13 +12,29 @@ import {
   ChevronLeft,
   ChevronRight,
   Sparkles,
+  Upload,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Shell } from "../../components/layout/Shell-temp";
 import { useState, useEffect } from "react";
-import { TemplateMeta } from "@/app/types/Content";
+import { ResumeTheme, TemplateMeta } from "@/app/types/Content";
 import { createClient } from "@/app/lib/supabase/client";
-import { getTemplates } from "@/app/lib/supabase/resume";
+import { createResume, getTemplates } from "@/app/lib/supabase/resume";
+import ImportResumeModal, {
+  ImportResult,
+} from "@/app/components/resumeBuilder/ImportResumeModal";
+
+const DEFAULT_THEME: ResumeTheme = {
+  primaryColor: "#33322E",
+  accentColor: "#5B8C85",
+  backgroundColor: "#FBFAF7",
+  textColor: "#33322E",
+  mutedColor: "#8A8A8A",
+  headingFont: "Fraunces",
+  bodyFont: "Inter",
+  fontScale: "md",
+  radius: "none",
+};
 
 export default function TemplatesPage() {
   const { user } = useAuth();
@@ -31,6 +47,31 @@ export default function TemplatesPage() {
   const [previewIndex, setPreviewIndex] = useState(0);
   const [templates, setTemplates] = useState<TemplateMeta[]>([]);
 
+  const [isImportOpen, setIsImportOpen] = useState(false);
+  const handleImported = async ({ content }: ImportResult) => {
+    setIsImportOpen(false);
+
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+
+    // Create a resume row with the imported content, using a default template
+    const created = await createResume({
+      userId: user.id,
+      templateId: "minimal-06", // or let the user pick; see below
+      theme: DEFAULT_THEME,
+      content,
+      title: content.personalInfo.fullName
+        ? `${content.personalInfo.fullName}'s Resume`
+        : "Imported Resume",
+      thumbnail_url: null,
+      status: "draft",
+    });
+
+    router.push(`/dashboard/resumeBuilder/minimal-06?resumeId=${created.id}`);
+  };
+
   // Categories
   const categories = [
     { id: "all", label: "All Templates" },
@@ -42,8 +83,8 @@ export default function TemplatesPage() {
   ];
 
   const fetchTemplates = async () => {
-    const data = await getTemplates()
-    setTemplates(data)
+    const data = await getTemplates();
+    setTemplates(data);
   };
 
   useEffect(() => {
@@ -130,9 +171,12 @@ export default function TemplatesPage() {
                   Choose from professionally designed resume templates
                 </p>
               </div>
-              <button className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-white bg-[#2563EB] rounded-lg hover:bg-[#1D4ED8] transition-colors flex items-center gap-1.5 sm:gap-2 shadow-sm shadow-blue-500/25 hover:shadow-blue-500/40 w-full sm:w-auto justify-center">
-                <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                Generate with AI
+              <button
+                onClick={() => setIsImportOpen(true)}
+                className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-[#0F172A] dark:text-white bg-white dark:bg-[#1E293B] border border-[#E2E8F0] dark:border-[#334155] rounded-lg hover:bg-[#F1F5F9] dark:hover:bg-[#334155] transition-colors flex items-center gap-1.5 sm:gap-2 w-full sm:w-auto justify-center"
+              >
+                <Upload className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                Import Resume
               </button>
             </div>
           </div>
@@ -381,6 +425,11 @@ export default function TemplatesPage() {
           </motion.div>
         )}
       </AnimatePresence>
+      <ImportResumeModal
+        open={isImportOpen}
+        onClose={() => setIsImportOpen(false)}
+        onImported={handleImported}
+      />
     </Shell>
   );
 }
@@ -483,32 +532,32 @@ function TemplateCard({
 
         {/* Hover Overlay with Preview and Use Buttons */}
         {/* Hover Overlay with Preview and Use Buttons */}
-<div
-  className={`absolute inset-0 flex flex-col items-center justify-center gap-3 transition-opacity duration-300 ${
-    isHovered ? "opacity-100" : "opacity-0"
-  } bg-black/40 backdrop-blur-[1px]`}
->
-  <button
-    onClick={(e) => {
-      e.stopPropagation();
-      onPreview();
-    }}
-    className="px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-medium text-white bg-white/20 hover:bg-white/30 rounded-lg transition-colors flex items-center gap-2 border border-white/30"
-  >
-    <Eye className="h-4 w-4" />
-    Preview
-  </button>
-  <button
-    onClick={(e) => {
-      e.stopPropagation();
-      onUse();
-    }}
-    className="px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-medium text-white bg-[#2563EB] hover:bg-[#1D4ED8] rounded-lg transition-colors flex items-center gap-2 shadow-sm shadow-blue-500/25 hover:shadow-blue-500/40"
-  >
-    <FileText className="h-4 w-4" />
-    Use Template
-  </button>
-</div>
+        <div
+          className={`absolute inset-0 flex flex-col items-center justify-center gap-3 transition-opacity duration-300 ${
+            isHovered ? "opacity-100" : "opacity-0"
+          } bg-black/40 backdrop-blur-[1px]`}
+        >
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onPreview();
+            }}
+            className="px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-medium text-white bg-white/20 hover:bg-white/30 rounded-lg transition-colors flex items-center gap-2 border border-white/30"
+          >
+            <Eye className="h-4 w-4" />
+            Preview
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onUse();
+            }}
+            className="px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-medium text-white bg-[#2563EB] hover:bg-[#1D4ED8] rounded-lg transition-colors flex items-center gap-2 shadow-sm shadow-blue-500/25 hover:shadow-blue-500/40"
+          >
+            <FileText className="h-4 w-4" />
+            Use Template
+          </button>
+        </div>
       </div>
 
       {/* Card Footer */}

@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   // Add this for Puppeteer support
-  serverExternalPackages: ['puppeteer', 'puppeteer-core', '@sparticuz/chromium'],
+  serverExternalPackages: ['puppeteer', 'puppeteer-core', '@sparticuz/chromium', 'pdf-parse', 'pdfjs-dist'],
   
   // For local development, you might also need:
   experimental: {
