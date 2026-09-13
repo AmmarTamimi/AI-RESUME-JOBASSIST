@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import type { TemplateProps, CustomItem, ReferenceItem, LanguageItem, AchievementItem, RatedSkillItem } from "../../types/Content";
 
 const Icon = {
@@ -417,23 +417,26 @@ export default function ElegantTemplate({ content, theme }: TemplateProps) {
            Absolute positioning + translateY(-50%) is plain pixel math, so
            html2canvas renders it identically to the live browser. */
         .sideHeading {
-          position: relative;
-          min-height: 24px;
-          padding-left: 30px;
+          display: flex;
+          align-items: center;
+          gap: 10px;
           margin: 22px 0 16px;
         }
 
         .iconBadge {
-          position: absolute;
-          left: 0;
-          top: 50%;
-          transform: translateY(-50%);
           color: ${t.accentColor || "#C19A49"};
           display: flex;
           align-items: center;
           justify-content: center;
           width: 18px;
           height: 18px;
+          flex-shrink: 0;
+        }
+
+        .iconBadge svg {
+          width: 14px;
+          height: 14px;
+          display: block;
         }
 
         .sideHeading h3 {
@@ -442,8 +445,11 @@ export default function ElegantTemplate({ content, theme }: TemplateProps) {
           font-weight: 600;
           letter-spacing: 1.5px;
           margin: 0;
+          padding: 0;
           color: ${t.accentColor || "#C19A49"};
-          line-height: 24px;
+          line-height: 1.2;
+          display: flex;
+          align-items: center;
         }
 
         .contactList {
@@ -452,33 +458,35 @@ export default function ElegantTemplate({ content, theme }: TemplateProps) {
           gap: 11px;
         }
 
-        /* Fixed twice now, same root cause both times: html2canvas doesn't
-           reliably implement flexbox align-items:center (it tends to anchor
-           flex children near the top of the row instead of centering them),
-           so anything centered with flexbox here looks right in the live
-           browser but drifts in exported PNG/PDF. Absolute positioning +
-           translateY(-50%) is plain pixel math — html2canvas renders that
-           identically to the live browser, so this is deterministic. */
         .contactItem {
-          position: relative;
-          min-height: 18px;
-          padding-left: 24px;
+          display: flex;
+          align-items: center;
+          gap: 10px;
           font-size: 12px;
-          line-height: 1.5;
+          line-height: 1.2;
           color: #e3ddcb;
         }
 
         .contactItem .ic {
-          position: absolute;
-          left: 0;
-          top: 50%;
-          transform: translateY(-50%);
           color: ${t.accentColor || "#C19A49"};
           display: flex;
           align-items: center;
           justify-content: center;
           width: 16px;
           height: 16px;
+          flex-shrink: 0;
+        }
+
+        .contactItem .ic svg {
+          width: 13px;
+          height: 13px;
+          display: block;
+        }
+
+        .contactItem .contactText {
+          display: flex;
+          align-items: center;
+          line-height: 1.2;
         }
 
         .ornament {
