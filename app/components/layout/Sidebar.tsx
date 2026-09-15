@@ -275,11 +275,11 @@ const mainNav = [
 ];
 
 const aiFeatures = [
-  { name: "AI Insights", href: "/dashboard/ai-insights", icon: Sparkles },
-  { name: "Job Match", href: "/dashboard/job-match", icon: Briefcase },
-  { name: "AI Assistant", href: "/dashboard/ai-assistant", icon: MessageSquare },
-  { name: "Integrations", href: "/dashboard/integrations", icon: Plug },
-  { name: "AI Experiments", href: "/dashboard/experiments", icon: FlaskConical, badge: "BETA" },
+  // { name: "AI Insights", href: "/dashboard/ai-insights", icon: Sparkles },
+  { name: "Job Match", href: "/dashboard/jobs", icon: Briefcase },
+  // { name: "AI Assistant", href: "/dashboard/ai-assistant", icon: MessageSquare },
+  // { name: "Integrations", href: "/dashboard/integrations", icon: Plug },
+  // { name: "AI Experiments", href: "/dashboard/experiments", icon: FlaskConical, badge: "BETA" },
 ];
 
 const bottomNav = [
@@ -423,11 +423,11 @@ export function Sidebar({ onClose }: SidebarProps) {
                     <item.icon className={cn("h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0", active ? "text-[#2563EB]" : "text-[#94A3B8]")} />
                     <span className="truncate">{item.name}</span>
                   </div>
-                  {item.badge && (
+                  {/* {item.badge && (
                     <span className="bg-blue-50 dark:bg-blue-900/30 text-[#2563EB] dark:text-blue-400 text-[8px] sm:text-[10px] font-bold px-1 sm:px-1.5 py-0.5 rounded-sm flex-shrink-0 ml-1">
                       {item.badge}
                     </span>
-                  )}
+                  )} */}
                 </div>
               </Link>
             );

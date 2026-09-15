@@ -153,7 +153,7 @@ Write a professional achievement description:`;
         },
       ],
       temperature: 0.7,
-      max_tokens: 500,
+      max_tokens: 1500,
     });
 
     let result = completion.choices[0]?.message?.content;
