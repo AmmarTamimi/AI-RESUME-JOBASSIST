@@ -1,33 +1,6 @@
 ﻿import React from "react";
 import type { TemplateProps } from "../../types/Content";
 
-const Icon = {
-  phone: (
-    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.7">
-      <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z" />
-    </svg>
-  ),
-  globe: (
-    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.7">
-      <circle cx="12" cy="12" r="10" />
-      <line x1="2" y1="12" x2="22" y2="12" />
-      <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
-    </svg>
-  ),
-  mail: (
-    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.7">
-      <rect x="2" y="4" width="20" height="16" rx="2" />
-      <path d="M22 7l-8.97 5.7a1.94 1.94 0 01-2.06 0L2 7" />
-    </svg>
-  ),
-  pin: (
-    <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.7">
-      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
-      <circle cx="12" cy="10" r="3" />
-    </svg>
-  ),
-};
-
 export default function ProfessionalStripTemplate({ content, theme }: TemplateProps) {
   const { personalInfo, sections } = content;
   const t = theme;
@@ -74,7 +47,7 @@ export default function ProfessionalStripTemplate({ content, theme }: TemplatePr
                 <div className="job data-resume-root" key={i}>
                   <div className="jobTop data-resume-root">
                     <span className="jobTitle">{job.role || "Position"}</span>
-                    <span className="jobDate">{job.start} â€“ {job.end || "Present"}</span>
+                    <span className="jobDate">{job.start} – {job.end || "Present"}</span>
                   </div>
                   <div className="jobSub data-resume-root">{job.company}{job.location ? `, ${job.location}` : ""}</div>
                   {job.bullets && job.bullets.length > 0 && <div className="jobDesc data-resume-root">{job.bullets}</div>}
@@ -98,13 +71,9 @@ export default function ProfessionalStripTemplate({ content, theme }: TemplatePr
               {contactItems.length > 0
                 ? contactItems.map((item, i) => {
                     if (typeof item === "object" && item !== null && "label" in item && "description" in item) {
-                      let icon = Icon.pin;
-                      if (item.label === "phone") icon = Icon.phone;
-                      else if (item.label === "email") icon = Icon.mail;
-                      else if (item.label === "web") icon = Icon.globe;
                       return (
                         <div className="contactItem data-resume-root" key={i}>
-                          <span className="ic">{icon}</span><span>{item.description}</span>
+                          <span>{item.description}</span>
                         </div>
                       );
                     }
@@ -112,10 +81,10 @@ export default function ProfessionalStripTemplate({ content, theme }: TemplatePr
                   })
                 : (
                   <>
-                    {personalInfo.phone && <div className="contactItem data-resume-root"><span className="ic">{Icon.phone}</span><span>{personalInfo.phone}</span></div>}
-                    {personalInfo.email && <div className="contactItem data-resume-root"><span className="ic">{Icon.mail}</span><span>{personalInfo.email}</span></div>}
-                    {personalInfo.location && <div className="contactItem data-resume-root"><span className="ic">{Icon.pin}</span><span>{personalInfo.location}</span></div>}
-                    {personalInfo.website && <div className="contactItem data-resume-root"><span className="ic">{Icon.globe}</span><span>{personalInfo.website}</span></div>}
+                    {personalInfo.phone && <div className="contactItem data-resume-root"><span>{personalInfo.phone}</span></div>}
+                    {personalInfo.email && <div className="contactItem data-resume-root"><span>{personalInfo.email}</span></div>}
+                    {personalInfo.location && <div className="contactItem data-resume-root"><span>{personalInfo.location}</span></div>}
+                    {personalInfo.website && <div className="contactItem data-resume-root"><span>{personalInfo.website}</span></div>}
                   </>
                 )}
             </div>
@@ -140,7 +109,7 @@ export default function ProfessionalStripTemplate({ content, theme }: TemplatePr
                 <div className="eduItem data-resume-root" key={i}>
                   <div className="eduSchool data-resume-root">{edu.school}</div>
                   <div className="eduDegree data-resume-root">{edu.degree}</div>
-                  <div className="eduDate data-resume-root">{edu.start} â€“ {edu.end}</div>
+                  <div className="eduDate data-resume-root">{edu.start} – {edu.end}</div>
                 </div>
               ))}
             </div>
@@ -310,17 +279,9 @@ export default function ProfessionalStripTemplate({ content, theme }: TemplatePr
         }
 
         .contactItem {
-          display: flex;
-          align-items: flex-start;
-          gap: 8px;
           font-size: 11px;
           color: #4a4a4a;
           line-height: 1.5;
-        }
-
-        .contactItem .ic {
-          color: ${t.accentColor || "#0F4C4C"};
-          margin-top: 2px;
         }
 
         .skillRow {
@@ -394,5 +355,3 @@ export default function ProfessionalStripTemplate({ content, theme }: TemplatePr
     </div>
   );
 }
-
-

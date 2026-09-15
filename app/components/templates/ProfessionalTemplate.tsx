@@ -1,76 +1,45 @@
 ﻿import React from "react";
-import type { TemplateProps } from "../../types/Content";
+import type {
+  TemplateProps,
+  RatedSkillItem,
+  LanguageItem,
+  AchievementItem,
+  CustomItem,
+  ReferenceItem,
+} from "../../types/Content";
 
-const Icon = {
-  phone: (
-    <svg
-      viewBox="0 0 24 24"
-      width="14"
-      height="14"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-    >
-      <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z" />
-    </svg>
-  ),
-
-  mail: (
-    <svg
-      viewBox="0 0 24 24"
-      width="14"
-      height="14"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-    >
-      <rect x="2" y="4" width="20" height="16" rx="1" />
-      <path d="M22 7l-8.97 5.7a1.94 1.94 0 01-2.06 0L2 7" />
-    </svg>
-  ),
-
-  pin: (
-    <svg
-      viewBox="0 0 24 24"
-      width="14"
-      height="14"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-    >
-      <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z" />
-      <circle cx="12" cy="10" r="3" />
-    </svg>
-  ),
-
-  globe: (
-    <svg
-      viewBox="0 0 24 24"
-      width="14"
-      height="14"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-    >
-      <circle cx="12" cy="12" r="10" />
-      <line x1="2" y1="12" x2="22" y2="12" />
-      <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
-    </svg>
-  ),
-};
+// Type guards
+const isCustomItem = (item: any): item is CustomItem =>
+  item && typeof item === "object" && "label" in item;
+const isLanguageItem = (item: any): item is LanguageItem =>
+  item && typeof item === "object" && "name" in item;
+const isAchievementItem = (item: any): item is AchievementItem =>
+  item && typeof item === "object" && "title" in item;
 
 export default function ProfessionalTemplate({ content, theme }: TemplateProps) {
   const { personalInfo, sections } = content;
   const t = theme;
 
-  // Filter sections for left and right
-  const leftSections = sections.filter((s) => s.type === "skills" || s.type === "custom" || s.type === "references");
-  const rightSections = sections.filter((s) => s.type !== "skills" && s.type !== "custom" && s.type !== "references");
-
   const contactSection = sections.find(
-    (s) => s.type === "custom" && s.id === "contact",
+    (s) => s.type === "custom" && s.id === "contact"
   );
   const contactItems = contactSection?.items || [];
+
+  const leftSectionTypes = new Set([
+    "skills",
+    "ratedSkills",
+    "languages",
+    "references",
+    "custom",
+  ]);
+  const leftSections = sections.filter(
+    (s) =>
+      leftSectionTypes.has(s.type) &&
+      !(s.type === "custom" && s.id === "contact")
+  );
+
+  const rightSectionTypes = new Set(["experience", "education", "achievements"]);
+  const rightSections = sections.filter((s) => rightSectionTypes.has(s.type));
 
   const rootStyle = {
     "--primary": t.primaryColor,
@@ -91,19 +60,14 @@ export default function ProfessionalTemplate({ content, theme }: TemplateProps) 
 
       <div className="prof-body data-resume-root">
         <aside className="prof-left">
-          {/* Contact Section */}
+          {/* Contact */}
           <div className="prof-block data-resume-root">
             <h2 className="prof-h2">Contact</h2>
             <div className="prof-contact data-resume-root">
               {contactItems.map((item, i) => {
-                if (typeof item === "object" && item !== null && "label" in item && "description" in item) {
-                  let icon = Icon.pin;
-                  if (item.label === "phone") icon = Icon.phone;
-                  else if (item.label === "email") icon = Icon.mail;
-                  else if (item.label === "web") icon = Icon.globe;
+                if (isCustomItem(item)) {
                   return (
                     <div className="contactItem data-resume-root" key={i}>
-                      <span className="ic">{icon}</span>
                       <span className="contact-text">{item.description}</span>
                     </div>
                   );
@@ -113,49 +77,130 @@ export default function ProfessionalTemplate({ content, theme }: TemplateProps) 
             </div>
           </div>
 
-          {/* Skills & Other Left Sections */}
           {leftSections.map((section) => {
             if (section.type === "skills") {
               return (
                 <div className="prof-block data-resume-root" key={section.id}>
-                  <h2 className="prof-h2">{section.title}</h2>
+                  <h2 className="prof-h2">{section.title || "Skills"}</h2>
                   <ul className="prof-skill-list">
-                    {section.items.map((s, i) => {
-                      const skillName = s;
-                      return <li key={i}>{skillName}</li>;
-                    })}
+                    {section.items.map((s, i) => (
+                      <li key={i}>{String(s)}</li>
+                    ))}
                   </ul>
                 </div>
               );
             }
+
+            if (section.type === "ratedSkills") {
+              return (
+                <div className="prof-block data-resume-root" key={section.id}>
+                  <h2 className="prof-h2">{section.title || "Skills"}</h2>
+                  <div className="prof-rated-list">
+                    {section.items.map((skill: RatedSkillItem, i) => (
+                      <div className="prof-rated-item" key={i}>
+                        <div className="prof-rated-head">
+                          <span className="prof-rated-name">{skill.name}</span>
+                          <span className="prof-rated-pct">
+                            {skill.level || 100}%
+                          </span>
+                        </div>
+                        <div className="prof-rated-bar">
+                          <div
+                            className="prof-rated-fill"
+                            style={{ width: `${skill.level || 100}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            }
+
+            if (section.type === "languages") {
+              return (
+                <div className="prof-block data-resume-root" key={section.id}>
+                  <h2 className="prof-h2">{section.title || "Languages"}</h2>
+                  <div className="prof-langs">
+                    {section.items.map((lang, i) => {
+                      if (isLanguageItem(lang)) {
+                        return (
+                          <div className="prof-lang-item" key={i}>
+                            <span className="prof-lang-name">{lang.name}</span>
+                            {lang.level && (
+                              <span className="prof-lang-level">{lang.level}</span>
+                            )}
+                          </div>
+                        );
+                      }
+                      return (
+                        <div className="prof-lang-item" key={i}>
+                          <span className="prof-lang-name">{String(lang)}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            }
+
             if (section.type === "references") {
               return (
                 <div className="prof-block data-resume-root" key={section.id}>
-                  <h2 className="prof-h2">{section.title}</h2>
-                  {section.items.map((ref, i) => (
+                  <h2 className="prof-h2">
+                    {section.title || "References"}
+                  </h2>
+                  {section.items.map((ref: ReferenceItem, i) => (
                     <div key={i} className="prof-reference data-resume-root">
                       <strong>{ref.name}</strong>
-                      {ref.address && <div className="prof-muted data-resume-root">{ref.address}</div>}
-                      {ref.phone && <div className="prof-muted data-resume-root">{ref.phone}</div>}
-                      {ref.email && <div className="prof-muted data-resume-root">{ref.email}</div>}
+                      {ref.address && (
+                        <div className="prof-muted data-resume-root">
+                          {ref.address}
+                        </div>
+                      )}
+                      {ref.phone && (
+                        <div className="prof-muted data-resume-root">
+                          {ref.phone}
+                        </div>
+                      )}
+                      {ref.email && (
+                        <div className="prof-muted data-resume-root">
+                          {ref.email}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
               );
             }
+
             if (section.type === "custom" && section.id !== "contact") {
               return (
                 <div className="prof-block data-resume-root" key={section.id}>
-                  <h2 className="prof-h2">{section.title}</h2>
-                  {section.items.map((item, i) => (
-                    <div key={i} className="prof-custom-item data-resume-root">
-                      {item.label && <strong>{item.label}</strong>}
-                      {item.description && <span className="prof-muted">{item.description}</span>}
-                    </div>
-                  ))}
+                  <h2 className="prof-h2">{section.title || "Custom"}</h2>
+                  {section.items.map((item, i) => {
+                    if (isCustomItem(item)) {
+                      return (
+                        <div key={i} className="prof-custom-item data-resume-root">
+                          {item.label && <strong>{item.label}</strong>}
+                          {item.description && (
+                            <span className="prof-muted">
+                              {item.description}
+                            </span>
+                          )}
+                        </div>
+                      );
+                    }
+                    return (
+                      <div key={i} className="prof-custom-item data-resume-root">
+                        <span className="prof-muted">{String(item)}</span>
+                      </div>
+                    );
+                  })}
                 </div>
               );
             }
+
             return null;
           })}
         </aside>
@@ -170,7 +215,7 @@ export default function ProfessionalTemplate({ content, theme }: TemplateProps) 
 
           {rightSections.map((section) => (
             <section className="prof-section" key={section.id}>
-              <h2 className="prof-h2">{section.title}</h2>
+              <h2 className="prof-h2">{section.title || section.type}</h2>
 
               {section.type === "experience" &&
                 section.items.map((item, i) => (
@@ -178,11 +223,12 @@ export default function ProfessionalTemplate({ content, theme }: TemplateProps) 
                     <div className="prof-row data-resume-root">
                       <strong>{item.role}</strong>
                       <span className="prof-date">
-                        {item.start} â€” {item.end || 'Present'}
+                        {item.start} – {item.end || "Present"}
                       </span>
                     </div>
                     <div className="prof-muted data-resume-root">
-                      {item.company} {item.location ? `Â· ${item.location}` : ''}
+                      {item.company}
+                      {item.location ? ` · ${item.location}` : ""}
                     </div>
                     {item.bullets && item.bullets.length > 0 && (
                       <ul>
@@ -199,13 +245,45 @@ export default function ProfessionalTemplate({ content, theme }: TemplateProps) 
                   <div className="prof-row prof-item data-resume-root" key={i}>
                     <div>
                       <strong>{item.degree}</strong>
-                      <div className="prof-muted data-resume-root">{item.school}</div>
+                      <div className="prof-muted data-resume-root">
+                        {item.school}
+                      </div>
                     </div>
                     <span className="prof-date">
-                      {item.start} â€” {item.end || 'Present'}
+                      {item.start} – {item.end || "Present"}
                     </span>
                   </div>
                 ))}
+
+              {section.type === "achievements" && (
+                <div className="prof-achievements">
+                  {section.items.map((item, i) => {
+                    if (isAchievementItem(item)) {
+                      return (
+                        <div
+                          className="prof-achievement-item data-resume-root"
+                          key={i}
+                        >
+                          <strong>{item.title}</strong>
+                          {item.description && (
+                            <div className="prof-muted data-resume-root">
+                              {item.description}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    }
+                    return (
+                      <div
+                        className="prof-achievement-item data-resume-root"
+                        key={i}
+                      >
+                        <strong>{String(item)}</strong>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </section>
           ))}
         </main>
@@ -217,10 +295,14 @@ export default function ProfessionalTemplate({ content, theme }: TemplateProps) 
           color: var(--text);
           font-family: var(--body-font), sans-serif;
           font-size: 13px;
+          min-height: 100%;
+          display: flex;
+          flex-direction: column;
         }
         .prof-header {
           padding: 26px 32px 18px;
           border-bottom: 3px solid var(--primary);
+          flex-shrink: 0;
         }
         .prof-name {
           font-family: var(--heading-font), serif;
@@ -238,6 +320,7 @@ export default function ProfessionalTemplate({ content, theme }: TemplateProps) 
         .prof-body {
           display: grid;
           grid-template-columns: 190px 1fr;
+          flex: 1;
         }
         .prof-left {
           padding: 22px 24px;
@@ -246,6 +329,7 @@ export default function ProfessionalTemplate({ content, theme }: TemplateProps) 
         }
         .prof-right {
           padding: 22px 30px;
+          background: var(--bg);
         }
         .prof-block {
           margin-bottom: 22px;
@@ -260,8 +344,7 @@ export default function ProfessionalTemplate({ content, theme }: TemplateProps) 
           padding-bottom: 5px;
           margin: 0 0 10px;
         }
-        
-        /* Contact - Fixed Alignment */
+
         .prof-contact {
           display: flex;
           flex-direction: column;
@@ -270,35 +353,13 @@ export default function ProfessionalTemplate({ content, theme }: TemplateProps) 
           line-height: 1.5;
           color: var(--text);
         }
-        
         .contactItem {
-          display: grid;
-          grid-template-columns: 20px 1fr;
-          gap: 8px;
-          align-items: start;
+          word-break: break-word;
         }
-        
-        .contactItem .ic {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          width: 20px;
-          height: 20px;
-          flex-shrink: 0;
-          color: var(--accent);
-        }
-        
-        .contactItem .ic svg {
-          width: 14px;
-          height: 14px;
-          display: block;
-        }
-        
         .contactItem .contact-text {
           word-break: break-word;
-          padding-top: 1px;
         }
-        
+
         .prof-skill-list {
           list-style: none;
           padding: 0;
@@ -309,7 +370,61 @@ export default function ProfessionalTemplate({ content, theme }: TemplateProps) 
         .prof-skill-list li {
           padding-left: 0;
         }
-        
+
+        .prof-rated-list {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+        .prof-rated-item {
+          font-size: 11.5px;
+        }
+        .prof-rated-head {
+          display: flex;
+          justify-content: space-between;
+          align-items: baseline;
+          margin-bottom: 4px;
+        }
+        .prof-rated-name {
+          font-weight: 600;
+          color: var(--text);
+        }
+        .prof-rated-pct {
+          font-size: 10.5px;
+          color: var(--muted);
+        }
+        .prof-rated-bar {
+          height: 3px;
+          background: #e6e2da;
+          border-radius: 2px;
+          overflow: hidden;
+        }
+        .prof-rated-fill {
+          height: 100%;
+          background: var(--accent);
+          border-radius: 2px;
+        }
+
+        .prof-langs {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+          font-size: 12px;
+        }
+        .prof-lang-item {
+          display: flex;
+          justify-content: space-between;
+          gap: 8px;
+        }
+        .prof-lang-name {
+          color: var(--text);
+        }
+        .prof-lang-level {
+          color: var(--muted);
+          font-style: italic;
+          font-size: 11px;
+        }
+
         .prof-reference {
           margin-bottom: 10px;
           font-size: 12px;
@@ -324,7 +439,7 @@ export default function ProfessionalTemplate({ content, theme }: TemplateProps) 
         .prof-reference .prof-muted {
           margin: 1px 0;
         }
-        
+
         .prof-custom-item {
           margin-bottom: 6px;
           font-size: 12px;
@@ -335,7 +450,7 @@ export default function ProfessionalTemplate({ content, theme }: TemplateProps) 
         .prof-custom-item .prof-muted {
           margin: 1px 0;
         }
-        
+
         .prof-section {
           margin-bottom: 20px;
         }
@@ -373,6 +488,25 @@ export default function ProfessionalTemplate({ content, theme }: TemplateProps) 
         }
         .prof-item ul li {
           margin-bottom: 2px;
+        }
+
+        .prof-achievements {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+        .prof-achievement-item {
+          padding-left: 12px;
+          border-left: 2px solid var(--accent);
+          font-size: 12px;
+        }
+        .prof-achievement-item strong {
+          display: block;
+          font-size: 12.5px;
+          color: var(--text);
+        }
+        .prof-achievement-item .prof-muted {
+          margin: 2px 0 0;
         }
       `}</style>
     </div>

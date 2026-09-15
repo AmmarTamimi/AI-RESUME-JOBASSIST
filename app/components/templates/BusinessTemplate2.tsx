@@ -73,7 +73,7 @@ export default function BusinessCardedTemplate({ content, theme }: TemplateProps
                   <div className="job data-resume-root" key={i}>
                     <div className="jobTop data-resume-root">
                       <span className="jobTitle">{job.role || "Position"}</span>
-                      <span className="jobDate">{job.start} â€“ {job.end || "Present"}</span>
+                      <span className="jobDate">{job.start} – {job.end || "Present"}</span>
                     </div>
                     <div className="jobSub data-resume-root">{job.company}{job.location ? ` / ${job.location}` : ""}</div>
                     {job.bullets && job.bullets.length > 0 && <div className="jobDesc data-resume-root">{job.bullets}</div>}
@@ -110,7 +110,7 @@ export default function BusinessCardedTemplate({ content, theme }: TemplateProps
                   <div className="eduItem data-resume-root" key={i}>
                     <div className="eduSchool data-resume-root">{edu.school}</div>
                     <div className="eduDegree data-resume-root">{edu.degree}</div>
-                    <div className="eduDate data-resume-root">{edu.start} â€“ {edu.end}</div>
+                    <div className="eduDate data-resume-root">{edu.start} – {edu.end}</div>
                   </div>
                 ))}
               </div>
@@ -230,13 +230,17 @@ export default function BusinessCardedTemplate({ content, theme }: TemplateProps
           border-bottom: 1px solid #e3e6eb;
         }
 
+        /* Number only, no box — yellow text */
         .cardNum {
-          font-size: 10.5px;
-          font-weight: 700;
-          color: #fff;
-          background: ${t.accentColor || "#E8A33D"};
-          border-radius: 4px;
-          padding: 2px 6px;
+          display: inline-block;
+          font-size: 11px;
+          font-weight: 800;
+          color: ${t.accentColor || "#E8A33D"};
+          background: transparent;
+          padding: 0;
+          flex-shrink: 0;
+          vertical-align: middle;
+          letter-spacing: 0.5px;
         }
 
         .cardBody {
@@ -383,5 +387,3 @@ export default function BusinessCardedTemplate({ content, theme }: TemplateProps
     </div>
   );
 }
-
-

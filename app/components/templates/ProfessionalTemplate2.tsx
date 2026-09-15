@@ -1,47 +1,6 @@
 ﻿import React from "react";
 import type { TemplateProps } from "../../types/Content";
 
-const Icon = {
-  phone: (
-    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z" />
-    </svg>
-  ),
-  globe: (
-    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <circle cx="12" cy="12" r="10" />
-      <line x1="2" y1="12" x2="22" y2="12" />
-      <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
-    </svg>
-  ),
-  mail: (
-    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <rect x="2" y="4" width="20" height="16" rx="2" />
-      <path d="M22 7l-8.97 5.7a1.94 1.94 0 01-2.06 0L2 7" />
-    </svg>
-  ),
-  pin: (
-    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
-      <circle cx="12" cy="10" r="3" />
-    </svg>
-  ),
-  cap: (
-    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
-      <path d="M6 12v5c0 1.5 2.7 3 6 3s6-1.5 6-3v-5" />
-    </svg>
-  ),
-  users: (
-    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
-      <circle cx="9" cy="7" r="4" />
-      <path d="M23 21v-2a4 4 0 00-3-3.87" />
-      <path d="M16 3.13a4 4 0 010 7.75" />
-    </svg>
-  ),
-};
-
 export default function BoldTemplate({ content, theme }: TemplateProps) {
   const { personalInfo, sections } = content;
   const t = theme;
@@ -78,13 +37,9 @@ export default function BoldTemplate({ content, theme }: TemplateProps) {
             {contactItems.length > 0
               ? contactItems.map((item, i) => {
                   if (typeof item === "object" && item !== null && "label" in item && "description" in item) {
-                    let icon = Icon.pin;
-                    if (item.label === "phone") icon = Icon.phone;
-                    else if (item.label === "email") icon = Icon.mail;
-                    else if (item.label === "web") icon = Icon.globe;
                     return (
                       <div className="contactItem data-resume-root" key={i}>
-                        <span className="ic">{icon}</span>{item.description}
+                        {item.description}
                       </div>
                     );
                   }
@@ -92,10 +47,10 @@ export default function BoldTemplate({ content, theme }: TemplateProps) {
                 })
               : (
                 <>
-                  {personalInfo.phone && <div className="contactItem data-resume-root"><span className="ic">{Icon.phone}</span>{personalInfo.phone}</div>}
-                  {personalInfo.email && <div className="contactItem data-resume-root"><span className="ic">{Icon.mail}</span>{personalInfo.email}</div>}
-                  {personalInfo.location && <div className="contactItem data-resume-root"><span className="ic">{Icon.pin}</span>{personalInfo.location}</div>}
-                  {personalInfo.website && <div className="contactItem data-resume-root"><span className="ic">{Icon.globe}</span>{personalInfo.website}</div>}
+                  {personalInfo.phone && <div className="contactItem data-resume-root">{personalInfo.phone}</div>}
+                  {personalInfo.email && <div className="contactItem data-resume-root">{personalInfo.email}</div>}
+                  {personalInfo.location && <div className="contactItem data-resume-root">{personalInfo.location}</div>}
+                  {personalInfo.website && <div className="contactItem data-resume-root">{personalInfo.website}</div>}
                 </>
               )}
           </div>
@@ -120,7 +75,7 @@ export default function BoldTemplate({ content, theme }: TemplateProps) {
                 <div className="job data-resume-root" key={i}>
                   <div className="jobTop data-resume-root">
                     <span className="jobTitle">{job.role || "Position"}</span>
-                    <span className="jobDate">{job.start} â€“ {job.end || "Present"}</span>
+                    <span className="jobDate">{job.start} – {job.end || "Present"}</span>
                   </div>
                   <div className="jobSub data-resume-root">{job.company}{job.location ? ` / ${job.location}` : ""}</div>
                   {job.bullets && job.bullets.length > 0 && (
@@ -151,12 +106,12 @@ export default function BoldTemplate({ content, theme }: TemplateProps) {
 
           {educationSection && educationSection.items.length > 0 && (
             <div className="section data-resume-root">
-              <div className="sectionTitle data-resume-root"><span className="tag"><span className="tagIcon">{Icon.cap}</span>{educationSection.title || 'EDUCATION'}</span></div>
+              <div className="sectionTitle data-resume-root"><span className="tag">{educationSection.title || 'EDUCATION'}</span></div>
               {educationSection.items.map((edu, i) => (
                 <div className="eduItem data-resume-root" key={i}>
                   <b>{edu.school}</b>
                   <span>{edu.degree}</span>
-                  <span className="dates">{edu.start} â€“ {edu.end}</span>
+                  <span className="dates">{edu.start} – {edu.end}</span>
                 </div>
               ))}
             </div>
@@ -164,7 +119,7 @@ export default function BoldTemplate({ content, theme }: TemplateProps) {
 
           {referencesSection && referencesSection.items.length > 0 && (
             <div className="section data-resume-root">
-              <div className="sectionTitle data-resume-root"><span className="tag"><span className="tagIcon">{Icon.users}</span>{referencesSection.title || 'REFERENCES'}</span></div>
+              <div className="sectionTitle data-resume-root"><span className="tag">{referencesSection.title || 'REFERENCES'}</span></div>
               {referencesSection.items.map((ref, i) => (
                 <div className="refItem data-resume-root" key={i}>
                   <b>{ref.name}</b>
@@ -257,16 +212,8 @@ export default function BoldTemplate({ content, theme }: TemplateProps) {
         }
 
         .contactItem {
-          display: flex;
-          align-items: center;
-          gap: 8px;
           font-size: 11.5px;
           color: #e9e2ea;
-        }
-
-        .contactItem .ic {
-          color: ${t.accentColor || "#CFE85C"};
-          display: flex;
         }
 
         .body {
@@ -293,22 +240,17 @@ export default function BoldTemplate({ content, theme }: TemplateProps) {
           margin-bottom: 16px;
         }
 
+        /* Section titles — purple text, no pill */
         .tag {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          background: ${t.primaryColor || "#3B1F3D"};
-          color: #fff;
-          font-size: 11px;
+          display: inline-block;
+          background: transparent;
+          color: ${t.primaryColor || "#3B1F3D"};
+          font-size: 13px;
           font-weight: 800;
-          letter-spacing: 1.5px;
-          padding: 6px 14px;
-          border-radius: 20px;
-        }
-
-        .tagIcon {
-          display: flex;
-          color: ${t.accentColor || "#CFE85C"};
+          letter-spacing: 1.8px;
+          text-transform: uppercase;
+          padding: 0;
+          border-radius: 0;
         }
 
         .aboutText {
@@ -427,5 +369,3 @@ export default function BoldTemplate({ content, theme }: TemplateProps) {
     </div>
   );
 }
-
-

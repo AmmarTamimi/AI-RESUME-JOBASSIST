@@ -8,100 +8,11 @@ import type {
   RatedSkillItem 
 } from "../../types/Content";
 
-// SVG Icons - clean and minimal
-const Icon = {
-  phone: (
-    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z" />
-    </svg>
-  ),
-  globe: (
-    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
-      <circle cx="12" cy="12" r="10" />
-      <line x1="2" y1="12" x2="22" y2="12" />
-      <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
-    </svg>
-  ),
-  mail: (
-    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
-      <rect x="2" y="4" width="20" height="16" rx="2" />
-      <path d="M22 7l-8.97 5.7a1.94 1.94 0 01-2.06 0L2 7" />
-    </svg>
-  ),
-  pin: (
-    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
-      <circle cx="12" cy="10" r="3" />
-    </svg>
-  ),
-  person: (
-    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
-      <circle cx="12" cy="7" r="4" />
-    </svg>
-  ),
-  cap: (
-    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
-      <path d="M6 12v5c0 1.5 2.7 3 6 3s6-1.5 6-3v-5" />
-    </svg>
-  ),
-  users: (
-    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
-      <circle cx="9" cy="7" r="4" />
-      <path d="M23 21v-2a4 4 0 00-3-3.87" />
-      <path d="M16 3.13a4 4 0 010 7.75" />
-    </svg>
-  ),
-  info: (
-    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
-      <circle cx="12" cy="12" r="10" />
-      <line x1="12" y1="16" x2="12" y2="12" />
-      <line x1="12" y1="8" x2="12.01" y2="8" />
-    </svg>
-  ),
-  briefcase: (
-    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
-      <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
-      <path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16" />
-    </svg>
-  ),
-  chart: (
-    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M12 20v-6M18 20V4M6 20v-4" />
-      <rect x="2" y="4" width="20" height="16" rx="2" />
-    </svg>
-  ),
-  award: (
-    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
-      <circle cx="12" cy="8" r="6" />
-      <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11" />
-    </svg>
-  ),
-  flag: (
-    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M4 21V4h16l-4 6 4 6H4z" />
-    </svg>
-  ),
-  star: (
-    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
-      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-    </svg>
-  ),
-  plus: (
-    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2">
-      <line x1="12" y1="5" x2="12" y2="19" />
-      <line x1="5" y1="12" x2="19" y2="12" />
-    </svg>
-  ),
-};
-
 export default function ModernTemplate({ content, theme }: TemplateProps) {
   const { personalInfo, sections } = content;
   const t = theme;
+  const accent = t.accentColor || '#f4a51c';
 
-  // Find all sections
   const contactSection = sections.find((s) => s.type === "custom" && s.id === "contact");
   const referencesSection = sections.find((s) => s.type === "references");
   const educationSection = sections.find((s) => s.type === "education");
@@ -112,41 +23,29 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
   const achievementsSection = sections.find((s) => s.type === "achievements");
   const aboutText = personalInfo.summary;
 
-  // Name parsing for display
   const nameParts = personalInfo.fullName.trim().split(" ");
   const lastWord = nameParts.length > 1 ? nameParts.pop() : "";
   const firstPart = nameParts.join(" ");
 
-  // Contact items - parse from the custom section
   const contactItems = contactSection?.items || [];
 
-  // Get all custom sections except contact
   const otherCustomSections = sections.filter(
     (s) => s.type === "custom" && s.id !== "contact"
   );
 
-  // Type guards
-  const isCustomItem = (item: any): item is CustomItem => {
-    return item && typeof item === 'object' && 'label' in item;
-  };
+  const isCustomItem = (item: any): item is CustomItem =>
+    item && typeof item === 'object' && 'label' in item;
+  const isLanguageItem = (item: any): item is LanguageItem =>
+    item && typeof item === 'object' && 'name' in item;
+  const isAchievementItem = (item: any): item is AchievementItem =>
+    item && typeof item === 'object' && 'title' in item;
 
-  const isLanguageItem = (item: any): item is LanguageItem => {
-    return item && typeof item === 'object' && 'name' in item;
-  };
-
-  const isAchievementItem = (item: any): item is AchievementItem => {
-    return item && typeof item === 'object' && 'title' in item;
-  };
-
-  // Count total items to determine if we need to reduce spacing
   const totalItems = sections.reduce((acc, section) => acc + section.items.length, 0);
   const isContentHeavy = totalItems > 15;
 
   return (
     <div className="modern-template data-resume-root" data-content-heavy={isContentHeavy}>
-      {/* ================= SIDEBAR ================= */}
       <aside className="sidebar">
-        {/* Photo Section */}
         {personalInfo.photoUrl && (
           <div className="photoWrap data-resume-root">
             <div className="photoTriangle data-resume-root" />
@@ -157,9 +56,7 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
         )}
 
         <div className="sidebarContent data-resume-root">
-          {/* Contact Section */}
           <div className="sideHeading data-resume-root">
-            <div className="iconBadge data-resume-root">{Icon.person}</div>
             <h3>CONTACT ME</h3>
           </div>
           
@@ -167,14 +64,8 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
             {contactItems.length > 0 ? (
               contactItems.map((item, i) => {
                 if (isCustomItem(item)) {
-                  let icon = Icon.pin;
-                  if (item.label === "phone") icon = Icon.phone;
-                  else if (item.label === "email") icon = Icon.mail;
-                  else if (item.label === "web") icon = Icon.globe;
-                  
                   return (
                     <div className="contactItem data-resume-root" key={i}>
-                      <span className="ic">{icon}</span>
                       <span>{item.description || item.label}</span>
                     </div>
                   );
@@ -185,25 +76,21 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
               <>
                 {personalInfo.phone && (
                   <div className="contactItem data-resume-root">
-                    <span className="ic">{Icon.phone}</span>
                     <span>{personalInfo.phone}</span>
                   </div>
                 )}
                 {personalInfo.email && (
                   <div className="contactItem data-resume-root">
-                    <span className="ic">{Icon.mail}</span>
                     <span>{personalInfo.email}</span>
                   </div>
                 )}
                 {personalInfo.location && (
                   <div className="contactItem data-resume-root">
-                    <span className="ic">{Icon.pin}</span>
                     <span>{personalInfo.location}</span>
                   </div>
                 )}
                 {personalInfo.website && (
                   <div className="contactItem data-resume-root">
-                    <span className="ic">{Icon.globe}</span>
                     <span>{personalInfo.website}</span>
                   </div>
                 )}
@@ -213,11 +100,9 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
 
           <hr className="dottedLine" />
 
-          {/* References Section */}
           {referencesSection && referencesSection.items.length > 0 && (
             <>
               <div className="sideHeading data-resume-root">
-                <div className="iconBadge data-resume-root">{Icon.users}</div>
                 <h3>REFERENCES</h3>
               </div>
               {referencesSection.items.map((ref: ReferenceItem, i) => (
@@ -232,11 +117,9 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
             </>
           )}
 
-          {/* Education Section */}
           {educationSection && educationSection.items.length > 0 && (
             <>
               <div className="sideHeading data-resume-root">
-                <div className="iconBadge data-resume-root">{Icon.cap}</div>
                 <h3>EDUCATION</h3>
               </div>
               {educationSection.items.map((edu, i) => (
@@ -254,9 +137,7 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
 
       <div className="divider data-resume-root" />
 
-      {/* ================= MAIN CONTENT ================= */}
       <div className="content data-resume-root">
-        {/* Header Block */}
         <div className="headerBlock data-resume-root">
           <div className="name data-resume-root">
             {firstPart} <span>{lastWord}</span>
@@ -264,22 +145,18 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
           <div className="title data-resume-root">{personalInfo.title || "PROFESSIONAL"}</div>
         </div>
 
-        {/* About Me */}
         {aboutText && (
           <div className="section data-resume-root">
             <div className="sectionTitle data-resume-root">
-              <div className="iconBadge iconBadgeYellow data-resume-root">{Icon.info}</div>
               <h2>ABOUT ME</h2>
             </div>
             <div className="aboutText data-resume-root">{aboutText}</div>
           </div>
         )}
 
-        {/* Job Experience */}
         {experienceSection && experienceSection.items.length > 0 && (
           <div className="section data-resume-root">
             <div className="sectionTitle data-resume-root">
-              <div className="iconBadge iconBadgeYellow data-resume-root">{Icon.briefcase}</div>
               <h2>JOB EXPERIENCE</h2>
             </div>
             {experienceSection.items.map((job, i) => (
@@ -301,11 +178,9 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
           </div>
         )}
 
-        {/* Skills (Rated) */}
         {ratedSkillsSection && ratedSkillsSection.items.length > 0 && (
           <div className="section data-resume-root">
             <div className="sectionTitle data-resume-root">
-              <div className="iconBadge iconBadgeYellow data-resume-root">{Icon.chart}</div>
               <h2>{ratedSkillsSection.title || 'Skills'}</h2>
             </div>
             <div className="skills data-resume-root">
@@ -321,11 +196,9 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
           </div>
         )}
 
-        {/* Skills (Tags) */}
         {skillsSection && skillsSection.items.length > 0 && (
           <div className="section data-resume-root">
             <div className="sectionTitle data-resume-root">
-              <div className="iconBadge iconBadgeYellow data-resume-root">{Icon.star}</div>
               <h2>{skillsSection.title || 'TECHNICAL SKILLS'}</h2>
             </div>
             <div className="skillsTags data-resume-root">
@@ -336,11 +209,9 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
           </div>
         )}
 
-        {/* Languages Section */}
         {languagesSection && languagesSection.items.length > 0 && (
           <div className="section data-resume-root">
             <div className="sectionTitle data-resume-root">
-              <div className="iconBadge iconBadgeYellow data-resume-root">{Icon.flag}</div>
               <h2>{languagesSection.title || 'LANGUAGES'}</h2>
             </div>
             <div className="languages data-resume-root">
@@ -363,11 +234,9 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
           </div>
         )}
 
-        {/* Achievements Section */}
         {achievementsSection && achievementsSection.items.length > 0 && (
           <div className="section data-resume-root">
             <div className="sectionTitle data-resume-root">
-              <div className="iconBadge iconBadgeYellow data-resume-root">{Icon.award}</div>
               <h2>{achievementsSection.title || 'ACHIEVEMENTS'}</h2>
             </div>
             <div className="achievements data-resume-root">
@@ -399,11 +268,9 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
           </div>
         )}
 
-        {/* Other Custom Sections */}
         {otherCustomSections.map((section) => (
           <div key={section.id} className="section data-resume-root">
             <div className="sectionTitle data-resume-root">
-              <div className="iconBadge iconBadgeYellow data-resume-root">{Icon.plus}</div>
               <h2>{section.title || "Custom"}</h2>
             </div>
             <div className="customItems data-resume-root">
@@ -426,7 +293,6 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
           </div>
         ))}
 
-        {/* Corner Decoration */}
         <div className="cornerTriangle data-resume-root" />
       </div>
 
@@ -441,7 +307,6 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
           font-family: ${t.bodyFont || 'Inter'}, sans-serif;
         }
 
-        /* ================= SIDEBAR ================= */
         .sidebar {
           width: 34%;
           background: ${t.primaryColor || '#2b2b2b'};
@@ -461,7 +326,7 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
         .photoWrap {
           position: relative;
           height: 230px;
-          background: ${t.accentColor || '#f4a51c'};
+          background: ${accent};
           clip-path: polygon(0 0, 100% 0, 100% 55%, 0 100%);
           overflow: hidden;
           flex-shrink: 0;
@@ -473,7 +338,7 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
           left: 0;
           width: 100%;
           height: 100%;
-          background: ${t.accentColor || '#f4a51c'};
+          background: ${accent};
           clip-path: polygon(0 0, 65% 0, 0 55%);
         }
 
@@ -500,27 +365,7 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
         }
 
         .sideHeading {
-          display: flex;
-          align-items: center;
-          gap: 10px;
           margin: 26px 0 16px 0;
-        }
-
-        .iconBadge {
-          width: 30px;
-          height: 30px;
-          border-radius: 50%;
-          background: ${t.accentColor || '#f4a51c'};
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-shrink: 0;
-          color: #fff;
-        }
-
-        .iconBadge svg {
-          width: 14px;
-          height: 14px;
         }
 
         .sideHeading h3 {
@@ -529,6 +374,8 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
           font-weight: 700;
           font-family: ${t.headingFont || 'Poppins'}, sans-serif;
           margin: 0;
+          color: ${accent};
+          line-height: 1.2;
         }
 
         .contactList {
@@ -538,28 +385,9 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
         }
 
         .contactItem {
-          display: flex;
-          align-items: center;   /* was: flex-start */
-          gap: 12px;
           font-size: 12.5px;
           line-height: 1.5;
           color: #e5e5e5;
-        }
-
-        .contactItem .ic {
-          color: ${t.accentColor || '#f4a51c'};
-          font-size: 14px;
-          flex-shrink: 0;
-          width: 18px;
-          height: 18px;           /* new: explicit height instead of relying on content */
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .contactItem .ic svg {
-          width: 14px;
-          height: 14px;
         }
 
         .dottedLine {
@@ -613,17 +441,15 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
           width: 7px;
           height: 7px;
           border-radius: 50%;
-          background: ${t.accentColor || '#f4a51c'};
+          background: ${accent};
         }
 
-        /* ================= DIVIDER ================= */
         .divider {
           width: 2px;
-          background: ${t.accentColor || '#f4a51c'};
+          background: ${accent};
           flex-shrink: 0;
         }
 
-        /* ================= CONTENT ================= */
         .content {
           flex: 1;
           background: #fff;
@@ -644,11 +470,11 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
         .headerBlock::before {
           content: "";
           position: absolute;
-          left: 10;
+          left: 10px;
           top: 15px;
           bottom: 15px;
           width: 6px;
-          background: ${t.accentColor || '#f4a51c'};
+          background: ${accent};
         }
 
         .name {
@@ -660,7 +486,7 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
         }
 
         .name span {
-          color: ${t.accentColor || '#f4a51c'};
+          color: ${accent};
         }
 
         .title {
@@ -676,7 +502,6 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
           padding: 26px 0 6px 0;
         }
 
-        /* Reduce spacing when content is heavy */
         .modern-template[data-content-heavy="true"] .section {
           padding-top: 18px;
           padding-bottom: 2px;
@@ -695,20 +520,7 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
         }
 
         .sectionTitle {
-          display: flex;
-          align-items: center;
-          gap: 10px;
           margin-bottom: 16px;
-        }
-
-        .iconBadgeYellow {
-          background: ${t.accentColor || '#f4a51c'};
-          color: #fff;
-        }
-
-        .iconBadgeYellow svg {
-          width: 14px;
-          height: 14px;
         }
 
         .sectionTitle h2 {
@@ -718,6 +530,9 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
           font-weight: 800;
           font-family: ${t.headingFont || 'Poppins'}, sans-serif;
           margin: 0;
+          padding-bottom: 6px;
+          border-bottom: 2px solid ${accent};
+          display: inline-block;
         }
 
         .aboutText {
@@ -792,9 +607,8 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
 
         .skillFill {
           height: 100%;
-          background: ${t.accentColor || '#f4a51c'};
+          background: ${accent};
           border-radius: 3px;
-          transition: width 0.6s ease;
         }
 
         .skillsTags {
@@ -805,8 +619,8 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
         }
 
         .skillTag {
-          background: ${t.accentColor || '#f4a51c'}20;
-          color: ${t.accentColor || '#f4a51c'};
+          background: ${accent}20;
+          color: ${accent};
           padding: 4px 12px;
           border-radius: 20px;
           font-size: 12px;
@@ -845,10 +659,10 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
         }
 
         .achievementItem::before {
-          content: "â–¸";
+          content: "▸";
           position: absolute;
           left: 0;
-          color: ${t.accentColor || '#f4a51c'};
+          color: ${accent};
         }
 
         .achievementDescription {
@@ -890,47 +704,23 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
           height: 0;
           border-style: solid;
           border-width: 0 0 90px 90px;
-          border-color: transparent transparent ${t.accentColor || '#f4a51c'} transparent;
+          border-color: transparent transparent ${accent} transparent;
           pointer-events: none;
         }
 
         @media (max-width: 900px) {
-          .modern-template {
-            flex-direction: column;
-          }
-          .sidebar {
-            width: 100%;
-          }
-          .divider {
-            width: 100%;
-            height: 2px;
-          }
-          .headerBlock {
-            margin: 0;
-            padding-left: 20px;
-          }
-          .content {
-            padding: 0 20px 20px;
-          }
-          .photoWrap {
-            height: 180px;
-          }
-          .photoCircle {
-            width: 120px;
-            height: 120px;
-            top: 35px;
-            left: 20px;
-          }
-          .skills {
-            grid-template-columns: 1fr;
-          }
+          .modern-template { flex-direction: column; }
+          .sidebar { width: 100%; }
+          .divider { width: 100%; height: 2px; }
+          .headerBlock { margin: 0; padding-left: 20px; }
+          .content { padding: 0 20px 20px; }
+          .photoWrap { height: 180px; }
+          .photoCircle { width: 120px; height: 120px; top: 35px; left: 20px; }
+          .skills { grid-template-columns: 1fr; }
         }
 
         @media print {
-          .modern-template {
-            box-shadow: none;
-            margin: 0;
-          }
+          .modern-template { box-shadow: none; margin: 0; }
         }
       `}</style>
     </div>

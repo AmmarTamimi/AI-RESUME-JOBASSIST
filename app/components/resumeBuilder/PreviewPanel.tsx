@@ -59,10 +59,6 @@ const PAGE_TEXT_BOTTOM_PADDING = 40; // minimum blank buffer kept above a break,
  * visual line — then, for every page, picks the last line-boundary at or
  * before the ideal cutoff (leaving `bottomPad` px of buffer) instead of
  * cutting at a raw pixel multiple.
- *
- * Returns an array of Y offsets (in the container's own content coordinates)
- * of length pageCount + 1: breakpoints[0] is always 0, breakpoints[N] is the
- * end of the content, and pageCount = breakpoints.length - 1.
  */
 function computeSafeBreakpoints(
   container: HTMLElement,
@@ -92,8 +88,6 @@ function computeSafeBreakpoints(
     }
   }
 
-  // Leaf (childless) elements — icons, dividers, rating bars, images — are
-  // also safe break candidates, so those aren't split either.
   container.querySelectorAll("*").forEach((el) => {
     if (el.children.length === 0) {
       const rect = el.getBoundingClientRect();
@@ -113,11 +107,6 @@ function computeSafeBreakpoints(
     const availableThisPage = pageHeight - (isFirstPage ? 0 : topPad);
     const remaining = totalHeight - cursor;
 
-    // If everything left already fits within this page, this IS the last
-    // page — stop here instead of hunting for an interior break point.
-    // Without this check, a resume that's only, say, half a page long would
-    // still get a spurious near-empty "page 2" once a break candidate was
-    // found anywhere in the (artificially generous) search window.
     if (remaining <= availableThisPage) {
       breakpoints.push(totalHeight);
       cursor = totalHeight;
@@ -133,8 +122,6 @@ function computeSafeBreakpoints(
         break;
       }
     }
-    // Fallback: nothing fit comfortably (e.g. a single block taller than a
-    // page) — hard-cut at the raw boundary so pagination still terminates.
     if (chosen === -1 || chosen <= cursor) {
       chosen = Math.min(cursor + availableThisPage, totalHeight);
     }
@@ -155,6 +142,21 @@ function computeSafeBreakpoints(
   return breakpoints;
 }
 
+/**
+ * Build a friendly, filesystem-safe filename from the resume's content.
+ * Preference order: fullName → title → "resume-<templateId>".
+ */
+function buildFileBaseName(
+  content: ResumeContent,
+  templateId: string,
+): string {
+  const raw =
+    content.personalInfo?.fullName?.trim() ||
+    content.personalInfo?.title?.trim() ||
+    `resume-${templateId}`;
+  return raw.replace(/[^a-z0-9_\- ]/gi, "_");
+}
+
 const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
   function PreviewPanel(
     { templateId, theme, content, onSwitchTemplate, variant = "full" },
@@ -162,17 +164,8 @@ const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
   ) {
     const isMinimal = variant === "minimal";
     const containerRef = useRef<HTMLDivElement>(null);
-    // Pure measurement mount: renders the resume at its natural, unconstrained
-    // height so we can find out exactly how tall the real content is, and where
-    // the safe page-break points are. Never padded/stretched.
     const measureOnlyRef = useRef<HTMLDivElement>(null);
-    // Foreground capture mount: the REAL, readable resume, stretched to a full
-    // page-multiple height. Used to capture the text layer for PDF/PNG export.
     const fullContentRef = useRef<HTMLDivElement>(null);
-    // Background capture mount: same resume, but with all text made invisible
-    // via CSS. Used to capture a "layout only" layer for PDF/PNG export — this
-    // is what lets a page's background/sidebar fill the whole page even when
-    // the actual text stops early.
     const bgOnlyContentRef = useRef<HTMLDivElement>(null);
 
     const [scale, setScale] = useState(1);
@@ -187,16 +180,8 @@ const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
 
     const template = templates.find((t) => t.id === templateId);
 
-    // pageBreaks has length pageCount + 1: [0, breakY1, breakY2, ..., totalHeight]
     const pageCount = Math.max(1, pageBreaks.length - 1);
-    // Every rendered/exported page's underlying content is stretched to a full
-    // page-multiple height — this is what makes full-height template styling
-    // (sidebars, background fills) work correctly on every page, including a
-    // trailing partial one.
     const paddedHeight = pageCount * PAPER_HEIGHT;
-
-    // Create a content key that changes when any section data changes, so the
-    // hidden/visible render mounts refresh in lockstep with the editor.
     const contentKey = JSON.stringify(content.sections);
 
     // ---- Measure natural content height and compute safe page-break points ----
@@ -206,11 +191,6 @@ const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
 
       const recompute = () => {
         const h = el.scrollHeight || el.getBoundingClientRect().height;
-        // Use the resume's TRUE height here — no artificial "at least one full
-        // page" floor. Padding that up to PAPER_HEIGHT was what caused a
-        // short, single-page resume to get a spurious, near-empty page 2 (the
-        // break-search loop kept hunting for a split all the way up to that
-        // padded minimum, even when there was no real content left to place).
         const totalHeight = Math.max(1, Math.ceil(h));
         setNaturalHeight(totalHeight);
         setPageBreaks(
@@ -231,14 +211,12 @@ const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [templateId, theme, content]);
 
-    // In the scale calculation useEffect, add:
-    // In the scale calculation useEffect:
+    // ---- Scale calculation ----
     useEffect(() => {
       const el = containerRef.current;
       if (!el) return;
 
       const recalc = () => {
-        // For minimal mode, we want the resume to fill the container naturally
         if (isMinimal) {
           setScale(1);
           return;
@@ -277,11 +255,7 @@ const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
     const totalScale = scale * zoomLevel;
 
     // ---------------------------------------------------------------------------
-    // CAPTURE: render the full (unclipped) resume once as a single tall canvas —
-    // once for the real text (fullContentRef) and once with text hidden
-    // (bgOnlyContentRef) — then slice both into page-height chunks and composite
-    // them together per page. This guarantees PDF / PNG pages line up exactly
-    // with what's shown in the preview.
+    // CAPTURE
     // ---------------------------------------------------------------------------
     const captureNode = async (
       node: HTMLElement,
@@ -290,7 +264,7 @@ const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
         try {
           await (document as any).fonts.ready;
         } catch {
-          /* no-op: not all browsers implement this fully */
+          /* no-op */
         }
       }
       await new Promise((resolve) =>
@@ -305,8 +279,6 @@ const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
         backgroundColor: "#ffffff",
         width: PAPER_WIDTH,
         height: node.scrollHeight,
-        // Use the real browser viewport size (not PAPER_WIDTH) so responsive
-        // CSS/media queries resolve exactly as they do in the live preview.
         windowWidth: document.documentElement.clientWidth,
         windowHeight: Math.max(
           document.documentElement.clientHeight,
@@ -328,10 +300,10 @@ const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
       return captureNode(node);
     };
 
-    // Composite the two captured canvases into one canvas per page: the
-    // background (text-hidden) layer fills the ENTIRE remaining page height,
-    // and the real text is drawn on top of it, clipped to exactly this page's
-    // slice — mirroring the two-layer structure used in the live preview.
+    // ---------------------------------------------------------------------------
+    // SLICE — background drawn from the very top of each page so the top
+    // padding strip on pages 2+ shows the resume's own background, not white.
+    // ---------------------------------------------------------------------------
     const sliceCanvasIntoPages = (
       fgCanvas: HTMLCanvasElement,
       bgCanvas: HTMLCanvasElement,
@@ -345,37 +317,59 @@ const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
       const pages: HTMLCanvasElement[] = [];
       for (let i = 0; i < totalPages; i++) {
         const topPad = i > 0 ? topPadPx : 0;
-        const availableBoxPx = pageHeightPx - topPad;
 
         const pageCanvas = document.createElement("canvas");
         pageCanvas.width = pageWidthPx;
         pageCanvas.height = pageHeightPx;
         const ctx = pageCanvas.getContext("2d")!;
+
+        // Base white fill (overdrawn by the background layer).
         ctx.fillStyle = "#ffffff";
         ctx.fillRect(0, 0, pageWidthPx, pageHeightPx);
 
         const sourceY = breaksPx[i];
 
-        // 1) Background/layout layer — fills the whole remaining page height.
+        // 1) BACKGROUND layer — draw from the very top of the page.
+        const bgSourceStart = Math.max(0, sourceY - topPad);
         const bgSourceHeight = Math.max(
           0,
-          Math.min(availableBoxPx, bgCanvas.height - sourceY),
+          Math.min(pageHeightPx, bgCanvas.height - bgSourceStart),
         );
+
         if (bgSourceHeight > 0) {
           ctx.drawImage(
             bgCanvas,
             0,
-            sourceY,
+            bgSourceStart,
             pageWidthPx,
             bgSourceHeight,
             0,
-            topPad,
+            0,
             pageWidthPx,
             bgSourceHeight,
           );
         }
 
-        // 2) Real text layer — drawn on top, clipped to exactly this page's slice.
+        // Extend the last visible row downward if the background canvas
+        // doesn't reach the bottom (resume shorter than the paper).
+        if (bgSourceHeight < pageHeightPx && bgCanvas.height > 0) {
+          const stripY = bgSourceStart + bgSourceHeight - 1;
+          if (stripY >= 0 && bgSourceHeight > 0) {
+            ctx.drawImage(
+              bgCanvas,
+              0,
+              stripY,
+              pageWidthPx,
+              1,
+              0,
+              bgSourceHeight,
+              pageWidthPx,
+              pageHeightPx - bgSourceHeight,
+            );
+          }
+        }
+
+        // 2) REAL TEXT layer — drawn at topPad offset, clipped to this page's slice.
         const fgSourceHeight = Math.max(
           0,
           Math.min(breaksPx[i + 1] - breaksPx[i], fgCanvas.height - sourceY),
@@ -453,17 +447,20 @@ const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
       }),
       [],
     );
+
     const handleDownloadPNG = async () => {
       setIsLoading(true);
       setShowDownloadMenu(false);
       try {
         const blobs = await generatePagedPNGBlobs();
+        const baseName = buildFileBaseName(content, templateId);
+
         blobs.forEach((blob, i) => {
           const link = document.createElement("a");
           link.download =
             blobs.length > 1
-              ? `resume-${templateId}-page-${i + 1}.png`
-              : `resume-${templateId}.png`;
+              ? `${baseName}-page-${i + 1}.png`
+              : `${baseName}.png`;
           link.href = URL.createObjectURL(blob);
           document.body.appendChild(link);
           link.click();
@@ -483,10 +480,14 @@ const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
       setShowDownloadMenu(false);
       try {
         const blob = await generatePagedPDFBlob();
+        const baseName = buildFileBaseName(content, templateId);
+
         const link = document.createElement("a");
-        link.download = `resume-${templateId}.pdf`;
+        link.download = `${baseName}.pdf`;
         link.href = URL.createObjectURL(blob);
+        document.body.appendChild(link);
         link.click();
+        document.body.removeChild(link);
         URL.revokeObjectURL(link.href);
       } catch (error) {
         console.error("Error downloading PDF:", error);
@@ -562,7 +563,9 @@ const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
       setIsLoading(true);
       try {
         const blob = await generatePagedPDFBlob();
-        const file = new File([blob], `resume-${templateId}.pdf`, {
+        const baseName = buildFileBaseName(content, templateId);
+
+        const file = new File([blob], `${baseName}.pdf`, {
           type: "application/pdf",
         });
 
@@ -570,9 +573,11 @@ const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
           await navigator.share({ title: "My Resume", files: [file] });
         } else {
           const link = document.createElement("a");
-          link.download = `resume-${templateId}.pdf`;
+          link.download = `${baseName}.pdf`;
           link.href = URL.createObjectURL(blob);
+          document.body.appendChild(link);
           link.click();
+          document.body.removeChild(link);
           URL.revokeObjectURL(link.href);
           alert("PDF downloaded! You can now share it manually.");
         }
@@ -596,7 +601,6 @@ const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
       setShowShareMenu(false);
     };
 
-    // Update the handleFullscreen function:
     const handleFullscreen = () => {
       if (!document.fullscreenElement) {
         const root = document.querySelector(".pp-root");
@@ -612,7 +616,6 @@ const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
       }
     };
 
-    // Update the fullscreen useEffect:
     useEffect(() => {
       const handleFullscreenChange = () => {
         const isFS = !!document.fullscreenElement;
@@ -649,7 +652,6 @@ const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
       <div className={`pp-root ${isFullscreen ? "fullscreen" : ""}`}>
         {/* Toolbar */}
         <div className={`pp-toolbar ${isMinimal ? "pp-toolbar-minimal" : ""}`}>
-          {/* Left side - Preview label and zoom controls */}
           <div className="flex items-center gap-3">
             {!isMinimal && (
               <div>
@@ -667,7 +669,6 @@ const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
                 )}
               </div>
             )}
-            {/* Show zoom controls only in full mode OR when in fullscreen */}
             {(!isMinimal || isFullscreen) && (
               <div
                 className={`flex items-center gap-2 text-xs text-[#64748B] dark:text-[#94A3B8] ${isMinimal ? "ml-auto" : ""}`}
@@ -698,7 +699,6 @@ const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
             )}
           </div>
 
-          {/* Right side - Action buttons */}
           <div className="flex items-center gap-2 relative">
             {/* Download Button */}
             <div className="dropdown-container relative">
@@ -775,7 +775,6 @@ const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
 
               {showShareMenu && (
                 <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-[#1E293B] rounded-lg shadow-lg border border-[#E2E8F0] dark:border-[#334155] overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-                  {/* Share menu content */}
                   <div className="p-1">
                     <button
                       onClick={shareViaWhatsApp}
@@ -873,7 +872,7 @@ const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
               )}
             </div>
 
-            {/* Fullscreen Button - always visible */}
+            {/* Fullscreen */}
             <button
               onClick={handleFullscreen}
               className={`inline-flex items-center justify-center p-2 text-[#64748B] dark:text-[#94A3B8] hover:text-[#0F172A] dark:hover:text-white hover:bg-[#F1F5F9] dark:hover:bg-[#1E293B] rounded-lg transition-all duration-200 border border-[#E2E8F0] dark:border-[#334155] hover:border-[#8B5CF6] dark:hover:border-[#8B5CF6] group ${isMinimal ? "border-transparent hover:border-[#E2E8F0] dark:hover:border-[#334155]" : ""}`}
@@ -920,12 +919,7 @@ const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
                 const sliceTop = pageBreaks[i];
                 const sliceBottom = pageBreaks[i + 1] ?? naturalHeight;
                 const topPad = i > 0 ? PAGE_TEXT_TOP_PADDING : 0;
-                // Full remaining height for this page, after the top padding gap.
-                // The BACKGROUND layer uses this — it always fills the whole page.
                 const availableBox = PAPER_HEIGHT - topPad;
-                // Exact amount of real text that belongs on this page — the
-                // TEXT layer is clipped to this, and nothing more, so it never
-                // repeats the next page's content.
                 const sliceHeight = Math.max(
                   0,
                   Math.min(sliceBottom - sliceTop, availableBox),
@@ -941,15 +935,16 @@ const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
                         minHeight: isMinimal ? "1123px" : "auto",
                       }}
                     >
-                      {/* Layer 1 — background/layout only (text invisible). Fills
-                        the entire remaining page height so sidebars, colored
-                        panels, etc. always look like a complete, full page. */}
+                      {/* Layer 1 — background/layout only (text invisible).
+                          Starts from the very top of the page so the top
+                          padding strip on pages 2+ shows the resume's
+                          own background, not white. */}
                       <div
                         className="pp-page-window-mask"
                         style={{
-                          top: topPad,
+                          top: 0,
                           width: PAPER_WIDTH,
-                          height: availableBox,
+                          height: PAPER_HEIGHT,
                         }}
                       >
                         <div
@@ -957,7 +952,7 @@ const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
                           style={{
                             width: PAPER_WIDTH,
                             height: paddedHeight,
-                            transform: `translateY(-${sliceTop}px)`,
+                            transform: `translateY(-${Math.max(0, sliceTop - topPad)}px)`,
                           }}
                         >
                           <TemplateRenderer
@@ -971,8 +966,7 @@ const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
                       </div>
 
                       {/* Layer 2 — the real, readable text. Clipped to exactly
-                        this page's slice (with padding already reserved by
-                        the safe-break calculation), drawn on top of Layer 1. */}
+                          this page's slice, drawn on top of Layer 1. */}
                       <div
                         className="pp-page-window-mask"
                         style={{
@@ -1011,8 +1005,7 @@ const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
           </div>
         </div>
 
-        {/* Hidden, unconstrained render used ONLY to measure the resume's true
-          natural content height and safe break points. Never padded/stretched. */}
+        {/* Hidden measure host */}
         <div className="pp-measure-host" aria-hidden="true">
           <div
             ref={measureOnlyRef}
@@ -1028,7 +1021,7 @@ const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
           </div>
         </div>
 
-        {/* Hidden render used for the real-text (foreground) PDF/PNG capture. */}
+        {/* Hidden full-content capture host */}
         <div className="pp-measure-host" aria-hidden="true">
           <div
             ref={fullContentRef}
@@ -1048,7 +1041,7 @@ const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
           </div>
         </div>
 
-        {/* Hidden render used for the background-only (text-hidden) PDF/PNG capture. */}
+        {/* Hidden bg-only capture host */}
         <div className="pp-measure-host" aria-hidden="true">
           <div
             ref={bgOnlyContentRef}
@@ -1095,7 +1088,6 @@ const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
   background: rgba(15,23,42,0.95) !important;
   border-bottom: 1px solid rgba(51,65,85,0.8) !important;
 }
-    /* Fullscreen minimal - remove all backgrounds */
   .pp-root.fullscreen .pp-viewport {
   background: #F1F5F9 !important;
   padding: 24px !important;
@@ -1161,8 +1153,6 @@ const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
   background: transparent !important;
 }
 
-
-/* Hide page badges in minimal mode */
 .pp-viewport-minimal .pp-page-badge {
   display: none !important;
 }
@@ -1262,10 +1252,6 @@ const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
           pointer-events: none;
           z-index: -1;
         }
-        /* Makes all text invisible while leaving backgrounds, borders, and
-           images intact — used for the "layout only" background layer so it
-           can safely be shown at full page height without duplicating any
-           readable text. */
         .pp-text-hidden,
         .pp-text-hidden * {
           color: transparent !important;
@@ -1318,3 +1304,4 @@ const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
 );
 
 export default PreviewPanel;
+
