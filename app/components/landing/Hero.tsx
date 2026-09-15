@@ -99,12 +99,12 @@ export function Hero() {
                 Build my resume free
                 <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition" />
               </Link>
-              <Link
+              {/* <Link
                 href="#"
                 className="inline-flex items-center gap-2 rounded-lg border border-border bg-background px-6 py-3 text-sm font-medium text-foreground hover:bg-secondary transition"
               >
                 <Play className="h-4 w-4 fill-current" /> Watch 60s demo
-              </Link>
+              </Link> */}
             </motion.div>
 
             <motion.div
