@@ -36,7 +36,8 @@ export function Footer() {
           <div className="col-span-2 md:col-span-1">
             <div className="flex items-center gap-2">
               <span className="grid place-items-center h-8 w-8 rounded-lg bg-primary text-primary-foreground">
-                <FileText className="h-4 w-4" />
+                {/* <FileText className="h-4 w-4" /> */}
+                <img src="resumeAi-logo.png" alt="logo" />
               </span>
               <span className="font-semibold tracking-tight text-foreground">ResumeAI</span>
             </div>
