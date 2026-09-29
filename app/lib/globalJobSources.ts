@@ -6,10 +6,12 @@ export interface JobPosting {
   location: string;
   description: string;
   applyUrl: string | null;
+  directApply?: boolean;
   postedAt: string; // ISO date string for sorting
   postedAtDisplay: string; // Human-readable display
   salary: string | null;
   employmentType: string | null;
+  companyLogo?: string | null;
   source: string;
 }
 
@@ -427,4 +429,85 @@ export async function fetchAllGlobalJobs(params: JobSearchParams): Promise<JobPo
   return deduped.sort(
     (a, b) => new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime()
   );
+}
+
+// ---------------------------------------------------------------------------
+// JSearch API (RapidAPI) — aggregates LinkedIn, Indeed, and others
+// ---------------------------------------------------------------------------
+export async function fetchJSearchJobs({ role, location, types }: JobSearchParams): Promise<JobPosting[]> {
+  const apiKey = process.env.RAPIDAPI_KEY;
+
+  if (!apiKey) {
+    console.log("RAPIDAPI_KEY missing — skipping JSearch");
+    return [];
+  }
+
+  try {
+    const query = `${role}${location ? ` in ${location}` : ""}`.trim();
+    const params = new URLSearchParams({
+      query,
+      page: "1",
+      num_pages: "3", // pull more pages since we filter down afterward
+      date_posted: "week",
+    });
+
+    // JSearch supports a remote filter param
+    if (types.some((t) => t.toLowerCase() === "remote")) {
+      params.set("remote_jobs_only", "true");
+    }
+
+    const res = await fetch(`https://jsearch.p.rapidapi.com/search?${params}`, {
+      headers: {
+        "X-RapidAPI-Key": apiKey,
+        "X-RapidAPI-Host": "jsearch.p.rapidapi.com",
+      },
+    });
+
+    if (!res.ok) {
+      console.log("JSearch error:", res.status);
+      return [];
+    }
+
+    const data = await res.json();
+const results = data.data || [];
+console.log("JSearch raw results:", results.length);
+console.log("Sample publishers:", results.slice(0, 10).map((j: any) => j.job_publisher));
+console.log("Full sample job:", JSON.stringify(results[0], null, 2));
+
+    // Keep only LinkedIn / Indeed postings
+    const filtered = results.filter((j: any) => {
+      const publisher = (j.job_publisher || "").toLowerCase();
+      return publisher.includes("linkedin") || publisher.includes("indeed");
+    });
+    console.log("JSearch LinkedIn/Indeed filtered:", filtered.length);
+
+    return filtered.map((j: any): JobPosting => {
+      const postedAt = j.job_posted_at_datetime_utc || new Date().toISOString();
+      const locationParts = [j.job_city, j.job_state, j.job_country].filter(Boolean);
+
+      let salary: string | null = null;
+      if (j.job_min_salary && j.job_max_salary) {
+        salary = `${Math.round(j.job_min_salary)}–${Math.round(j.job_max_salary)} ${j.job_salary_currency || ""}`.trim();
+      }
+
+      return {
+        id: j.job_id || `js_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+        title: j.job_title || "Unknown Position",
+        company: j.employer_name || "Unknown",
+        location: j.job_is_remote ? "Remote" : (locationParts.join(", ") || location || ""),
+        description: j.job_description || "",
+        applyUrl: j.job_apply_link || null,
+        directApply: !!j.job_apply_is_direct, // true = goes straight to employer/LinkedIn/Indeed apply page
+        postedAt,
+        postedAtDisplay: formatDateDisplay(postedAt),
+        salary,
+        employmentType: j.job_employment_type || null,
+        companyLogo: j.employer_logo || null,
+        source: j.job_publisher || "JSearch",
+      };
+    });
+  } catch (error) {
+    console.error("JSearch fetch error:", error);
+    return [];
+  }
 }

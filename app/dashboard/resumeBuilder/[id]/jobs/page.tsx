@@ -4,7 +4,8 @@ import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Search, MapPin, ArrowLeft, Loader2, Briefcase, Filter, X, Building, Calendar, DollarSign, Globe, ExternalLink, Clock, Star, Users } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { loadResumeLocal } from "@/app/lib/resumeStore";
+import { Resume } from "@/app/types/Content";
+import { getResumeById } from "@/app/lib/supabase/resume";
 
 const JOB_TYPES = [
   "Remote",
@@ -50,20 +51,42 @@ export default function JobsPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [resume, setResume] = useState<Resume>()
 
   // Load resume data
   useEffect(() => {
-    try {
-      const resume = loadResumeLocal(id);
-      const title = resume?.content.personalInfo.title || "";
-      const location = resume?.content.personalInfo.location || "";
-      
+    const fetchResume = async() => {
+     try {
+       const data = await getResumeById(id)
+       console.log("resume: ",data)
+      if(!data){
+        console.log("resume not fetched")
+        return
+      }
+      setResume(data)
+      const title = data?.content.personalInfo.title || "";
+      const location = data?.content.personalInfo.location || "";
+      console.log("fields fetched from resume ",title,location)
       setRole(title);
       setLocation(location);
       setSelectedTypes(["Full-time"]);
-    } catch (error) {
-      console.error("Failed to load resume data:", error);
+
+     } catch (error) {
+       console.log("Failed to fetch resume ",error)
+     }
     }
+    fetchResume()
+    // try {
+    //   // const resume = loadResumeLocal(id);
+    //   const title = resume?.content.personalInfo.title || "";
+    //   const location = resume?.content.personalInfo.location || "";
+      
+    //   setRole(title);
+    //   setLocation(location);
+    //   setSelectedTypes(["Full-time"]);
+    // } catch (error) {
+    //   console.error("Failed to load resume data:", error);
+    // }
   }, [id]);
 
   const toggleType = (type: string) =>
@@ -72,16 +95,16 @@ export default function JobsPage() {
     );
 
   const clearFilters = () => {
-    const resume = loadResumeLocal(id);
     setRole(resume?.content.personalInfo.title || "");
     setLocation(resume?.content.personalInfo.location || "");
     setSelectedTypes(["Full-time"]);
   };
 
-  const search = useCallback(async () => {
+  const search = async () => {
     setIsLoading(true);
     setHasSearched(true);
     setSelectedJob(null);
+    console.log("sending data: ",role,location,selectedTypes)
     try {
       const params = new URLSearchParams({
         role,
@@ -89,8 +112,8 @@ export default function JobsPage() {
         type: selectedTypes.join(","),
       });
       const res = await fetch(`/api/job-search?${params}`);
-      console.log("Jobs response: ",res)
       const data = await res.json();
+      console.log("Jobs response: ",data)
       setJobs(data.jobs || []);
     } catch (err) {
       console.error("Job search failed:", err);
@@ -98,27 +121,27 @@ export default function JobsPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [role, location, selectedTypes]);
+  }
 
   // Auto-search on mount with pre-filled values
-  useEffect(() => {
-    if (role || location) {
-      const timer = setTimeout(() => {
-        search();
-      }, 300);
-      return () => clearTimeout(timer);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // useEffect(() => {
+  //   if (role || location) {
+  //     const timer = setTimeout(() => {
+  //       search();
+  //     }, 300);
+  //     return () => clearTimeout(timer);
+  //   }
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, []);
 
-  // Auto-search on filter change with debounce
-  useEffect(() => {
-    if (!role && !location) return;
-    const timer = setTimeout(() => {
-      search();
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [role, location, selectedTypes, search]);
+  // // Auto-search on filter change with debounce
+  // useEffect(() => {
+  //   if (!role && !location) return;
+  //   const timer = setTimeout(() => {
+  //     search();
+  //   }, 500);
+  //   return () => clearTimeout(timer);
+  // }, [role, location, selectedTypes, search]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F8FAFC] via-white to-[#F1F5F9] dark:from-[#0F172A] dark:via-[#1E293B] dark:to-[#0F172A] p-4 md:p-8">

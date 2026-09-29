@@ -2,8 +2,8 @@ import { NextRequest } from "next/server";
 import OpenAI from "openai";
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENROUTER_API_KEY,
-  baseURL: "https://openrouter.ai/api/v1",
+  apiKey: process.env.GEMINI_API_KEY,
+  baseURL: "https://generativelanguage.googleapis.com/v1beta/openai/",
 });
 
 type GenerationType = "summary" | "experience" | "achievement";
@@ -141,7 +141,7 @@ Write a professional achievement description:`;
     }
 
     const completion = await openai.chat.completions.create({
-      model: "openrouter/free",
+      model: "gemini-3.5-flash",
       messages: [
         {
           role: "system",
