@@ -276,7 +276,7 @@ const mainNav = [
 
 const aiFeatures = [
   // { name: "AI Insights", href: "/dashboard/ai-insights", icon: Sparkles },
-  { name: "Job Match", href: "/dashboard/jobs", icon: Briefcase },
+  { name: "Job Match", href: "/dashboard/resumeBuilder/new/jobs", icon: Briefcase },
   // { name: "AI Assistant", href: "/dashboard/ai-assistant", icon: MessageSquare },
   // { name: "Integrations", href: "/dashboard/integrations", icon: Plug },
   // { name: "AI Experiments", href: "/dashboard/experiments", icon: FlaskConical, badge: "BETA" },

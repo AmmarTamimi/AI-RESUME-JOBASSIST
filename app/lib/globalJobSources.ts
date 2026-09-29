@@ -1,4 +1,7 @@
 // app/lib/globalJobSources.ts
+import { scrapeJobs } from "jobspy-node";
+
+
 export interface JobPosting {
   id: string;
   title: string;
@@ -508,6 +511,69 @@ console.log("Full sample job:", JSON.stringify(results[0], null, 2));
     });
   } catch (error) {
     console.error("JSearch fetch error:", error);
+    return [];
+  }
+}
+
+
+
+
+
+ // Adjust imports as needed
+
+export async function fetchJobSpyJobs({ role, location, types }: JobSearchParams): Promise<JobPosting[]> {
+  try {
+    // jobspy-node uses camelCase parameters
+    const result = await scrapeJobs({
+      siteName: ["indeed", "linkedin"],
+      searchTerm: role,
+      location: location,
+      resultsWanted: 20,
+      hoursOld: 72,
+      countryIndeed: "Pakistan", // Required for Indeed searches outside the US
+      linkedinFetchDescription: true, // Fetches full descriptions and direct apply URLs
+    });
+
+    // The result object contains: jobs, errors, meta
+    const jobs = result.jobs || [];
+
+    return jobs.map((j: any): JobPosting => {
+      // Parse the posted date safely
+      let postedAt = new Date().toISOString();
+      if (j.datePosted) {
+        try {
+          postedAt = new Date(j.datePosted).toISOString();
+        } catch {
+          // Keep default if parsing fails
+        }
+      }
+
+      // Build location string from object structure
+      let locationString = location || "Remote";
+      if (j.location?.city) {
+        locationString = j.location.city;
+        if (j.location.state) locationString += `, ${j.location.state}`;
+      }
+console.log("RAW:", JSON.stringify(j.description?.slice(0, 1000)));
+      return {
+        id: j.id || `jobspy_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+        title: j.title || "Unknown Position",
+        company: j.company || "Unknown",
+        location: locationString,
+        description: j.description || "",
+        applyUrl: j.jobUrl || null, // Direct apply link from job board
+        postedAt: postedAt,
+        postedAtDisplay: formatDateDisplay(postedAt),
+        salary: j.salary?.minAmount && j.salary?.maxAmount
+          ? `${j.salary.minAmount}–${j.salary.maxAmount} ${j.salary.currency || ""}`.trim()
+          : null,
+        employmentType: j.jobType || null,
+        companyLogo: j.companyLogo || null,
+        source: j.site || "JobSpy",
+      };
+    });
+  } catch (error) {
+    console.error("JobSpy fetch error:", error);
     return [];
   }
 }

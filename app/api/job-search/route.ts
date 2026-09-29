@@ -129,60 +129,66 @@
 
 // app/api/jobs/search/route.ts
 // app/api/job-search/route.ts
+// app/api/job-search/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { fetchAllGlobalJobs,fetchJSearchJobs, type JobPosting } from "@/app/lib/globalJobSources";
+import { fetchJobSpyJobs, type JobPosting } from "@/app/lib/globalJobSources";
 
 const cache = new Map<string, { jobs: JobPosting[]; expires: number }>();
-const CACHE_TTL_MS = 4 * 60 * 60 * 1000;
+const CACHE_TTL_MS = 4 * 60 * 60 * 1000; // 4 hours
 
 export async function GET(req: NextRequest) {
   try {
     const role = req.nextUrl.searchParams.get("role") || "";
     const location = req.nextUrl.searchParams.get("location") || "";
-    const types = (req.nextUrl.searchParams.get("type") || "").split(",").filter(Boolean);
+    const types = (req.nextUrl.searchParams.get("type") || "")
+      .split(",")
+      .filter(Boolean);
 
     if (!role) {
       return NextResponse.json(
         { success: false, error: "role parameter is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     const cacheKey = `${role}|${location}|${types.join(",")}`;
     const cached = cache.get(cacheKey);
-    
-    // if (cached && cached.expires > Date.now()) {
-    //   return NextResponse.json({ 
-    //     success: true, 
-    //     jobs: cached.jobs, 
-    //     total: cached.jobs.length, 
-    //     cached: true 
-    //   });
-    // }
 
-    console.log(`Fetching jobs for: ${role} in ${location}, types: ${types.join(",")}`);
-    
-    const globalJobs = await fetchJSearchJobs({ role, location, types });
-    console.log("globals jobs: ",globalJobs)
+    if (cached && cached.expires > Date.now()) {
+      return NextResponse.json({
+        success: true,
+        jobs: cached.jobs,
+        total: cached.jobs.length,
+        cached: true,
+      });
+    }
 
-    cache.set(cacheKey, { jobs: globalJobs, expires: Date.now() + CACHE_TTL_MS });
+    console.log(
+      `Fetching jobs for: ${role} in ${location}, types: ${types.join(",")}`,
+    );
 
-    return NextResponse.json({ 
-      success: true, 
-      jobs: globalJobs, 
-      total: globalJobs.length 
+    const jobs = await fetchJobSpyJobs({ role, location, types });
+
+    console.log(`Found ${jobs.length} jobs`);
+
+    cache.set(cacheKey, { jobs, expires: Date.now() + CACHE_TTL_MS });
+
+    return NextResponse.json({
+      success: true,
+      jobs,
+      total: jobs.length,
     });
-    
   } catch (error) {
     console.error("Job search API error:", error);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: error instanceof Error ? error.message : "Failed to search jobs",
+      {
+        success: false,
+        error:
+          error instanceof Error ? error.message : "Failed to search jobs",
         jobs: [],
-        total: 0
+        total: 0,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

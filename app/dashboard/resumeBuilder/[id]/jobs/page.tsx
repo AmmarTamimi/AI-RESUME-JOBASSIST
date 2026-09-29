@@ -1,8 +1,24 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Search, MapPin, ArrowLeft, Loader2, Briefcase, Filter, X, Building, Calendar, DollarSign, Globe, ExternalLink, Clock, Star, Users } from "lucide-react";
+import {
+  Search,
+  MapPin,
+  ArrowLeft,
+  Loader2,
+  Briefcase,
+  Filter,
+  X,
+  Building,
+  Calendar,
+  DollarSign,
+  Globe,
+  ExternalLink,
+  Clock,
+  Star,
+  Users,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Resume } from "@/app/types/Content";
 import { getResumeById } from "@/app/lib/supabase/resume";
@@ -39,8 +55,78 @@ interface JobPosting {
   source: string;
 }
 
+function DescriptionRenderer({ text }: { text: string }) {
+  const normalized = text
+    // 1. Split on "About X" / "About The Role" style headers
+    .replace(/([a-z.,])(About\s+[A-Z][a-zA-Z\s]{2,30}?)(?=[A-Z])/g, "$1\n\n$2\n")
+    // 2. Split on common section headers: "Requirements", "Responsibilities", etc.
+    .replace(/([a-z.,])(Must-Have|Good-to-Have|Responsibilities|Requirements|Qualifications|Preferred|Key Responsibilities|What You Will|What You Bring|Benefits|About The Role|About Us|Job Summary|Experience:|Employment Type:|Location:)/g, "$1\n\n$2\n")
+    // 3. Split on inline bullets: " • " or " - " surrounded by spaces
+    .replace(/\s+[•·]\s+/g, "\n• ")
+    .replace(/\s+-\s+(?=[A-Z])/g, "\n• ")
+    // 4. Split on sentence boundaries when followed by a capital letter starting a new clause
+    //    (only in longer runs — avoids splitting "U.S." etc.)
+    .replace(/([.!?])\s+(?=[A-Z][a-z]{3,})/g, "$1\n")
+    // 5. Clean up extra whitespace
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+
+  const lines = normalized
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter((l) => l.length > 0);
+
+  return (
+    <div className="space-y-2 text-sm text-[#64748B] dark:text-[#94A3B8] leading-relaxed">
+      {lines.map((line, i) => {
+        // Bullet: starts with •, -, *, or a numbered list marker
+        const bulletMatch = line.match(/^([•\-*]|\d+\.)\s+(.*)$/);
+        if (bulletMatch) {
+          return (
+            <div key={i} className="flex gap-2 pl-1">
+              <span className="text-[#2563EB] dark:text-[#60A5FA] shrink-0 mt-[2px]">
+                •
+              </span>
+              <span className="flex-1">{bulletMatch[2]}</span>
+            </div>
+          );
+        }
+
+        // Section header: line is short, no period at the end, and ends with ':' or is ALL CAPS-ish
+        const isHeader =
+          line.length < 60 &&
+          !line.endsWith(".") &&
+          (line.endsWith(":") ||
+            /^[A-Z][A-Za-z\s&/]+$/.test(line) ||
+            /^(About|Responsibilities|Requirements|Qualifications|Skills|Experience|What|Who|Why|Benefits|Job Summary|Must-Have|Good-to-Have|Key Responsibilities|Preferred)/i.test(
+              line,
+            ));
+
+        if (isHeader) {
+          return (
+            <h4
+              key={i}
+              className="text-sm font-semibold text-[#0F172A] dark:text-white pt-2 first:pt-0"
+            >
+              {line}
+            </h4>
+          );
+        }
+
+        // Regular paragraph
+        return (
+          <p key={i} className="text-sm">
+            {line}
+          </p>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function JobsPage() {
   const { id } = useParams<{ id: string }>();
+  const hasResume = id && id !== 'new'
   const router = useRouter();
 
   const [role, setRole] = useState("");
@@ -51,42 +137,97 @@ export default function JobsPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [resume, setResume] = useState<Resume>()
+  const [resume, setResume] = useState<Resume>();
+
+  const filteredJobs = useMemo(() => {
+  if (selectedTypes.length === 0) return jobs;
+
+  return jobs.filter((job) => {
+    // Combine all type signals we have for this job
+    const typeText = [
+      job.employmentType || "",
+      job.extensions?.employment_type || "",
+      job.extensions?.schedule_type || "",
+      job.location || "",
+    ]
+      .join(" ")
+      .toLowerCase();
+
+    return selectedTypes.some((type) => {
+      const t = type.toLowerCase();
+
+      // Remote is special — check the location text too
+      if (t === "remote") {
+        return typeText.includes("remote");
+      }
+
+      // Full-time / full time / fulltime
+      if (t === "full-time") {
+        return (
+          typeText.includes("full-time") ||
+          typeText.includes("full time") ||
+          typeText.includes("fulltime") ||
+          typeText.includes("full_time")
+        );
+      }
+
+      // Part-time
+      if (t === "part-time") {
+        return (
+          typeText.includes("part-time") ||
+          typeText.includes("part time") ||
+          typeText.includes("parttime") ||
+          typeText.includes("part_time")
+        );
+      }
+
+      // Contract
+      if (t === "contract") {
+        return (
+          typeText.includes("contract") ||
+          typeText.includes("contractor") ||
+          typeText.includes("freelance")
+        );
+      }
+
+      // Internship
+      if (t === "internship") {
+        return (
+          typeText.includes("intern") ||
+          typeText.includes("internship")
+        );
+      }
+
+      return typeText.includes(t);
+    });
+  });
+}, [jobs, selectedTypes]);
 
   // Load resume data
   useEffect(() => {
-    const fetchResume = async() => {
-     try {
-       const data = await getResumeById(id)
-       console.log("resume: ",data)
-      if(!data){
-        console.log("resume not fetched")
-        return
+    const fetchResume = async () => {
+      try {
+        const data = await getResumeById(id);
+        console.log("resume: ", data);
+        if (!data) {
+          console.log("resume not fetched");
+          return;
+        }
+        setResume(data);
+        const title = data?.content.personalInfo.title || "";
+        const location = data?.content.personalInfo.location || "";
+        console.log("fields fetched from resume ", title, location);
+        setRole(title);
+        setLocation(location);
+        setSelectedTypes(["Full-time"]);
+      } catch (error) {
+        console.log("Failed to fetch resume ", error);
       }
-      setResume(data)
-      const title = data?.content.personalInfo.title || "";
-      const location = data?.content.personalInfo.location || "";
-      console.log("fields fetched from resume ",title,location)
-      setRole(title);
-      setLocation(location);
-      setSelectedTypes(["Full-time"]);
-
-     } catch (error) {
-       console.log("Failed to fetch resume ",error)
-     }
+    };
+    if (hasResume){
+      fetchResume();
     }
-    fetchResume()
-    // try {
-    //   // const resume = loadResumeLocal(id);
-    //   const title = resume?.content.personalInfo.title || "";
-    //   const location = resume?.content.personalInfo.location || "";
-      
-    //   setRole(title);
-    //   setLocation(location);
-    //   setSelectedTypes(["Full-time"]);
-    // } catch (error) {
-    //   console.error("Failed to load resume data:", error);
-    // }
+   
   }, [id]);
 
   const toggleType = (type: string) =>
@@ -104,7 +245,7 @@ export default function JobsPage() {
     setIsLoading(true);
     setHasSearched(true);
     setSelectedJob(null);
-    console.log("sending data: ",role,location,selectedTypes)
+    console.log("sending data: ", role, location, selectedTypes);
     try {
       const params = new URLSearchParams({
         role,
@@ -113,7 +254,7 @@ export default function JobsPage() {
       });
       const res = await fetch(`/api/job-search?${params}`);
       const data = await res.json();
-      console.log("Jobs response: ",data)
+      console.log("Jobs response: ", data);
       setJobs(data.jobs || []);
     } catch (err) {
       console.error("Job search failed:", err);
@@ -121,7 +262,7 @@ export default function JobsPage() {
     } finally {
       setIsLoading(false);
     }
-  }
+  };
 
   // Auto-search on mount with pre-filled values
   // useEffect(() => {
@@ -150,11 +291,13 @@ export default function JobsPage() {
         <motion.button
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          onClick={() => router.push(`/dashboard/resumeBuilder/${id}/complete`)}
+          onClick={()=>{
+            hasResume ? router.push(`/dashboard/resumeBuilder/${id}/complete`) : router.push(`/dashboard/`)
+          }}
           className="group flex items-center gap-2 text-sm text-[#64748B] hover:text-[#0F172A] dark:text-[#94A3B8] dark:hover:text-white mb-6 transition-all duration-200"
         >
           <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
-          <span>Back to resume</span>
+          <span>{hasResume ? "Back to resume": "Back"}</span>
         </motion.button>
 
         {/* Header */}
@@ -274,7 +417,7 @@ export default function JobsPage() {
           {/* Left Column - Job Listings */}
           <div className="flex-1 min-w-0">
             <AnimatePresence mode="wait">
-              {hasSearched && !isLoading && jobs.length === 0 && (
+              {hasSearched && !isLoading && filteredJobs.length === 0 && (
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -293,20 +436,20 @@ export default function JobsPage() {
 
             <div className="space-y-3">
               <AnimatePresence>
-                 {jobs.map((job, index) => (
-      <motion.div
-        key={job.id}
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-        transition={{ delay: index * 0.05 }}
-        onClick={() => setSelectedJob(job)}
-        className={`group block bg-white/80 dark:bg-[#1E293B]/80 backdrop-blur-sm border rounded-2xl p-4 hover:shadow-xl hover:shadow-[#0F172A]/10 dark:hover:shadow-[#0F172A]/50 transition-all duration-300 cursor-pointer ${
-          selectedJob?.id === job.id
-            ? "border-[#2563EB] shadow-lg shadow-[#2563EB]/10"
-            : "border-[#E2E8F0] dark:border-[#334155] hover:border-[#2563EB]/50"
-        }`}
-      >
+                {filteredJobs.map((job, index) => (
+                  <motion.div
+                    key={job.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ delay: index * 0.05 }}
+                    onClick={() => setSelectedJob(job)}
+                    className={`group block bg-white/80 dark:bg-[#1E293B]/80 backdrop-blur-sm border rounded-2xl p-4 hover:shadow-xl hover:shadow-[#0F172A]/10 dark:hover:shadow-[#0F172A]/50 transition-all duration-300 cursor-pointer ${
+                      selectedJob?.id === job.id
+                        ? "border-[#2563EB] shadow-lg shadow-[#2563EB]/10"
+                        : "border-[#E2E8F0] dark:border-[#334155] hover:border-[#2563EB]/50"
+                    }`}
+                  >
                     <div className="flex items-start gap-4">
                       <div className="flex-shrink-0">
                         {job.companyLogo ? (
@@ -335,7 +478,9 @@ export default function JobsPage() {
                           </span>
                           <span className="w-1 h-1 rounded-full bg-[#E2E8F0] dark:bg-[#334155]" />
                           <span className="px-2 py-0.5 bg-[#F1F5F9] dark:bg-[#0F172A] rounded-full">
-                            {job.employmentType || job.extensions?.employment_type || "Full-time"}
+                            {job.employmentType ||
+                              job.extensions?.employment_type ||
+                              "Full-time"}
                           </span>
                           {job.salary && (
                             <>
@@ -438,16 +583,18 @@ export default function JobsPage() {
 
                   {selectedJob.description && (
                     <div className="mb-4">
-                      <h3 className="text-sm font-semibold text-[#0F172A] dark:text-white mb-2">Description</h3>
-                      <p className="text-sm text-[#64748B] dark:text-[#94A3B8] leading-relaxed whitespace-pre-wrap">
-                        {selectedJob.description}
-                      </p>
+                      <h3 className="text-sm font-semibold text-[#0F172A] dark:text-white mb-3">
+                        Description
+                      </h3>
+                      <DescriptionRenderer text={selectedJob.description} />
                     </div>
                   )}
 
                   {selectedJob.snippet && (
                     <div className="mb-4">
-                      <h3 className="text-sm font-semibold text-[#0F172A] dark:text-white mb-2">Overview</h3>
+                      <h3 className="text-sm font-semibold text-[#0F172A] dark:text-white mb-2">
+                        Overview
+                      </h3>
                       <p className="text-sm text-[#64748B] dark:text-[#94A3B8] leading-relaxed">
                         {selectedJob.snippet}
                       </p>
