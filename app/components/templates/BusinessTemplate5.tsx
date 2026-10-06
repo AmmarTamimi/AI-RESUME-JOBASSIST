@@ -21,30 +21,57 @@ export default function BusinessMonogramTemplate({ content, theme }: TemplatePro
     .slice(0, 2)
     .toUpperCase();
 
-  const dotsFor = (level: number) => Math.max(1, Math.min(5, Math.round(level / 20)));
+  const dotsFor = (level: number) =>
+    Math.max(1, Math.min(5, Math.round(level / 20)));
 
   return (
     <div className="bm-template data-resume-root">
       {/* ================= HEADER WITH MONOGRAM WATERMARK ================= */}
       <div className="header data-resume-root">
-        <div className="monogram data-resume-root">{initials || "U"}</div>
+        {personalInfo.photoUrl ? (
+          <img
+            className="monogramPhoto"
+            src={personalInfo.photoUrl}
+            alt={personalInfo.fullName}
+          />
+        ) : (
+          <div className="monogram data-resume-root">{initials || "U"}</div>
+        )}
         <div className="headerContent data-resume-root">
           <div className="name data-resume-root">{personalInfo.fullName}</div>
-          <div className="title data-resume-root">{personalInfo.title || "PROFESSIONAL"}</div>
+          <div className="title data-resume-root">
+            {personalInfo.title || "PROFESSIONAL"}
+          </div>
           <div className="contactRow data-resume-root">
             {contactItems.length > 0
               ? contactItems.map((item, i) => {
-                  if (typeof item === "object" && item !== null && "description" in item) {
-                    return <span className="contactItem" key={i}>{item.description}</span>;
+                  if (
+                    typeof item === "object" &&
+                    item !== null &&
+                    "description" in item
+                  ) {
+                    return (
+                      <span className="contactItem" key={i}>
+                        {item.description}
+                      </span>
+                    );
                   }
                   return null;
                 })
               : (
                 <>
-                  {personalInfo.phone && <span className="contactItem">{personalInfo.phone}</span>}
-                  {personalInfo.email && <span className="contactItem">{personalInfo.email}</span>}
-                  {personalInfo.location && <span className="contactItem">{personalInfo.location}</span>}
-                  {personalInfo.website && <span className="contactItem">{personalInfo.website}</span>}
+                  {personalInfo.phone && (
+                    <span className="contactItem">{personalInfo.phone}</span>
+                  )}
+                  {personalInfo.email && (
+                    <span className="contactItem">{personalInfo.email}</span>
+                  )}
+                  {personalInfo.location && (
+                    <span className="contactItem">{personalInfo.location}</span>
+                  )}
+                  {personalInfo.website && (
+                    <span className="contactItem">{personalInfo.website}</span>
+                  )}
                 </>
               )}
           </div>
@@ -65,15 +92,24 @@ export default function BusinessMonogramTemplate({ content, theme }: TemplatePro
 
           {experienceSection && experienceSection.items.length > 0 && (
             <div className="section data-resume-root">
-              <h2 className="sectionTitle">{experienceSection.title || 'Experience'}</h2>
+              <h2 className="sectionTitle">
+                {experienceSection.title || "Experience"}
+              </h2>
               {experienceSection.items.map((job, i) => (
                 <div className="job data-resume-root" key={i}>
                   <div className="jobTop data-resume-root">
                     <span className="jobTitle">{job.role || "Position"}</span>
-                    <span className="jobDate">{job.start} â€“ {job.end || "Present"}</span>
+                    <span className="jobDate">
+                      {job.start} – {job.end || "Present"}
+                    </span>
                   </div>
-                  <div className="jobSub data-resume-root">{job.company}{job.location ? `, ${job.location}` : ""}</div>
-                  {job.bullets && job.bullets.length > 0 && <div className="jobDesc data-resume-root">{job.bullets}</div>}
+                  <div className="jobSub data-resume-root">
+                    {job.company}
+                    {job.location ? `, ${job.location}` : ""}
+                  </div>
+                  {job.bullets && job.bullets.length > 0 && (
+                    <div className="jobDesc data-resume-root">{job.bullets}</div>
+                  )}
                 </div>
               ))}
             </div>
@@ -83,13 +119,18 @@ export default function BusinessMonogramTemplate({ content, theme }: TemplatePro
         <div className="sideCol data-resume-root">
           {ratedSkillsSection && ratedSkillsSection.items.length > 0 && (
             <div className="section data-resume-root">
-              <h2 className="sectionTitle">{ratedSkillsSection.title || 'Skills'}</h2>
+              <h2 className="sectionTitle">
+                {ratedSkillsSection.title || "Skills"}
+              </h2>
               {ratedSkillsSection.items.map((skill, i) => (
                 <div className="skillRow data-resume-root" key={i}>
                   <span className="skillName">{skill.name}</span>
                   <div className="dots data-resume-root">
                     {Array.from({ length: 5 }).map((_, d) => (
-                      <span key={d} className={`dot ${d < dotsFor(skill.level) ? "filled" : ""}`} />
+                      <span
+                        key={d}
+                        className={`dot ${d < dotsFor(skill.level) ? "filled" : ""}`}
+                      />
                     ))}
                   </div>
                 </div>
@@ -99,12 +140,16 @@ export default function BusinessMonogramTemplate({ content, theme }: TemplatePro
 
           {educationSection && educationSection.items.length > 0 && (
             <div className="section data-resume-root">
-              <h2 className="sectionTitle">{educationSection.title || 'Education'}</h2>
+              <h2 className="sectionTitle">
+                {educationSection.title || "Education"}
+              </h2>
               {educationSection.items.map((edu, i) => (
                 <div className="eduItem data-resume-root" key={i}>
                   <div className="eduSchool data-resume-root">{edu.school}</div>
                   <div className="eduDegree data-resume-root">{edu.degree}</div>
-                  <div className="eduDate data-resume-root">{edu.start} â€“ {edu.end}</div>
+                  <div className="eduDate data-resume-root">
+                    {edu.start} – {edu.end}
+                  </div>
                 </div>
               ))}
             </div>
@@ -112,12 +157,18 @@ export default function BusinessMonogramTemplate({ content, theme }: TemplatePro
 
           {referencesSection && referencesSection.items.length > 0 && (
             <div className="section data-resume-root">
-              <h2 className="sectionTitle">{referencesSection.title || 'References'}</h2>
+              <h2 className="sectionTitle">
+                {referencesSection.title || "References"}
+              </h2>
               {referencesSection.items.map((ref, i) => (
                 <div className="refItem data-resume-root" key={i}>
                   <div className="refName data-resume-root">{ref.name}</div>
-                  {ref.phone && <div className="refLine data-resume-root">{ref.phone}</div>}
-                  {ref.email && <div className="refLine data-resume-root">{ref.email}</div>}
+                  {ref.phone && (
+                    <div className="refLine data-resume-root">{ref.phone}</div>
+                  )}
+                  {ref.email && (
+                    <div className="refLine data-resume-root">{ref.email}</div>
+                  )}
                 </div>
               ))}
             </div>
@@ -142,10 +193,15 @@ export default function BusinessMonogramTemplate({ content, theme }: TemplatePro
           position: relative;
         }
 
-        .monogram {
+        .monogram,
+        .monogramPhoto {
           width: 72px;
           height: 72px;
           border-radius: 6px;
+          flex-shrink: 0;
+        }
+
+        .monogram {
           background: ${t.primaryColor || "#20232A"};
           color: ${t.accentColor || "#8E3B76"};
           display: flex;
@@ -153,7 +209,11 @@ export default function BusinessMonogramTemplate({ content, theme }: TemplatePro
           justify-content: center;
           font-size: 28px;
           font-weight: 800;
-          flex-shrink: 0;
+        }
+
+        .monogramPhoto {
+          object-fit: cover;
+          border: 2px solid ${t.accentColor || "#8E3B76"};
         }
 
         .name {
@@ -318,15 +378,17 @@ export default function BusinessMonogramTemplate({ content, theme }: TemplatePro
         }
 
         @media (max-width: 800px) {
-          .body { grid-template-columns: 1fr; }
+          .body {
+            grid-template-columns: 1fr;
+          }
         }
 
         @media print {
-          .bm-template { box-shadow: none; }
+          .bm-template {
+            box-shadow: none;
+          }
         }
       `}</style>
     </div>
   );
 }
-
-

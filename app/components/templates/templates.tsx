@@ -56,7 +56,7 @@ export const templates: TemplateMeta[] = [
     id: "modern-03",
     name: "Modern Timeline",
     category: "Modern",
-    thumbnail: "/thumbnails/modern3.jpg",
+    thumbnail: "/thumbnails/modern3.png",
     component: "ModernTemplate3",
     layout: "sidebar-left",
     defaultTheme: {
@@ -76,7 +76,7 @@ export const templates: TemplateMeta[] = [
     id: "modern-04",
     name: "Modern 4",
     category: "Modern",
-    thumbnail: "/thumbnails/modern4.jpg",
+    thumbnail: "/thumbnails/modern4.png",
     component: "ModernTemplate4",
     layout: "sidebar-left",
     defaultTheme: {
@@ -96,7 +96,7 @@ export const templates: TemplateMeta[] = [
     id: "modern-05",
     name: "Tech Modern",
     category: "Modern",
-    thumbnail: "/thumbnails/modern5.jpg",
+    thumbnail: "/thumbnails/modern5.png",
     component: "ModernTemplate5",
     layout: "sidebar-left",
     defaultTheme: {
@@ -116,7 +116,7 @@ export const templates: TemplateMeta[] = [
     id: "modern-06",
     name: "Elegant",
     category: "Modern",
-    thumbnail: "/thumbnails/modern6.jpg",
+    thumbnail: "/thumbnails/modern6.png",
     component: "ModernTemplate6",
     layout: "sidebar-left",
     defaultTheme: {
@@ -136,7 +136,7 @@ export const templates: TemplateMeta[] = [
     id: "minimal-01",
     name: "Minimal",
     category: "Minimal",
-    thumbnail: "/thumbnails/minimal1.jpg",
+    thumbnail: "/thumbnails/minimal1.png",
     component: "MinimalTemplate",
     layout: "single-column",
     defaultTheme: {
@@ -156,7 +156,7 @@ export const templates: TemplateMeta[] = [
     id: "minimal-02",
     name: "Minimal 2",
     category: "Minimal",
-    thumbnail: "/thumbnails/minimal2.jpg",
+    thumbnail: "/thumbnails/minimal2.png",
     component: "MinimalTemplate2",
     layout: "single-column",
     defaultTheme: {
@@ -188,7 +188,7 @@ export const templates: TemplateMeta[] = [
     id: "minimal-03",
     name: "Minimal 3",
     category: "Minimal",
-    thumbnail: "/thumbnails/minimal3.jpg",
+    thumbnail: "/thumbnails/minimal3.png",
     component: "MinimalTemplate3",
     layout: "single-column",
     defaultTheme: {
@@ -268,7 +268,7 @@ export const templates: TemplateMeta[] = [
     id: "professional-01",
     name: "Professional",
     category: "Professional",
-    thumbnail: "/thumbnails/professional1.jpg",
+    thumbnail: "/thumbnails/professional1.png",
     component: "ProfessionalTemplate",
     layout: "two-column",
     defaultTheme: {
@@ -288,7 +288,7 @@ export const templates: TemplateMeta[] = [
     id: "professional-02", // New template - Professional/Bold
     name: "Bold Professional",
     category: "Professional",
-    thumbnail: "/thumbnails/professional2.jpg",
+    thumbnail: "/thumbnails/professional2.png",
     component: "ProfessionalTemplate2",
     layout: "sidebar-left",
     defaultTheme: {
@@ -368,7 +368,7 @@ export const templates: TemplateMeta[] = [
     id: "business-01",
     name: "Business",
     category: "Business",
-    thumbnail: "/thumbnails/business1.jpg",
+    thumbnail: "/thumbnails/business1.png",
     component: "BusinessTemplate",
     layout: "header-band",
     defaultTheme: {

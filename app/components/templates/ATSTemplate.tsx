@@ -13,18 +13,34 @@ export default function ATSClassicTemplate({ content, theme }: TemplateProps) {
   const aboutText = personalInfo.summary;
 
   const contactItems = contactSection?.items || [];
-  const contactStrings: string[] = contactItems.length > 0
-    ? contactItems
-        .map((item) => (typeof item === "object" && item !== null && "description" in item ? String(item.description) : ""))
-        .filter(Boolean)
-    : [personalInfo.phone, personalInfo.email, personalInfo.location, personalInfo.website].filter(Boolean) as string[];
+  const contactStrings: string[] =
+    contactItems.length > 0
+      ? contactItems
+          .map((item) =>
+            typeof item === "object" &&
+            item !== null &&
+            "description" in item
+              ? String(item.description)
+              : "",
+          )
+          .filter(Boolean)
+      : ([
+          personalInfo.phone,
+          personalInfo.email,
+          personalInfo.location,
+          personalInfo.website,
+        ].filter(Boolean) as string[]);
 
   return (
     <div className="atsc-template data-resume-root">
-      {/* Plain-text header â€” no images, no icons, no tables */}
+      {/* Plain-text header — no images, no icons, no tables */}
       <div className="name data-resume-root">{personalInfo.fullName}</div>
-      <div className="title data-resume-root">{personalInfo.title || "Professional"}</div>
-      <div className="contactLine data-resume-root">{contactStrings.join("  |  ")}</div>
+      <div className="title data-resume-root">
+        {personalInfo.title || "Professional"}
+      </div>
+      <div className="contactLine data-resume-root">
+        {contactStrings.join("  |  ")}
+      </div>
 
       <div className="rule data-resume-root" />
 
@@ -37,12 +53,21 @@ export default function ATSClassicTemplate({ content, theme }: TemplateProps) {
 
       {experienceSection && experienceSection.items.length > 0 && (
         <div className="section data-resume-root">
-          <div className="sectionTitle data-resume-root">{experienceSection.title || 'Experience'}</div>
+          <div className="sectionTitle data-resume-root">
+            {experienceSection.title || "Experience"}
+          </div>
           {experienceSection.items.map((job, i) => (
             <div className="entry data-resume-root" key={i}>
-              <div className="entryTop data-resume-root">{job.role || "Position"} â€” {job.company}{job.location ? `, ${job.location}` : ""}</div>
-              <div className="entryDate data-resume-root">{job.start} â€“ {job.end || "Present"}</div>
-              {job.bullets && job.bullets.length > 0 && <div className="jobDesc data-resume-root">{job.bullets}</div>}
+              <div className="entryTop data-resume-root">
+                {job.role || "Position"} — {job.company}
+                {job.location ? `, ${job.location}` : ""}
+              </div>
+              <div className="entryDate data-resume-root">
+                {job.start} – {job.end || "Present"}
+              </div>
+              {job.bullets && job.bullets.length > 0 && (
+                <div className="jobDesc data-resume-root">{job.bullets}</div>
+              )}
             </div>
           ))}
         </div>
@@ -50,11 +75,17 @@ export default function ATSClassicTemplate({ content, theme }: TemplateProps) {
 
       {educationSection && educationSection.items.length > 0 && (
         <div className="section data-resume-root">
-          <div className="sectionTitle data-resume-root">{educationSection.title || 'Education'}</div>
+          <div className="sectionTitle data-resume-root">
+            {educationSection.title || "Education"}
+          </div>
           {educationSection.items.map((edu, i) => (
             <div className="entry data-resume-root" key={i}>
-              <div className="entryTop data-resume-root">{edu.degree} â€” {edu.school}</div>
-              <div className="entryDate data-resume-root">{edu.start} â€“ {edu.end}</div>
+              <div className="entryTop data-resume-root">
+                {edu.degree} — {edu.school}
+              </div>
+              <div className="entryDate data-resume-root">
+                {edu.start} – {edu.end}
+              </div>
             </div>
           ))}
         </div>
@@ -62,20 +93,26 @@ export default function ATSClassicTemplate({ content, theme }: TemplateProps) {
 
       {ratedSkillsSection && ratedSkillsSection.items.length > 0 && (
         <div className="section data-resume-root">
-          <div className="sectionTitle data-resume-root">{ratedSkillsSection.title || 'Skills'}</div>
-          <p className="bodyText">{ratedSkillsSection.items.map((s) => s.name).join(", ")}</p>
+          <div className="sectionTitle data-resume-root">
+            {ratedSkillsSection.title || "Skills"}
+          </div>
+          <p className="bodyText">
+            {ratedSkillsSection.items.map((s) => s.name).join(", ")}
+          </p>
         </div>
       )}
 
       {referencesSection && referencesSection.items.length > 0 && (
         <div className="section data-resume-root">
-          <div className="sectionTitle data-resume-root">{referencesSection.title || 'References'}</div>
+          <div className="sectionTitle data-resume-root">
+            {referencesSection.title || "References"}
+          </div>
           {referencesSection.items.map((ref, i) => (
             <div className="entry data-resume-root" key={i}>
               <div className="entryTop data-resume-root">
                 {ref.name}
-                {ref.phone ? ` â€” ${ref.phone}` : ""}
-                {ref.email ? ` â€” ${ref.email}` : ""}
+                {ref.phone ? ` — ${ref.phone}` : ""}
+                {ref.email ? ` — ${ref.email}` : ""}
               </div>
             </div>
           ))}
@@ -157,6 +194,13 @@ export default function ATSClassicTemplate({ content, theme }: TemplateProps) {
           margin-top: 2px;
         }
 
+        .jobDesc {
+          font-size: 12px;
+          line-height: 1.6;
+          color: #1a1a1a;
+          margin-top: 4px;
+        }
+
         .bullets {
           margin: 6px 0 0;
           padding-left: 18px;
@@ -170,11 +214,11 @@ export default function ATSClassicTemplate({ content, theme }: TemplateProps) {
         }
 
         @media print {
-          .atsc-template { box-shadow: none; }
+          .atsc-template {
+            box-shadow: none;
+          }
         }
       `}</style>
     </div>
   );
 }
-
-

@@ -20,7 +20,12 @@ export default function BusinessTemplate({ content, theme }: TemplateProps) {
         <h1 className="biz-name">{personalInfo.fullName}</h1>
         <p className="biz-title">{personalInfo.title}</p>
         <div className="biz-contact data-resume-root">
-          {[personalInfo.email, personalInfo.phone, personalInfo.location, personalInfo.website]
+          {[
+            personalInfo.email,
+            personalInfo.phone,
+            personalInfo.location,
+            personalInfo.website,
+          ]
             .filter(Boolean)
             .join("  |  ")}
         </div>
@@ -44,11 +49,11 @@ export default function BusinessTemplate({ content, theme }: TemplateProps) {
                   <div className="biz-row data-resume-root">
                     <strong className="biz-role">{item.role}</strong>
                     <span className="biz-date">
-                      {item.start} â€” {item.end}
+                      {item.start} — {item.end}
                     </span>
                   </div>
                   <div className="biz-muted data-resume-root">
-                    {item.company} Â· {item.location}
+                    {item.company} · {item.location}
                   </div>
                   <ul>
                     {item.bullets.map((b, bi) => (
@@ -63,10 +68,12 @@ export default function BusinessTemplate({ content, theme }: TemplateProps) {
                 <div className="biz-row biz-item data-resume-root" key={i}>
                   <div>
                     <strong>{item.degree}</strong>
-                    <div className="biz-muted data-resume-root">{item.school}</div>
+                    <div className="biz-muted data-resume-root">
+                      {item.school}
+                    </div>
                   </div>
                   <span className="biz-date">
-                    {item.start} â€” {item.end}
+                    {item.start} — {item.end}
                   </span>
                 </div>
               ))}

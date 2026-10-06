@@ -26,7 +26,9 @@ export default function ProfessionalLedgerTemplate({ content, theme }: TemplateP
       <div className="mainArea data-resume-root">
         <header className="header">
           <div className="name data-resume-root">{personalInfo.fullName}</div>
-          <div className="title data-resume-root">{personalInfo.title || "PROFESSIONAL"}</div>
+          <div className="title data-resume-root">
+            {personalInfo.title || "PROFESSIONAL"}
+          </div>
           <div className="contactRow data-resume-root">
             {contactItems.length > 0
               ? contactItems.map((item, i) => {
@@ -60,10 +62,17 @@ export default function ProfessionalLedgerTemplate({ content, theme }: TemplateP
               <div className="job data-resume-root" key={i}>
                 <div className="jobTop data-resume-root">
                   <span className="jobTitle">{job.role || "Position"}</span>
-                  <span className="jobDate">{job.start} â€“ {job.end || "Present"}</span>
+                  <span className="jobDate">
+                    {job.start} – {job.end || "Present"}
+                  </span>
                 </div>
-                <div className="jobSub data-resume-root">{job.company}{job.location ? `, ${job.location}` : ""}</div>
-                {job.bullets && job.bullets.length > 0 && <div className="jobDesc data-resume-root">{job.bullets}</div>}
+                <div className="jobSub data-resume-root">
+                  {job.company}
+                  {job.location ? `, ${job.location}` : ""}
+                </div>
+                {job.bullets && job.bullets.length > 0 && (
+                  <div className="jobDesc data-resume-root">{job.bullets}</div>
+                )}
               </div>
             ))}
           </div>
@@ -76,7 +85,9 @@ export default function ProfessionalLedgerTemplate({ content, theme }: TemplateP
               <div className="eduItem data-resume-root" key={i}>
                 <div className="eduTop data-resume-root">
                   <span className="eduSchool">{edu.school}</span>
-                  <span className="eduDate">{edu.start} â€“ {edu.end}</span>
+                  <span className="eduDate">
+                    {edu.start} – {edu.end}
+                  </span>
                 </div>
                 <div className="eduDegree data-resume-root">{edu.degree}</div>
               </div>
@@ -91,7 +102,12 @@ export default function ProfessionalLedgerTemplate({ content, theme }: TemplateP
               {ratedSkillsSection.items.map((skill, i) => (
                 <div className="skillRow data-resume-root" key={i}>
                   <span className="skillName">{skill.name}</span>
-                  <div className="skillBar data-resume-root"><div className="skillFill data-resume-root" style={{ width: `${skill.level}%` }} /></div>
+                  <div className="skillBar data-resume-root">
+                    <div
+                      className="skillFill data-resume-root"
+                      style={{ width: `${skill.level}%` }}
+                    />
+                  </div>
                 </div>
               ))}
             </div>
@@ -104,8 +120,8 @@ export default function ProfessionalLedgerTemplate({ content, theme }: TemplateP
             {referencesSection.items.map((ref, i) => (
               <div className="refItem data-resume-root" key={i}>
                 <span className="refName">{ref.name}</span>
-                {ref.phone && <span className="refLine"> Â· {ref.phone}</span>}
-                {ref.email && <span className="refLine"> Â· {ref.email}</span>}
+                {ref.phone && <span className="refLine"> · {ref.phone}</span>}
+                {ref.email && <span className="refLine"> · {ref.email}</span>}
               </div>
             ))}
           </div>
@@ -336,5 +352,3 @@ export default function ProfessionalLedgerTemplate({ content, theme }: TemplateP
     </div>
   );
 }
-
-

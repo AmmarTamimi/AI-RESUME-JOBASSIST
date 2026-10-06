@@ -70,15 +70,12 @@ export default function BusinessRibbonTemplate({ content, theme }: TemplateProps
             <h2 className="sectionTitle">{experienceSection.title || 'Experience'}</h2>
             {experienceSection.items.map((job, i) => (
               <div className="job data-resume-root" key={i}>
-                <span className="bullet" />
-                <div className="jobContent data-resume-root">
-                  <div className="jobTop data-resume-root">
-                    <span className="jobTitle">{job.role || "Position"}</span>
-                    <span className="jobDate">{job.start} â€“ {job.end || "Present"}</span>
-                  </div>
-                  <div className="jobSub data-resume-root">{job.company}{job.location ? `, ${job.location}` : ""}</div>
-                  {job.bullets && job.bullets.length > 0 && <div className="jobDesc data-resume-root">{job.bullets}</div>}
+                <div className="jobTop data-resume-root">
+                  <span className="jobTitle">{job.role || "Position"}</span>
+                  <span className="jobDate">{job.start} – {job.end || "Present"}</span>
                 </div>
+                <div className="jobSub data-resume-root">{job.company}{job.location ? `, ${job.location}` : ""}</div>
+                {job.bullets && job.bullets.length > 0 && <div className="jobDesc data-resume-root">{job.bullets}</div>}
               </div>
             ))}
           </div>
@@ -92,7 +89,7 @@ export default function BusinessRibbonTemplate({ content, theme }: TemplateProps
                 <div className="eduItem data-resume-root" key={i}>
                   <div className="eduSchool data-resume-root">{edu.school}</div>
                   <div className="eduDegree data-resume-root">{edu.degree}</div>
-                  <div className="eduDate data-resume-root">{edu.start} â€“ {edu.end}</div>
+                  <div className="eduDate data-resume-root">{edu.start} – {edu.end}</div>
                 </div>
               ))}
             </div>
@@ -232,22 +229,7 @@ export default function BusinessRibbonTemplate({ content, theme }: TemplateProps
         }
 
         .job {
-          display: flex;
-          gap: 12px;
           margin-bottom: 16px;
-        }
-
-        .bullet {
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-          background: ${t.accentColor || "#FF6B4A"};
-          margin-top: 5px;
-          flex-shrink: 0;
-        }
-
-        .jobContent {
-          flex: 1;
         }
 
         .jobTop {
@@ -374,5 +356,3 @@ export default function BusinessRibbonTemplate({ content, theme }: TemplateProps
     </div>
   );
 }
-
-

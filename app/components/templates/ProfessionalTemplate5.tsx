@@ -1,11 +1,16 @@
 ﻿import React from "react";
 import type { TemplateProps } from "../../types/Content";
 
-export default function ProfessionalCompactTemplate({ content, theme }: TemplateProps) {
+export default function ProfessionalCompactTemplate({
+  content,
+  theme,
+}: TemplateProps) {
   const { personalInfo, sections } = content;
   const t = theme;
 
-  const contactSection = sections.find((s) => s.type === "custom" && s.id === "contact");
+  const contactSection = sections.find(
+    (s) => s.type === "custom" && s.id === "contact",
+  );
   const referencesSection = sections.find((s) => s.type === "references");
   const educationSection = sections.find((s) => s.type === "education");
   const experienceSection = sections.find((s) => s.type === "experience");
@@ -26,42 +31,74 @@ export default function ProfessionalCompactTemplate({ content, theme }: Template
       {/* ================= BANNER ================= */}
       <div className="banner data-resume-root">
         {personalInfo.photoUrl ? (
-          <img className="photo" src={personalInfo.photoUrl} alt={personalInfo.fullName} />
+          <img
+            className="photo"
+            src={personalInfo.photoUrl}
+            alt={personalInfo.fullName}
+          />
         ) : (
-          <div className="photoFallback data-resume-root">{initials || "U"}</div>
+          <div className="photoFallback data-resume-root">
+            {initials || "U"}
+          </div>
         )}
         <div className="bannerText data-resume-root">
           <div className="name data-resume-root">{personalInfo.fullName}</div>
-          <div className="title data-resume-root">{personalInfo.title || "PROFESSIONAL"}</div>
+          <div className="title data-resume-root">
+            {personalInfo.title || "PROFESSIONAL"}
+          </div>
         </div>
       </div>
 
       {/* ================= FORM-STYLE INFO ROW ================= */}
       <div className="infoRow data-resume-root">
-        {personalInfo.phone && (
-          <div className="infoCell data-resume-root"><span className="infoLabel">Phone</span><span className="infoValue">{personalInfo.phone}</span></div>
-        )}
-        {personalInfo.email && (
-          <div className="infoCell data-resume-root"><span className="infoLabel">Email</span><span className="infoValue">{personalInfo.email}</span></div>
-        )}
-        {personalInfo.location && (
-          <div className="infoCell data-resume-root"><span className="infoLabel">Location</span><span className="infoValue">{personalInfo.location}</span></div>
-        )}
-        {personalInfo.website && (
-          <div className="infoCell data-resume-root"><span className="infoLabel">Website</span><span className="infoValue">{personalInfo.website}</span></div>
-        )}
-        {contactItems.length > 0 &&
-          contactItems.map((item, i) => {
-            if (typeof item === "object" && item !== null && "label" in item && "description" in item) {
-              return (
-                <div className="infoCell data-resume-root" key={i}>
-                  <span className="infoLabel">{String(item.label)}</span>
-                  <span className="infoValue">{item.description}</span>
+        {contactItems.length > 0
+          ? contactItems.map((item, i) => {
+              if (
+                typeof item === "object" &&
+                item !== null &&
+                "label" in item &&
+                "description" in item
+              ) {
+                return (
+                  <div className="infoCell data-resume-root" key={i}>
+                    <span className="infoLabel">
+                      {String(item.label).charAt(0).toUpperCase() +
+                        String(item.label).slice(1)}
+                    </span>
+                    <span className="infoValue">{item.description}</span>
+                  </div>
+                );
+              }
+              return null;
+            })
+          : (
+            <>
+              {personalInfo.phone && (
+                <div className="infoCell data-resume-root">
+                  <span className="infoLabel">Phone</span>
+                  <span className="infoValue">{personalInfo.phone}</span>
                 </div>
-              );
-            }
-            return null;
-          })}
+              )}
+              {personalInfo.email && (
+                <div className="infoCell data-resume-root">
+                  <span className="infoLabel">Email</span>
+                  <span className="infoValue">{personalInfo.email}</span>
+                </div>
+              )}
+              {personalInfo.location && (
+                <div className="infoCell data-resume-root">
+                  <span className="infoLabel">Location</span>
+                  <span className="infoValue">{personalInfo.location}</span>
+                </div>
+              )}
+              {personalInfo.website && (
+                <div className="infoCell data-resume-root">
+                  <span className="infoLabel">Website</span>
+                  <span className="infoValue">{personalInfo.website}</span>
+                </div>
+              )}
+            </>
+          )}
       </div>
 
       {/* ================= BODY ================= */}
@@ -75,15 +112,24 @@ export default function ProfessionalCompactTemplate({ content, theme }: Template
 
         {experienceSection && experienceSection.items.length > 0 && (
           <div className="section data-resume-root">
-            <h2 className="sectionTitle">{experienceSection.title || 'Experience'}</h2>
+            <h2 className="sectionTitle">
+              {experienceSection.title || "Experience"}
+            </h2>
             {experienceSection.items.map((job, i) => (
               <div className="job data-resume-root" key={i}>
                 <div className="jobTop data-resume-root">
                   <span className="jobTitle">{job.role || "Position"}</span>
-                  <span className="jobDate">{job.start} â€“ {job.end || "Present"}</span>
+                  <span className="jobDate">
+                    {job.start} – {job.end || "Present"}
+                  </span>
                 </div>
-                <div className="jobSub data-resume-root">{job.company}{job.location ? `, ${job.location}` : ""}</div>
-                {job.bullets && job.bullets.length > 0 && <div className="jobDesc data-resume-root">{job.bullets}</div>}
+                <div className="jobSub data-resume-root">
+                  {job.company}
+                  {job.location ? `, ${job.location}` : ""}
+                </div>
+                {job.bullets && job.bullets.length > 0 && (
+                  <div className="jobDesc data-resume-root">{job.bullets}</div>
+                )}
               </div>
             ))}
           </div>
@@ -92,12 +138,18 @@ export default function ProfessionalCompactTemplate({ content, theme }: Template
         <div className="footerCols data-resume-root">
           {educationSection && educationSection.items.length > 0 && (
             <div className="section data-resume-root">
-              <h2 className="sectionTitle">{educationSection.title || 'Education'}</h2>
+              <h2 className="sectionTitle">
+                {educationSection.title || "Education"}
+              </h2>
               {educationSection.items.map((edu, i) => (
                 <div className="eduItem data-resume-root" key={i}>
                   <div className="eduSchool data-resume-root">{edu.school}</div>
-                  <div className="eduDegree data-resume-root">{edu.degree}</div>
-                  <div className="eduDate data-resume-root">{edu.start} â€“ {edu.end}</div>
+                  <div className="eduDegree data-resume-root">
+                    {edu.degree}
+                  </div>
+                  <div className="eduDate data-resume-root">
+                    {edu.start} – {edu.end}
+                  </div>
                 </div>
               ))}
             </div>
@@ -105,11 +157,18 @@ export default function ProfessionalCompactTemplate({ content, theme }: Template
 
           {ratedSkillsSection && ratedSkillsSection.items.length > 0 && (
             <div className="section data-resume-root">
-              <h2 className="sectionTitle">{ratedSkillsSection.title || 'Skills'}</h2>
+              <h2 className="sectionTitle">
+                {ratedSkillsSection.title || "Skills"}
+              </h2>
               {ratedSkillsSection.items.map((skill, i) => (
                 <div className="skillRow data-resume-root" key={i}>
                   <span className="skillName">{skill.name}</span>
-                  <div className="skillBar data-resume-root"><div className="skillFill data-resume-root" style={{ width: `${skill.level}%` }} /></div>
+                  <div className="skillBar data-resume-root">
+                    <div
+                      className="skillFill data-resume-root"
+                      style={{ width: `${skill.level}%` }}
+                    />
+                  </div>
                 </div>
               ))}
             </div>
@@ -117,12 +176,18 @@ export default function ProfessionalCompactTemplate({ content, theme }: Template
 
           {referencesSection && referencesSection.items.length > 0 && (
             <div className="section data-resume-root">
-              <h2 className="sectionTitle">{referencesSection.title || 'References'}</h2>
+              <h2 className="sectionTitle">
+                {referencesSection.title || "References"}
+              </h2>
               {referencesSection.items.map((ref, i) => (
                 <div className="refItem data-resume-root" key={i}>
                   <div className="refName data-resume-root">{ref.name}</div>
-                  {ref.phone && <div className="refLine data-resume-root">{ref.phone}</div>}
-                  {ref.email && <div className="refLine data-resume-root">{ref.email}</div>}
+                  {ref.phone && (
+                    <div className="refLine data-resume-root">{ref.phone}</div>
+                  )}
+                  {ref.email && (
+                    <div className="refLine data-resume-root">{ref.email}</div>
+                  )}
                 </div>
               ))}
             </div>
@@ -147,7 +212,8 @@ export default function ProfessionalCompactTemplate({ content, theme }: Template
           padding: 26px 42px;
         }
 
-        .photo, .photoFallback {
+        .photo,
+        .photoFallback {
           width: 58px;
           height: 58px;
           border-radius: 8px;
@@ -155,7 +221,7 @@ export default function ProfessionalCompactTemplate({ content, theme }: Template
         }
 
         .photoFallback {
-          background: rgba(255,255,255,0.12);
+          background: rgba(255, 255, 255, 0.12);
           color: ${t.accentColor || "#4FB0A5"};
           display: flex;
           align-items: center;
@@ -334,16 +400,20 @@ export default function ProfessionalCompactTemplate({ content, theme }: Template
         }
 
         @media (max-width: 800px) {
-          .infoRow { grid-template-columns: 1fr 1fr; }
-          .footerCols { grid-template-columns: 1fr; }
+          .infoRow {
+            grid-template-columns: 1fr 1fr;
+          }
+          .footerCols {
+            grid-template-columns: 1fr;
+          }
         }
 
         @media print {
-          .pc-template { box-shadow: none; }
+          .pc-template {
+            box-shadow: none;
+          }
         }
       `}</style>
     </div>
   );
 }
-
-

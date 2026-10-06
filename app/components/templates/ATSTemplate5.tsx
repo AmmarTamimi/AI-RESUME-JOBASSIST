@@ -5,7 +5,9 @@ export default function ATSFormalTemplate({ content, theme }: TemplateProps) {
   const { personalInfo, sections } = content;
   const t = theme;
 
-  const contactSection = sections.find((s) => s.type === "custom" && s.id === "contact");
+  const contactSection = sections.find(
+    (s) => s.type === "custom" && s.id === "contact",
+  );
   const referencesSection = sections.find((s) => s.type === "references");
   const educationSection = sections.find((s) => s.type === "education");
   const experienceSection = sections.find((s) => s.type === "experience");
@@ -13,17 +15,33 @@ export default function ATSFormalTemplate({ content, theme }: TemplateProps) {
   const aboutText = personalInfo.summary;
 
   const contactItems = contactSection?.items || [];
-  const contactStrings: string[] = contactItems.length > 0
-    ? contactItems
-        .map((item) => (typeof item === "object" && item !== null && "description" in item ? String(item.description) : ""))
-        .filter(Boolean)
-    : [personalInfo.phone, personalInfo.email, personalInfo.location, personalInfo.website].filter(Boolean) as string[];
+  const contactStrings: string[] =
+    contactItems.length > 0
+      ? contactItems
+          .map((item) =>
+            typeof item === "object" &&
+            item !== null &&
+            "description" in item
+              ? String(item.description)
+              : "",
+          )
+          .filter(Boolean)
+      : ([
+          personalInfo.phone,
+          personalInfo.email,
+          personalInfo.location,
+          personalInfo.website,
+        ].filter(Boolean) as string[]);
 
   return (
     <div className="atsf-template data-resume-root">
       <div className="name data-resume-root">{personalInfo.fullName}</div>
-      <div className="contactLine data-resume-root">{contactStrings.join("  |  ")}</div>
-      <div className="title data-resume-root">{personalInfo.title || "Professional"}</div>
+      <div className="contactLine data-resume-root">
+        {contactStrings.join("  |  ")}
+      </div>
+      <div className="title data-resume-root">
+        {personalInfo.title || "Professional"}
+      </div>
 
       {aboutText && (
         <div className="section data-resume-root">
@@ -35,15 +53,24 @@ export default function ATSFormalTemplate({ content, theme }: TemplateProps) {
 
       {experienceSection && experienceSection.items.length > 0 && (
         <div className="section data-resume-root">
-          <div className="sectionTitle data-resume-root">{experienceSection.title || 'Professional Experience'}</div>
+          <div className="sectionTitle data-resume-root">
+            {experienceSection.title || "Professional Experience"}
+          </div>
           <div className="sectionRule data-resume-root" />
           {experienceSection.items.map((job, i) => (
             <div className="entry data-resume-root" key={i}>
-              <div className="entryTop data-resume-root">{job.company}{job.location ? `, ${job.location}` : ""} â€” {job.role || "Position"}</div>
-              <div className="entryDate data-resume-root">{job.start} â€“ {job.end || "Present"}</div>
+              <div className="entryTop data-resume-root">
+                {job.company}
+                {job.location ? `, ${job.location}` : ""} — {job.role || "Position"}
+              </div>
+              <div className="entryDate data-resume-root">
+                {job.start} – {job.end || "Present"}
+              </div>
               {job.bullets && job.bullets.length > 0 && (
                 <ul className="bullets">
-                  {job.bullets.map((b, bi) => <li key={bi}>{b}</li>)}
+                  {job.bullets.map((b, bi) => (
+                    <li key={bi}>{b}</li>
+                  ))}
                 </ul>
               )}
             </div>
@@ -53,12 +80,18 @@ export default function ATSFormalTemplate({ content, theme }: TemplateProps) {
 
       {educationSection && educationSection.items.length > 0 && (
         <div className="section data-resume-root">
-          <div className="sectionTitle data-resume-root">{educationSection.title || 'Education'}</div>
+          <div className="sectionTitle data-resume-root">
+            {educationSection.title || "Education"}
+          </div>
           <div className="sectionRule data-resume-root" />
           {educationSection.items.map((edu, i) => (
             <div className="entry data-resume-root" key={i}>
-              <div className="entryTop data-resume-root">{edu.school} â€” {edu.degree}</div>
-              <div className="entryDate data-resume-root">{edu.start} â€“ {edu.end}</div>
+              <div className="entryTop data-resume-root">
+                {edu.school} — {edu.degree}
+              </div>
+              <div className="entryDate data-resume-root">
+                {edu.start} – {edu.end}
+              </div>
             </div>
           ))}
         </div>
@@ -66,15 +99,21 @@ export default function ATSFormalTemplate({ content, theme }: TemplateProps) {
 
       {ratedSkillsSection && ratedSkillsSection.items.length > 0 && (
         <div className="section data-resume-root">
-          <div className="sectionTitle data-resume-root">{ratedSkillsSection.title || 'Skills'}</div>
+          <div className="sectionTitle data-resume-root">
+            {ratedSkillsSection.title || "Skills"}
+          </div>
           <div className="sectionRule data-resume-root" />
-          <p className="bodyText">{ratedSkillsSection.items.map((s) => s.name).join(", ")}</p>
+          <p className="bodyText">
+            {ratedSkillsSection.items.map((s) => s.name).join(", ")}
+          </p>
         </div>
       )}
 
       {referencesSection && referencesSection.items.length > 0 && (
         <div className="section data-resume-root">
-          <div className="sectionTitle data-resume-root">{referencesSection.title || 'References'}</div>
+          <div className="sectionTitle data-resume-root">
+            {referencesSection.title || "References"}
+          </div>
           <div className="sectionRule data-resume-root" />
           {referencesSection.items.map((ref, i) => (
             <div className="entry data-resume-root" key={i}>
@@ -176,11 +215,11 @@ export default function ATSFormalTemplate({ content, theme }: TemplateProps) {
         }
 
         @media print {
-          .atsf-template { box-shadow: none; }
+          .atsf-template {
+            box-shadow: none;
+          }
         }
       `}</style>
     </div>
   );
 }
-
-

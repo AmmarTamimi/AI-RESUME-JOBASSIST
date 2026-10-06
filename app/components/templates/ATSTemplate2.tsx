@@ -13,17 +13,33 @@ export default function ATSModernTemplate({ content, theme }: TemplateProps) {
   const aboutText = personalInfo.summary;
 
   const contactItems = contactSection?.items || [];
-  const contactStrings: string[] = contactItems.length > 0
-    ? contactItems
-        .map((item) => (typeof item === "object" && item !== null && "description" in item ? String(item.description) : ""))
-        .filter(Boolean)
-    : [personalInfo.phone, personalInfo.email, personalInfo.location, personalInfo.website].filter(Boolean) as string[];
+  const contactStrings: string[] =
+    contactItems.length > 0
+      ? contactItems
+          .map((item) =>
+            typeof item === "object" &&
+            item !== null &&
+            "description" in item
+              ? String(item.description)
+              : "",
+          )
+          .filter(Boolean)
+      : ([
+          personalInfo.phone,
+          personalInfo.email,
+          personalInfo.location,
+          personalInfo.website,
+        ].filter(Boolean) as string[]);
 
   return (
     <div className="atsm-template data-resume-root">
       <div className="name data-resume-root">{personalInfo.fullName}</div>
-      <div className="title data-resume-root">{personalInfo.title || "Professional"}</div>
-      <div className="contactLine data-resume-root">{contactStrings.join("   â€¢   ")}</div>
+      <div className="title data-resume-root">
+        {personalInfo.title || "Professional"}
+      </div>
+      <div className="contactLine data-resume-root">
+        {contactStrings.join("   •   ")}
+      </div>
 
       {aboutText && (
         <div className="section data-resume-root">
@@ -34,18 +50,28 @@ export default function ATSModernTemplate({ content, theme }: TemplateProps) {
 
       {experienceSection && experienceSection.items.length > 0 && (
         <div className="section data-resume-root">
-          <div className="sectionTitle data-resume-root">{experienceSection.title || 'Experience'}</div>
+          <div className="sectionTitle data-resume-root">
+            {experienceSection.title || "Experience"}
+          </div>
           {experienceSection.items.map((job, i) => (
             <div className="entry data-resume-root" key={i}>
               <div className="entryRow data-resume-root">
                 <span className="entryRole">{job.role || "Position"}</span>
-                <span className="entryDate">{job.start} â€“ {job.end || "Present"}</span>
+                <span className="entryDate">
+                  {job.start} – {job.end || "Present"}
+                </span>
               </div>
-              <div className="entryCompany data-resume-root">{job.company}{job.location ? `, ${job.location}` : ""}</div>
+              <div className="entryCompany data-resume-root">
+                {job.company}
+                {job.location ? `, ${job.location}` : ""}
+              </div>
               {job.bullets && job.bullets.length > 0 && (
                 <div className="bullets data-resume-root">
                   {job.bullets.map((b, bi) => (
-                    <div className="bulletLine data-resume-root" key={bi}>- {b}</div>
+                    <div className="bulletLine data-resume-root" key={bi}>
+                      <span className="bulletDot" />
+                      <span className="bulletText">{b}</span>
+                    </div>
                   ))}
                 </div>
               )}
@@ -56,14 +82,20 @@ export default function ATSModernTemplate({ content, theme }: TemplateProps) {
 
       {educationSection && educationSection.items.length > 0 && (
         <div className="section data-resume-root">
-          <div className="sectionTitle data-resume-root">{educationSection.title || 'Education'}</div>
+          <div className="sectionTitle data-resume-root">
+            {educationSection.title || "Education"}
+          </div>
           {educationSection.items.map((edu, i) => (
             <div className="entry data-resume-root" key={i}>
               <div className="entryRow data-resume-root">
                 <span className="entryRole">{edu.school}</span>
-                <span className="entryDate">{edu.start} â€“ {edu.end}</span>
+                <span className="entryDate">
+                  {edu.start} – {edu.end}
+                </span>
               </div>
-              <div className="entryCompany data-resume-root">{edu.degree}</div>
+              <div className="entryCompany data-resume-root">
+                {edu.degree}
+              </div>
             </div>
           ))}
         </div>
@@ -71,19 +103,25 @@ export default function ATSModernTemplate({ content, theme }: TemplateProps) {
 
       {ratedSkillsSection && ratedSkillsSection.items.length > 0 && (
         <div className="section data-resume-root">
-          <div className="sectionTitle data-resume-root">{ratedSkillsSection.title || 'Skills'}</div>
-          <p className="bodyText">{ratedSkillsSection.items.map((s) => s.name).join(", ")}</p>
+          <div className="sectionTitle data-resume-root">
+            {ratedSkillsSection.title || "Skills"}
+          </div>
+          <p className="bodyText">
+            {ratedSkillsSection.items.map((s) => s.name).join(", ")}
+          </p>
         </div>
       )}
 
       {referencesSection && referencesSection.items.length > 0 && (
         <div className="section data-resume-root">
-          <div className="sectionTitle data-resume-root">{referencesSection.title || 'References'}</div>
+          <div className="sectionTitle data-resume-root">
+            {referencesSection.title || "References"}
+          </div>
           {referencesSection.items.map((ref, i) => (
             <div className="entry data-resume-root" key={i}>
               <div className="entryRole data-resume-root">{ref.name}</div>
               <div className="entryCompany data-resume-root">
-                {[ref.phone, ref.email].filter(Boolean).join("  Â·  ")}
+                {[ref.phone, ref.email].filter(Boolean).join("  ·  ")}
               </div>
             </div>
           ))}
@@ -131,8 +169,6 @@ export default function ATSModernTemplate({ content, theme }: TemplateProps) {
           text-transform: uppercase;
           letter-spacing: 1.5px;
           color: ${t.accentColor || "#0E7C7B"};
-          border-left: 3px solid ${t.accentColor || "#0E7C7B"};
-          padding-left: 8px;
           margin-bottom: 10px;
         }
 
@@ -176,18 +212,34 @@ export default function ATSModernTemplate({ content, theme }: TemplateProps) {
         }
 
         .bulletLine {
+          display: flex;
+          align-items: flex-start;
+          gap: 8px;
           font-size: 12px;
           line-height: 1.6;
           color: #1a1a1a;
           margin-bottom: 3px;
         }
 
+        .bulletDot {
+          width: 5px;
+          height: 5px;
+          border-radius: 50%;
+          background: ${t.accentColor || "#0E7C7B"};
+          flex-shrink: 0;
+          margin-top: 8px;
+        }
+
+        .bulletText {
+          flex: 1;
+        }
+
         @media print {
-          .atsm-template { box-shadow: none; }
+          .atsm-template {
+            box-shadow: none;
+          }
         }
       `}</style>
     </div>
   );
 }
-
-
