@@ -1537,8 +1537,8 @@ export default function ModernTemplate3({ content, theme }: TemplateProps) {
   const firstName = nameParts.length > 1 ? nameParts.slice(0, -1).join(" ") : nameParts[0];
   const lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : "";
 
-  const primary = theme.primaryColor || "#777674";
-  const accent = theme.accentColor || "#7B2CFF";
+  const primary = theme.primaryColor || "#37b3c3";
+  const accent = theme.accentColor || "#91d9f8";
   const text = theme.textColor || "#444444";
 
   return (
