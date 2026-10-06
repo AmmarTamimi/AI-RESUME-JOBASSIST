@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import {
   Search,
@@ -9,19 +9,17 @@ import {
   Loader2,
   Briefcase,
   Filter,
-  X,
   Building,
-  Calendar,
   DollarSign,
   Globe,
   ExternalLink,
   Clock,
   Star,
-  Users,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Resume } from "@/app/types/Content";
 import { getResumeById } from "@/app/lib/supabase/resume";
+import { logActivity } from "@/app/lib/activityStore";
 
 const JOB_TYPES = [
   "Remote",
@@ -30,6 +28,8 @@ const JOB_TYPES = [
   "Contract",
   "Internship",
 ] as const;
+
+const SEEN_JOBS_KEY = "jobs-seen-ids";
 
 interface JobPosting {
   id: string;
@@ -55,19 +55,68 @@ interface JobPosting {
   source: string;
 }
 
+// Read the user's location from the resume:
+// 1. personalInfo.location (preferred)
+// 2. any section item with label "location" / "city" / "address"
+function extractResumeLocation(resume: Resume | null | undefined): string {
+  if (!resume?.content) return "";
+
+  const personal = resume.content.personalInfo?.location;
+  if (personal && personal.trim()) return personal.trim();
+
+  const sections = resume.content.sections ?? [];
+  for (const section of sections) {
+    if (!Array.isArray(section.items)) continue;
+    for (const item of section.items) {
+      if (
+        item &&
+        typeof item === "object" &&
+        "label" in item &&
+        "description" in item
+      ) {
+        const label = String((item as any).label || "").toLowerCase();
+        if (
+          label === "location" ||
+          label === "city" ||
+          label === "address"
+        ) {
+          const desc = String((item as any).description || "").trim();
+          if (desc) return desc;
+        }
+      }
+    }
+  }
+  return "";
+}
+
+function readSeenJobs(): Set<string> {
+  if (typeof window === "undefined") return new Set();
+  try {
+    const raw = localStorage.getItem(SEEN_JOBS_KEY);
+    if (!raw) return new Set();
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? new Set(parsed) : new Set();
+  } catch {
+    return new Set();
+  }
+}
+
+function writeSeenJobs(ids: Set<string>) {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(SEEN_JOBS_KEY, JSON.stringify([...ids]));
+  } catch {
+    // quota / disabled — ignore
+  }
+}
+
 function DescriptionRenderer({ text }: { text: string }) {
   const normalized = text
-    // 1. Split on "About X" / "About The Role" style headers
     .replace(/([a-z.,])(About\s+[A-Z][a-zA-Z\s]{2,30}?)(?=[A-Z])/g, "$1\n\n$2\n")
-    // 2. Split on common section headers: "Requirements", "Responsibilities", etc.
     .replace(/([a-z.,])(Must-Have|Good-to-Have|Responsibilities|Requirements|Qualifications|Preferred|Key Responsibilities|What You Will|What You Bring|Benefits|About The Role|About Us|Job Summary|Experience:|Employment Type:|Location:)/g, "$1\n\n$2\n")
-    // 3. Split on inline bullets: " • " or " - " surrounded by spaces
     .replace(/\s+[•·]\s+/g, "\n• ")
     .replace(/\s+-\s+(?=[A-Z])/g, "\n• ")
-    // 4. Split on sentence boundaries when followed by a capital letter starting a new clause
-    //    (only in longer runs — avoids splitting "U.S." etc.)
     .replace(/([.!?])\s+(?=[A-Z][a-z]{3,})/g, "$1\n")
-    // 5. Clean up extra whitespace
     .replace(/\n{3,}/g, "\n\n")
     .trim();
 
@@ -79,7 +128,6 @@ function DescriptionRenderer({ text }: { text: string }) {
   return (
     <div className="space-y-2 text-sm text-[#64748B] dark:text-[#94A3B8] leading-relaxed">
       {lines.map((line, i) => {
-        // Bullet: starts with •, -, *, or a numbered list marker
         const bulletMatch = line.match(/^([•\-*]|\d+\.)\s+(.*)$/);
         if (bulletMatch) {
           return (
@@ -92,7 +140,6 @@ function DescriptionRenderer({ text }: { text: string }) {
           );
         }
 
-        // Section header: line is short, no period at the end, and ends with ':' or is ALL CAPS-ish
         const isHeader =
           line.length < 60 &&
           !line.endsWith(".") &&
@@ -113,7 +160,6 @@ function DescriptionRenderer({ text }: { text: string }) {
           );
         }
 
-        // Regular paragraph
         return (
           <p key={i} className="text-sm">
             {line}
@@ -126,7 +172,7 @@ function DescriptionRenderer({ text }: { text: string }) {
 
 export default function JobsPage() {
   const { id } = useParams<{ id: string }>();
-  const hasResume = id && id !== 'new'
+  const hasResume = id && id !== "new";
   const router = useRouter();
 
   const [role, setRole] = useState("");
@@ -140,95 +186,79 @@ export default function JobsPage() {
   const [resume, setResume] = useState<Resume>();
 
   const filteredJobs = useMemo(() => {
-  if (selectedTypes.length === 0) return jobs;
+    if (selectedTypes.length === 0) return jobs;
 
-  return jobs.filter((job) => {
-    // Combine all type signals we have for this job
-    const typeText = [
-      job.employmentType || "",
-      job.extensions?.employment_type || "",
-      job.extensions?.schedule_type || "",
-      job.location || "",
-    ]
-      .join(" ")
-      .toLowerCase();
+    return jobs.filter((job) => {
+      const typeText = [
+        job.employmentType || "",
+        job.extensions?.employment_type || "",
+        job.extensions?.schedule_type || "",
+        job.location || "",
+      ]
+        .join(" ")
+        .toLowerCase();
 
-    return selectedTypes.some((type) => {
-      const t = type.toLowerCase();
+      return selectedTypes.some((type) => {
+        const t = type.toLowerCase();
 
-      // Remote is special — check the location text too
-      if (t === "remote") {
-        return typeText.includes("remote");
-      }
+        if (t === "remote") {
+          return typeText.includes("remote");
+        }
+        if (t === "full-time") {
+          return (
+            typeText.includes("full-time") ||
+            typeText.includes("full time") ||
+            typeText.includes("fulltime") ||
+            typeText.includes("full_time")
+          );
+        }
+        if (t === "part-time") {
+          return (
+            typeText.includes("part-time") ||
+            typeText.includes("part time") ||
+            typeText.includes("parttime") ||
+            typeText.includes("part_time")
+          );
+        }
+        if (t === "contract") {
+          return (
+            typeText.includes("contract") ||
+            typeText.includes("contractor") ||
+            typeText.includes("freelance")
+          );
+        }
+        if (t === "internship") {
+          return (
+            typeText.includes("intern") || typeText.includes("internship")
+          );
+        }
 
-      // Full-time / full time / fulltime
-      if (t === "full-time") {
-        return (
-          typeText.includes("full-time") ||
-          typeText.includes("full time") ||
-          typeText.includes("fulltime") ||
-          typeText.includes("full_time")
-        );
-      }
-
-      // Part-time
-      if (t === "part-time") {
-        return (
-          typeText.includes("part-time") ||
-          typeText.includes("part time") ||
-          typeText.includes("parttime") ||
-          typeText.includes("part_time")
-        );
-      }
-
-      // Contract
-      if (t === "contract") {
-        return (
-          typeText.includes("contract") ||
-          typeText.includes("contractor") ||
-          typeText.includes("freelance")
-        );
-      }
-
-      // Internship
-      if (t === "internship") {
-        return (
-          typeText.includes("intern") ||
-          typeText.includes("internship")
-        );
-      }
-
-      return typeText.includes(t);
+        return typeText.includes(t);
+      });
     });
-  });
-}, [jobs, selectedTypes]);
+  }, [jobs, selectedTypes]);
 
-  // Load resume data
   useEffect(() => {
     const fetchResume = async () => {
       try {
         const data = await getResumeById(id);
-        console.log("resume: ", data);
-        if (!data) {
-          console.log("resume not fetched");
-          return;
-        }
+        if (!data) return;
         setResume(data);
+
         const title = data?.content.personalInfo.title || "";
-        const location = data?.content.personalInfo.location || "";
-        console.log("fields fetched from resume ", title, location);
+        const loc = extractResumeLocation(data);
+
         setRole(title);
-        setLocation(location);
+        setLocation(loc);
         setSelectedTypes(["Full-time"]);
       } catch (error) {
         console.log("Failed to fetch resume ", error);
       }
     };
-    if (hasResume){
+    if (hasResume) {
       fetchResume();
     }
-   
-  }, [id]);
+  }, [id, hasResume]);
 
   const toggleType = (type: string) =>
     setSelectedTypes((prev) =>
@@ -237,7 +267,7 @@ export default function JobsPage() {
 
   const clearFilters = () => {
     setRole(resume?.content.personalInfo.title || "");
-    setLocation(resume?.content.personalInfo.location || "");
+    setLocation(extractResumeLocation(resume));
     setSelectedTypes(["Full-time"]);
   };
 
@@ -245,7 +275,6 @@ export default function JobsPage() {
     setIsLoading(true);
     setHasSearched(true);
     setSelectedJob(null);
-    console.log("sending data: ", role, location, selectedTypes);
     try {
       const params = new URLSearchParams({
         role,
@@ -254,8 +283,22 @@ export default function JobsPage() {
       });
       const res = await fetch(`/api/job-search?${params}`);
       const data = await res.json();
-      console.log("Jobs response: ", data);
-      setJobs(data.jobs || []);
+      const newJobs: JobPosting[] = data.jobs || [];
+      setJobs(newJobs);
+
+      // Log each unique job we haven't logged before
+      const seen = readSeenJobs();
+      newJobs.forEach((job) => {
+        if (!seen.has(job.id)) {
+          seen.add(job.id);
+          void logActivity(
+            "job_matched",
+            `Matched: ${job.title} at ${job.company}`,
+            { jobId: job.id, company: job.company, location: job.location },
+          );
+        }
+      });
+      writeSeenJobs(seen);
     } catch (err) {
       console.error("Job search failed:", err);
       setJobs([]);
@@ -264,25 +307,13 @@ export default function JobsPage() {
     }
   };
 
-  // Auto-search on mount with pre-filled values
-  // useEffect(() => {
-  //   if (role || location) {
-  //     const timer = setTimeout(() => {
-  //       search();
-  //     }, 300);
-  //     return () => clearTimeout(timer);
-  //   }
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, []);
-
-  // // Auto-search on filter change with debounce
-  // useEffect(() => {
-  //   if (!role && !location) return;
-  //   const timer = setTimeout(() => {
-  //     search();
-  //   }, 500);
-  //   return () => clearTimeout(timer);
-  // }, [role, location, selectedTypes, search]);
+  const handleApply = (job: JobPosting) => {
+    void logActivity(
+      "application_sent",
+      `Applied to ${job.title} at ${job.company}`,
+      { jobId: job.id, applyUrl: job.applyUrl, source: job.source },
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F8FAFC] via-white to-[#F1F5F9] dark:from-[#0F172A] dark:via-[#1E293B] dark:to-[#0F172A] p-4 md:p-8">
@@ -291,13 +322,15 @@ export default function JobsPage() {
         <motion.button
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          onClick={()=>{
-            hasResume ? router.push(`/dashboard/resumeBuilder/${id}/complete`) : router.push(`/dashboard/`)
+          onClick={() => {
+            hasResume
+              ? router.push(`/dashboard/resumeBuilder/${id}/complete`)
+              : router.push(`/dashboard/`);
           }}
           className="group flex items-center gap-2 text-sm text-[#64748B] hover:text-[#0F172A] dark:text-[#94A3B8] dark:hover:text-white mb-6 transition-all duration-200"
         >
           <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
-          <span>{hasResume ? "Back to resume": "Back"}</span>
+          <span>{hasResume ? "Back to resume" : "Back"}</span>
         </motion.button>
 
         {/* Header */}
@@ -412,9 +445,9 @@ export default function JobsPage() {
           </div>
         </motion.div>
 
-        {/* Results Layout - 2 columns */}
+        {/* Results Layout */}
         <div className="flex gap-6">
-          {/* Left Column - Job Listings */}
+          {/* Left Column */}
           <div className="flex-1 min-w-0">
             <AnimatePresence mode="wait">
               {hasSearched && !isLoading && filteredJobs.length === 0 && (
@@ -499,7 +532,6 @@ export default function JobsPage() {
               </AnimatePresence>
             </div>
 
-            {/* Loading state */}
             {isLoading && (
               <motion.div
                 initial={{ opacity: 0 }}
@@ -514,7 +546,7 @@ export default function JobsPage() {
             )}
           </div>
 
-          {/* Right Column - Job Details */}
+          {/* Right Column */}
           <div className="w-[45%] hidden lg:block">
             <div className="sticky top-4">
               {selectedJob ? (
@@ -607,6 +639,7 @@ export default function JobsPage() {
                         href={selectedJob.applyUrl}
                         target="_blank"
                         rel="noopener noreferrer"
+                        onClick={() => handleApply(selectedJob)}
                         className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-[#2563EB] to-[#1D4ED8] hover:from-[#1D4ED8] hover:to-[#1E40AF] rounded-xl transition-all duration-200 shadow-lg shadow-[#2563EB]/25"
                       >
                         <ExternalLink className="h-4 w-4" />

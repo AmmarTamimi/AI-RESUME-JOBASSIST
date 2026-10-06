@@ -141,7 +141,7 @@ Write a professional achievement description:`;
     }
 
     const completion = await openai.chat.completions.create({
-      model: "gemini-3.5-flash",
+      model: "gemini-3.8-flash",
       messages: [
         {
           role: "system",

@@ -32,8 +32,7 @@ import {
   updateResume,
   uploadResumeThumbnail,
 } from "@/app/lib/supabase/resume";
-
-// Put these at the top of your builder page, before the component
+import { logActivity } from "@/app/lib/activityStore";
 
 const DEFAULT_THEME: ResumeTheme = {
   primaryColor: "#2B2B2B",
@@ -181,7 +180,6 @@ const fetchResume = async (resumeId: string) => {
 function createResumeFromTemplate(templateId: string): Resume {
   const template = templates.find((t) => t.id === templateId);
   return {
-    // id is a placeholder — the real DB id comes after the first save
     id: "",
     userId: "",
     templateId,
@@ -207,7 +205,6 @@ export default function ResumeBuilderPage() {
     createResumeFromTemplate(templateId),
   );
 
-  // null until the first successful DB write
   const [persistedId, setPersistedId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -222,7 +219,6 @@ export default function ResumeBuilderPage() {
         if (cancelled) return;
         if (existing) {
           setResume(existing);
-          // Seed last-saved hash so autosave doesn't fire immediately
           lastSavedHashRef.current = JSON.stringify({
             title: existing.title,
             theme: existing.theme,
@@ -240,22 +236,15 @@ export default function ResumeBuilderPage() {
     };
   }, [resumeIdFromUrl]);
 
-  // Always-current ref — lets timers and unload handlers see fresh data
-  // without re-subscribing on every keystroke.
   const resumeRef = useRef(resume);
   useEffect(() => {
     resumeRef.current = resume;
   }, [resume]);
 
-  // Track last-saved hash so we skip no-op saves.
   const lastSavedHashRef = useRef<string>("");
-  // Prevent overlapping writes.
   const inFlightRef = useRef(false);
   const pendingRef = useRef(false);
 
-  // ---------------------------------------------------------------
-  // Core save: create once, update after.
-  // ---------------------------------------------------------------
   const saveToDb = useCallback(async () => {
     if (inFlightRef.current) {
       pendingRef.current = true;
@@ -272,7 +261,6 @@ export default function ResumeBuilderPage() {
         content: current.content,
       });
 
-      // Nothing changed since last save → skip
       if (hash === lastSavedHashRef.current) return;
 
       const supabase = createClient();
@@ -284,7 +272,6 @@ export default function ResumeBuilderPage() {
         return;
       }
 
-      // Determine the id we just saved under
       let savedId: string;
       if (!persistedId) {
         const created = await createResume({
@@ -298,7 +285,6 @@ export default function ResumeBuilderPage() {
         });
         savedId = created.id;
         setPersistedId(savedId);
-        // Rewrite URL so refresh keeps editing this resume
         const url = new URL(window.location.href);
         url.searchParams.set("resumeId", savedId);
         window.history.replaceState({}, "", url.toString());
@@ -316,7 +302,6 @@ export default function ResumeBuilderPage() {
 
       lastSavedHashRef.current = hash;
 
-      // Generate + upload thumbnail (non-fatal if it fails)
       try {
         if (previewRef.current) {
           const blob = await previewRef.current.generateThumbnailBlob();
@@ -333,22 +318,16 @@ export default function ResumeBuilderPage() {
       inFlightRef.current = false;
       if (pendingRef.current) {
         pendingRef.current = false;
-        saveToDb(); // run once more with latest state
+        saveToDb();
       }
     }
   }, [persistedId, router]);
 
-  // ---------------------------------------------------------------
-  // Debounced autosave: 3s after last change.
-  // ---------------------------------------------------------------
   useEffect(() => {
     const t = setTimeout(saveToDb, AUTOSAVE_DEBOUNCE_MS);
     return () => clearTimeout(t);
   }, [resume, saveToDb]);
 
-  // ---------------------------------------------------------------
-  // Save when the tab becomes hidden (mobile background, tab switch).
-  // ---------------------------------------------------------------
   useEffect(() => {
     const handler = () => {
       if (document.visibilityState === "hidden") saveToDb();
@@ -357,11 +336,6 @@ export default function ResumeBuilderPage() {
     return () => document.removeEventListener("visibilitychange", handler);
   }, [saveToDb]);
 
-  // ---------------------------------------------------------------
-  // Draft recovery on mount.
-  // Look in "resume-draft:new" — a single slot for the resume the
-  // user was working on before it ever got saved to the DB.
-  // ---------------------------------------------------------------
   useEffect(() => {
     const key = "resume-draft:new";
     const raw = localStorage.getItem(key);
@@ -394,12 +368,6 @@ export default function ResumeBuilderPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ---------------------------------------------------------------
-  // Last-resort save on unload — writes to localStorage.
-  // Key is "resume-draft:new" if we haven't saved to DB yet,
-  // otherwise "resume-draft:<persistedId>".
-  // Reads from resumeRef so it always has the freshest data.
-  // ---------------------------------------------------------------
   useEffect(() => {
     const handler = () => {
       const current = resumeRef.current;
@@ -425,9 +393,6 @@ export default function ResumeBuilderPage() {
     return () => window.removeEventListener("beforeunload", handler);
   }, [persistedId]);
 
-  // ---------------------------------------------------------------
-  // Editor callbacks (unchanged)
-  // ---------------------------------------------------------------
   const updatePersonalInfo = useCallback(
     <K extends keyof PersonalInfo>(field: K, value: PersonalInfo[K]) => {
       setResume((prev) => ({
@@ -570,12 +535,11 @@ export default function ResumeBuilderPage() {
   }, [resume.content.sections, resume.content.sectionOrder]);
 
   // ---------------------------------------------------------------
-  // Finish — force a completed save, then navigate.
+  // Finish — force a completed save, log activity, then navigate.
   // ---------------------------------------------------------------
   const handleFinish = useCallback(async () => {
     const current = resumeRef.current;
 
-    // Wait for any in-flight save to settle
     while (inFlightRef.current) {
       await new Promise((r) => setTimeout(r, 50));
     }
@@ -614,23 +578,27 @@ export default function ResumeBuilderPage() {
       localStorage.removeItem(`resume-draft:${finalId}`);
     }
 
+    // Log "AI checked resume" — the finish action represents a completed AI-scored resume
+    void logActivity(
+      "resume_checked",
+      `AI checked "${current.title ?? "Untitled Resume"}"`,
+    );
+
     router.push(`/dashboard/resumeBuilder/${finalId}/complete`);
   }, [persistedId, router]);
 
   const replaceContent = useCallback((content: ResumeContent) => {
-  setResume((prev) => ({
-    ...prev,
-    content,
-    // If the imported resume has a name and we don't have a custom title yet,
-    // adopt it as the resume title too
-    title:
-      prev.title && prev.title !== "Untitled Resume"
-        ? prev.title
-        : content.personalInfo.fullName
-          ? `${content.personalInfo.fullName}'s Resume`
-          : prev.title,
-  }));
-}, []);
+    setResume((prev) => ({
+      ...prev,
+      content,
+      title:
+        prev.title && prev.title !== "Untitled Resume"
+          ? prev.title
+          : content.personalInfo.fullName
+            ? `${content.personalInfo.fullName}'s Resume`
+            : prev.title,
+    }));
+  }, []);
 
   return (
     <div className="flex h-screen overflow-hidden bg-[#F8FAFC] dark:bg-[#0F172A]">

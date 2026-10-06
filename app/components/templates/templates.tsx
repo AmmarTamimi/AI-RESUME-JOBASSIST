@@ -16,7 +16,7 @@ export const templates: TemplateMeta[] = [
     id: "modern-01",
     name: "Modern",
     category: "Modern",
-    thumbnail: "/thumbnails/modern1.jpg",
+    thumbnail: "/thumbnails/modern1.png",
     component: "ModernTemplate", // String key that matches Registry
     layout: "sidebar-left",
     defaultTheme: {
@@ -36,7 +36,7 @@ export const templates: TemplateMeta[] = [
     id: "modern-02",
     name: "Modern Professional",
     category: "Modern",
-    thumbnail: "/thumbnails/modern2.jpg",
+    thumbnail: "/thumbnails/modern2.png",
     component: "ModernTemplate2",
     layout: "sidebar-left",
     defaultTheme: {
@@ -60,10 +60,10 @@ export const templates: TemplateMeta[] = [
     component: "ModernTemplate3",
     layout: "sidebar-left",
     defaultTheme: {
-      primaryColor: "#777674",
-      accentColor: "#7B2CFF",
+      primaryColor: "#37b3c3",
+      accentColor: "#91d9f8",
       backgroundColor: "#FFFFFF",
-      textColor: "#4A4A4A",
+      textColor: "#444444",
       mutedColor: "#777777",
       headingFont: "Arial",
       bodyFont: "Arial",

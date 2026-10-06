@@ -421,8 +421,6 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
           font-size: 12px;
           color: #dcdcdc;
           line-height: 1.6;
-          position: relative;
-          padding-left: 16px;
         }
 
         .eduItem b {
@@ -431,17 +429,6 @@ export default function ModernTemplate({ content, theme }: TemplateProps) {
           font-size: 13px;
           letter-spacing: 0.5px;
           margin-bottom: 3px;
-        }
-
-        .eduItem::before {
-          content: "";
-          position: absolute;
-          left: 0;
-          top: 6px;
-          width: 7px;
-          height: 7px;
-          border-radius: 50%;
-          background: ${accent};
         }
 
         .divider {
