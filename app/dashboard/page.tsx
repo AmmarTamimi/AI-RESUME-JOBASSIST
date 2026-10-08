@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -18,6 +18,10 @@ import {
   Brain,
   X,
   Loader2,
+  Building2,
+  ExternalLink,
+  MapPin,
+  ChevronRight,
 } from "lucide-react";
 import { Shell } from "../components/layout/Shell-temp";
 import { useAuth } from "../providers/auth-provider";
@@ -58,6 +62,258 @@ const PROMPT_EXAMPLES = [
   "Marketing Manager specializing in growth and content strategy",
 ];
 
+const JOB_BOARD_HOSTS = [
+  "linkedin.com",
+  "indeed.com",
+  "glassdoor.com",
+  "ziprecruiter.com",
+  "jobs.lever.co",
+  "boards.greenhouse.io",
+  "jobs.ashbyhq.com",
+  "apply.workable.com",
+  "smartrecruiters.com",
+  "workday.com",
+  "myworkdayjobs.com",
+  "recruitee.com",
+  "bamboohr.com",
+  "jobvite.com",
+  "icims.com",
+  "taleo.net",
+];
+
+const COMPANY_DOMAINS: Record<string, string> = {
+  stripe: "stripe.com",
+  vercel: "vercel.com",
+  linear: "linear.app",
+  airbnb: "airbnb.com",
+  notion: "notion.so",
+  figma: "figma.com",
+  shopify: "shopify.com",
+  duolingo: "duolingo.com",
+  cloudflare: "cloudflare.com",
+  github: "github.com",
+  gitlab: "gitlab.com",
+  google: "google.com",
+  apple: "apple.com",
+  microsoft: "microsoft.com",
+  meta: "meta.com",
+  facebook: "facebook.com",
+  netflix: "netflix.com",
+  amazon: "amazon.com",
+  spotify: "spotify.com",
+  twitter: "twitter.com",
+  x: "x.com",
+  slack: "slack.com",
+  zoom: "zoom.us",
+  dropbox: "dropbox.com",
+  salesforce: "salesforce.com",
+  adobe: "adobe.com",
+  ibm: "ibm.com",
+  oracle: "oracle.com",
+  uber: "uber.com",
+  lyft: "lyft.com",
+  doordash: "doordash.com",
+  instacart: "instacart.com",
+  reddit: "reddit.com",
+  pinterest: "pinterest.com",
+  snapchat: "snapchat.com",
+  tiktok: "tiktok.com",
+  booking: "booking.com",
+  expedia: "expedia.com",
+  paypal: "paypal.com",
+  square: "squareup.com",
+  plaid: "plaid.com",
+  twilio: "twilio.com",
+  mongodb: "mongodb.com",
+  supabase: "supabase.com",
+  railway: "railway.app",
+  netlify: "netlify.com",
+  heroku: "heroku.com",
+  digitalocean: "digitalocean.com",
+  openai: "openai.com",
+  anthropic: "anthropic.com",
+  huggingface: "huggingface.co",
+  databricks: "databricks.com",
+  snowflake: "snowflake.com",
+  qureos: "qureos.com",
+  netsol: "netsoltech.com",
+  arbisoft: "arbisoft.com",
+  careem: "careem.com",
+  daraz: "daraz.pk",
+  foodpanda: "foodpanda.pk",
+  bykea: "bykea.com",
+  zameen: "zameen.com",
+  jazz: "jazz.com.pk",
+  telenor: "telenor.com.pk",
+  ufone: "ufone.com",
+  mckinsey: "mckinsey.com",
+  bcg: "bcg.com",
+  bain: "bain.com",
+  deloitte: "deloitte.com",
+  pwc: "pwc.com",
+  kpmg: "kpmg.com",
+  ey: "ey.com",
+  accenture: "accenture.com",
+};
+
+function domainFromCompany(company: string): string | null {
+  if (!company) return null;
+  const key = company.toLowerCase().trim();
+
+  if (COMPANY_DOMAINS[key]) return COMPANY_DOMAINS[key];
+
+  const cleaned = key
+    .replace(
+      /\b(inc|inc\.|llc|ltd|limited|corp|corporation|company|co\.|gmbh|pvt|private)\b/gi,
+      "",
+    )
+    .trim();
+  if (cleaned && COMPANY_DOMAINS[cleaned]) return COMPANY_DOMAINS[cleaned];
+
+  const words = cleaned.split(/\s+/);
+  for (const [name, domain] of Object.entries(COMPANY_DOMAINS)) {
+    if (words.some((w) => w === name) || cleaned.includes(name)) {
+      return domain;
+    }
+  }
+
+  const slug = cleaned.replace(/[^a-z0-9]/g, "");
+  return slug ? `${slug}.com` : null;
+}
+
+type ApplicationInfo = {
+  company: string;
+  role: string;
+  location: string;
+  applyUrl: string | null;
+  domain: string | null;
+  logoUrl: string | null;
+};
+
+function extractApplicationInfo(event: ActivityEvent): ApplicationInfo {
+  const title = event.title || "";
+  const meta = (event.meta || {}) as any;
+
+  let role = meta.role ? String(meta.role) : "";
+  let company = meta.company ? String(meta.company) : "";
+  const location =
+    (meta.location && String(meta.location)) ||
+    (meta.jobLocation && String(meta.jobLocation)) ||
+    "";
+  const applyUrl =
+    (meta.applyUrl && String(meta.applyUrl)) ||
+    (meta.url && String(meta.url)) ||
+    null;
+
+  // The exact logo URL the job board API gave us at apply time
+  const logoUrl =
+    (meta.companyLogo && String(meta.companyLogo)) ||
+    (meta.logoUrl && String(meta.logoUrl)) ||
+    null;
+
+  if (!company || !role) {
+    const match = title.match(/^Applied to (.+?) at (.+?)(?:\s*\(.+\))?$/i);
+    if (match) {
+      if (!role) role = match[1].trim();
+      if (!company) company = match[2].trim();
+    }
+  }
+  if (!company) {
+    company = title.replace(/^Applied to\s*/i, "").trim() || "Company";
+  }
+
+  let domain: string | null = null;
+  if (meta.companyDomain) {
+    domain = String(meta.companyDomain).replace(/^www\./, "");
+  }
+
+  if (!domain) {
+    domain = domainFromCompany(company);
+  }
+
+  if (!domain && applyUrl) {
+    try {
+      const host = new URL(applyUrl).hostname.replace(/^www\./, "");
+      const isJobBoard = JOB_BOARD_HOSTS.some(
+        (b) => host === b || host.endsWith(`.${b}`),
+      );
+      if (!isJobBoard) {
+        domain = host;
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+
+  return { company, role, location, applyUrl, domain, logoUrl };
+}
+
+function CompanyLogo({
+  company,
+  domain,
+  logoUrl,
+}: {
+  company: string;
+  domain: string | null;
+  logoUrl: string | null;
+}) {
+  const [sourceIndex, setSourceIndex] = useState(0);
+
+  const initials =
+    company
+      .replace(/[^a-zA-Z0-9 ]/g, "")
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((w) => w[0])
+      .join("")
+      .toUpperCase() || "CO";
+
+  const isJobBoard =
+    domain &&
+    JOB_BOARD_HOSTS.some((b) => domain === b || domain.endsWith(`.${b}`));
+
+  const candidates: string[] = [];
+
+  // 1. Preferred: the exact logo URL the job board gave us. Highest
+  //    quality, and guaranteed to match what the user saw when they
+  //    applied.
+  if (logoUrl) {
+    candidates.push(logoUrl);
+  }
+
+  // 2. Guessed domain → Clearbit (proper 404) → DuckDuckGo → favicon
+  if (domain && !isJobBoard) {
+    candidates.push(`https://logo.clearbit.com/${domain}?size=128`);
+    candidates.push(`https://icons.duckduckgo.com/ip3/${domain}.ico`);
+    candidates.push(`https://${domain}/favicon.ico`);
+  }
+
+  const tryNext = () => setSourceIndex((i) => i + 1);
+
+  if (candidates.length === 0 || sourceIndex >= candidates.length) {
+    return (
+      <div className="shrink-0 w-11 h-11 rounded-xl flex items-center justify-center text-xs font-bold text-white bg-gradient-to-br from-blue-500 to-cyan-500 shadow-md shadow-blue-500/25">
+        {initials}
+      </div>
+    );
+  }
+
+  return (
+    <div className="shrink-0 w-11 h-11 rounded-xl bg-white border border-white/70 dark:border-white/10 shadow-md shadow-blue-500/10 flex items-center justify-center overflow-hidden">
+      <img
+        key={candidates[sourceIndex]}
+        src={candidates[sourceIndex]}
+        alt={company}
+        className="w-full h-full object-contain p-1.5"
+        onError={tryNext}
+        loading="lazy"
+        referrerPolicy="no-referrer"
+      />
+    </div>
+  );
+}
+
 export default function Dashboard() {
   const { user } = useAuth();
   const router = useRouter();
@@ -67,6 +323,8 @@ export default function Dashboard() {
   const [prompt, setPrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [isApplicationsOpen, setIsApplicationsOpen] = useState(false);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -107,24 +365,32 @@ export default function Dashboard() {
       value: String(resumeCount),
       icon: FileText,
       trend: getTrend("resume_created", activities),
+      onClick: undefined as (() => void) | undefined,
+      hint: undefined as string | undefined,
     },
     {
       label: "Applications Sent",
       value: String(applicationCount),
       icon: Send,
       trend: getTrend("application_sent", activities),
+      onClick: () => setIsApplicationsOpen(true),
+      hint: "View applications",
     },
     {
       label: "Resumes Checked with AI",
       value: String(aiCheckedCount),
       icon: Brain,
       trend: getTrend("resume_checked", activities),
+      onClick: undefined as (() => void) | undefined,
+      hint: undefined as string | undefined,
     },
     {
       label: "Job Matches",
       value: String(matchCount),
       icon: Briefcase,
       trend: getTrend("job_matched", activities),
+      onClick: undefined as (() => void) | undefined,
+      hint: undefined as string | undefined,
     },
   ];
 
@@ -136,6 +402,11 @@ export default function Dashboard() {
 
   const displayName = getDisplayName();
   const recentActivity = activities.slice(0, 5);
+
+  const applications = useMemo(
+    () => activities.filter((a) => a.type === "application_sent"),
+    [activities],
+  );
 
   const openBuilder = () => {
     setPrompt("");
@@ -235,33 +506,67 @@ export default function Dashboard() {
           </div>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4">
-            {stats.map((stat, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
-                className="bg-white dark:bg-[#1E293B] border border-[#E2E8F0] dark:border-[#334155] rounded-xl p-3 sm:p-4 lg:p-5 shadow-sm hover:shadow-md transition-shadow duration-200"
-              >
-                <div className="flex justify-between items-start mb-2 sm:mb-3 lg:mb-4">
-                  <div className="p-1.5 sm:p-2 rounded-lg bg-blue-50 dark:bg-blue-900/20">
-                    <stat.icon className="h-3.5 w-3.5 sm:h-4 sm:w-4 lg:h-5 lg:w-5 text-blue-600 dark:text-blue-400" />
+            {stats.map((stat, i) => {
+              const clickable = !!stat.onClick;
+              return (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                  onClick={stat.onClick}
+                  role={clickable ? "button" : undefined}
+                  tabIndex={clickable ? 0 : undefined}
+                  onKeyDown={(e) => {
+                    if (clickable && (e.key === "Enter" || e.key === " ")) {
+                      e.preventDefault();
+                      stat.onClick?.();
+                    }
+                  }}
+                  className={`group relative bg-white dark:bg-[#1E293B] border border-[#E2E8F0] dark:border-[#334155] rounded-xl p-3 sm:p-4 lg:p-5 shadow-sm transition-all duration-200 overflow-hidden ${
+                    clickable
+                      ? "cursor-pointer hover:shadow-xl hover:shadow-blue-500/10 hover:border-blue-400 dark:hover:border-blue-500 hover:-translate-y-1"
+                      : "hover:shadow-md"
+                  }`}
+                >
+                  {clickable && (
+                    <div
+                      aria-hidden
+                      className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl"
+                      style={{
+                        background:
+                          "radial-gradient(120% 80% at 50% 0%, rgba(59,130,246,0.10) 0%, rgba(59,130,246,0) 60%)",
+                      }}
+                    />
+                  )}
+
+                  <div className="relative flex justify-between items-start mb-2 sm:mb-3 lg:mb-4">
+                    <div className="p-1.5 sm:p-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 transition-transform duration-200 group-hover:scale-110">
+                      <stat.icon className="h-3.5 w-3.5 sm:h-4 sm:w-4 lg:h-5 lg:w-5 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <TrendingUp className="h-3 w-3 sm:h-3.5 sm:w-3.5 lg:h-4 lg:w-4 text-emerald-500" />
                   </div>
-                  <TrendingUp className="h-3 w-3 sm:h-3.5 sm:w-3.5 lg:h-4 lg:w-4 text-emerald-500" />
-                </div>
-                <div>
-                  <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-[#0F172A] dark:text-white">
-                    {stat.value}
-                  </h3>
-                  <p className="text-[10px] sm:text-xs lg:text-sm font-medium text-[#64748B] dark:text-[#94A3B8] mt-0.5 sm:mt-1">
-                    {stat.label}
-                  </p>
-                  <p className="text-[10px] sm:text-xs text-[#64748B] dark:text-[#94A3B8] mt-1 sm:mt-1.5 lg:mt-2">
-                    {stat.trend}
-                  </p>
-                </div>
-              </motion.div>
-            ))}
+                  <div className="relative">
+                    <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-[#0F172A] dark:text-white">
+                      {stat.value}
+                    </h3>
+                    <p className="text-[10px] sm:text-xs lg:text-sm font-medium text-[#64748B] dark:text-[#94A3B8] mt-0.5 sm:mt-1">
+                      {stat.label}
+                    </p>
+                    <p className="text-[10px] sm:text-xs text-[#64748B] dark:text-[#94A3B8] mt-1 sm:mt-1.5 lg:mt-2">
+                      {stat.trend}
+                    </p>
+                  </div>
+
+                  {clickable && stat.hint && (
+                    <div className="relative mt-2 sm:mt-3 flex items-center gap-1 text-[10px] sm:text-xs font-semibold text-blue-600 dark:text-blue-400 opacity-0 group-hover:opacity-100 translate-y-1 group-hover:translate-y-0 transition-all duration-200">
+                      <span>{stat.hint}</span>
+                      <ChevronRight className="h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
+                    </div>
+                  )}
+                </motion.div>
+              );
+            })}
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
@@ -337,6 +642,182 @@ export default function Dashboard() {
             </div>
           </div>
         </motion.div>
+
+        <AnimatePresence>
+          {isApplicationsOpen && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setIsApplicationsOpen(false)}
+                className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
+              />
+
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none"
+              >
+                <div
+                  onClick={(e) => e.stopPropagation()}
+                  className="relative w-full max-w-2xl pointer-events-auto"
+                >
+                  <div
+                    aria-hidden
+                    className="absolute -inset-3 rounded-[28px] bg-gradient-to-br from-blue-400/40 via-sky-400/30 to-cyan-300/35 blur-2xl"
+                  />
+
+                  <div
+                    className="relative rounded-3xl overflow-hidden border border-white/50 dark:border-white/10 shadow-[0_25px_60px_-15px_rgba(15,23,42,0.45)]"
+                    style={{
+                      background:
+                        "linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(240,249,255,0.7) 45%, rgba(224,242,254,0.85) 100%)",
+                      backdropFilter: "blur(22px) saturate(180%)",
+                      WebkitBackdropFilter: "blur(22px) saturate(180%)",
+                    }}
+                  >
+                    <div
+                      aria-hidden
+                      className="absolute inset-0 hidden dark:block"
+                      style={{
+                        background:
+                          "linear-gradient(135deg, rgba(15,23,42,0.9) 0%, rgba(30,58,138,0.4) 50%, rgba(15,23,42,0.9) 100%)",
+                      }}
+                    />
+
+                    <div
+                      aria-hidden
+                      className="absolute inset-x-0 top-0 h-24 pointer-events-none"
+                      style={{
+                        background:
+                          "linear-gradient(to bottom, rgba(191,219,254,0.75), rgba(191,219,254,0))",
+                        mixBlendMode: "overlay",
+                      }}
+                    />
+
+                    <div className="relative">
+                      <div className="flex items-center justify-between px-6 py-5 border-b border-white/50 dark:border-white/10">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-xl bg-gradient-to-br from-blue-500 to-sky-600 shadow-lg shadow-blue-500/40">
+                            <Send className="h-5 w-5 text-white" />
+                          </div>
+                          <div>
+                            <h2 className="text-base font-semibold text-[#0F172A] dark:text-white">
+                              Applications Sent
+                            </h2>
+                            <p className="text-xs text-[#475569] dark:text-[#94A3B8] mt-0.5">
+                              {applications.length === 0
+                                ? "No applications yet"
+                                : `${applications.length} ${
+                                    applications.length === 1
+                                      ? "application"
+                                      : "applications"
+                                  } logged`}
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => setIsApplicationsOpen(false)}
+                          className="p-2 rounded-lg hover:bg-white/70 dark:hover:bg-white/10 transition-colors"
+                        >
+                          <X className="h-4 w-4 text-[#64748B]" />
+                        </button>
+                      </div>
+
+                      <div className="max-h-[60vh] overflow-y-auto p-4 sm:p-5">
+                        {applications.length === 0 ? (
+                          <div className="flex flex-col items-center justify-center py-14 text-center">
+                            <div className="p-4 rounded-full bg-white/70 dark:bg-white/5 border border-white/60 dark:border-white/10 mb-3">
+                              <Briefcase className="h-6 w-6 text-[#64748B] dark:text-[#94A3B8]" />
+                            </div>
+                            <p className="text-sm font-semibold text-[#0F172A] dark:text-white">
+                              No applications yet
+                            </p>
+                            <p className="text-xs text-[#475569] dark:text-[#94A3B8] mt-1 max-w-xs">
+                              When you click <strong>View &amp; Apply</strong>{" "}
+                              on a job, it will appear here.
+                            </p>
+                          </div>
+                        ) : (
+                          <ul className="space-y-2">
+                            {applications.map((event) => {
+                              const info = extractApplicationInfo(event);
+                              return (
+                                <motion.li
+                                  key={event.id}
+                                  initial={{ opacity: 0, y: 6 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  className="group flex items-start gap-3 px-3.5 py-3.5 rounded-2xl border border-white/60 dark:border-white/10 bg-white/70 dark:bg-white/5 hover:bg-white/90 dark:hover:bg-white/10 transition-colors shadow-sm"
+                                >
+                                  <CompanyLogo
+                                    company={info.company}
+                                    domain={info.domain}
+                                    logoUrl={info.logoUrl}
+                                  />
+
+                                  <div className="min-w-0 flex-1">
+                                    <div className="flex items-center gap-1.5">
+                                      <Building2 className="h-3.5 w-3.5 text-[#64748B] dark:text-[#94A3B8] shrink-0" />
+                                      <p className="text-sm font-semibold text-[#0F172A] dark:text-white truncate">
+                                        {info.company}
+                                      </p>
+                                    </div>
+
+                                    {info.role && (
+                                      <p className="text-xs text-[#334155] dark:text-[#CBD5E1] mt-1 font-medium truncate">
+                                        {info.role}
+                                      </p>
+                                    )}
+
+                                    <div className="flex items-center flex-wrap gap-x-3 gap-y-1 mt-1.5">
+                                      {info.location && (
+                                        <span className="inline-flex items-center gap-1 text-[11px] text-[#64748B] dark:text-[#94A3B8]">
+                                          <MapPin className="h-3 w-3" />
+                                          {info.location}
+                                        </span>
+                                      )}
+                                      <span className="text-[11px] text-[#64748B] dark:text-[#94A3B8]">
+                                        {formatRelativeTime(event.timestamp)}
+                                      </span>
+                                    </div>
+                                  </div>
+
+                                  {info.applyUrl && (
+                                    <a
+                                      href={info.applyUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="shrink-0 self-center inline-flex items-center gap-1 px-2.5 py-1.5 text-[11px] font-medium text-blue-700 dark:text-blue-300 bg-blue-100/70 dark:bg-blue-500/15 hover:bg-blue-100 dark:hover:bg-blue-500/25 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                                    >
+                                      <ExternalLink className="h-3 w-3" />
+                                      Open
+                                    </a>
+                                  )}
+                                </motion.li>
+                              );
+                            })}
+                          </ul>
+                        )}
+                      </div>
+
+                      <div className="px-6 py-4 border-t border-white/50 dark:border-white/10 flex items-center justify-end">
+                        <button
+                          onClick={() => setIsApplicationsOpen(false)}
+                          className="px-4 py-2 text-sm font-medium text-[#0F172A] dark:text-white bg-white/80 dark:bg-white/10 border border-white/60 dark:border-white/10 hover:bg-white dark:hover:bg-white/20 rounded-lg transition-colors"
+                        >
+                          Close
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
 
         <AnimatePresence>
           {isBuilderOpen && (
