@@ -10,6 +10,7 @@ import React, {
 import type { ResumeContent, ResumeTheme } from "@/app/types/Content";
 import TemplateRenderer from "../templates/Registry";
 import { templates } from "../templates/templates";
+import { logActivity } from "@/app/lib/activityStore";
 
 import {
   Eye,
@@ -28,7 +29,6 @@ import {
 } from "lucide-react";
 
 export interface PreviewPanelHandle {
-  /** Returns the first-page PNG of the current render as a Blob. */
   generateThumbnailBlob: () => Promise<Blob>;
 }
 
@@ -42,24 +42,12 @@ interface PreviewPanelProps {
 
 const PAPER_WIDTH = 794;
 const PAPER_HEIGHT = 1123;
-const PAGE_GAP = 24; // visual gap between stacked pages in the preview
-const CAPTURE_SCALE = 2; // resolution multiplier used for html2canvas exports
+const PAGE_GAP = 24;
+const CAPTURE_SCALE = 2;
 
-// Breathing room around a page break, applied ONLY to the readable text layer.
-// The background/layout layer is never shrunk by these — it always fills the
-// full page height regardless.
-const PAGE_TEXT_TOP_PADDING = 40; // blank gap above text at the start of every page after the first
-const PAGE_TEXT_BOTTOM_PADDING = 40; // minimum blank buffer kept above a break, so a line is never sliced in half
+const PAGE_TEXT_TOP_PADDING = 40;
+const PAGE_TEXT_BOTTOM_PADDING = 40;
 
-/**
- * Finds safe places to cut the resume into pages so a break never lands in
- * the middle of a line of text (or any other leaf element, like a divider
- * or icon). It walks every text node in the rendered content and reads its
- * actual on-screen line boxes via Range.getClientRects() — each rect is one
- * visual line — then, for every page, picks the last line-boundary at or
- * before the ideal cutoff (leaving `bottomPad` px of buffer) instead of
- * cutting at a raw pixel multiple.
- */
 function computeSafeBreakpoints(
   container: HTMLElement,
   pageHeight: number,
@@ -142,10 +130,6 @@ function computeSafeBreakpoints(
   return breakpoints;
 }
 
-/**
- * Build a friendly, filesystem-safe filename from the resume's content.
- * Preference order: fullName → title → "resume-<templateId>".
- */
 function buildFileBaseName(
   content: ResumeContent,
   templateId: string,
@@ -184,7 +168,6 @@ const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
     const paddedHeight = pageCount * PAPER_HEIGHT;
     const contentKey = JSON.stringify(content.sections);
 
-    // ---- Measure natural content height and compute safe page-break points ----
     useEffect(() => {
       const el = measureOnlyRef.current;
       if (!el) return;
@@ -211,7 +194,6 @@ const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [templateId, theme, content]);
 
-    // ---- Scale calculation ----
     useEffect(() => {
       const el = containerRef.current;
       if (!el) return;
@@ -254,9 +236,6 @@ const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
     const zoomLevel = zoom / 100;
     const totalScale = scale * zoomLevel;
 
-    // ---------------------------------------------------------------------------
-    // CAPTURE
-    // ---------------------------------------------------------------------------
     const captureNode = async (
       node: HTMLElement,
     ): Promise<HTMLCanvasElement> => {
@@ -300,10 +279,6 @@ const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
       return captureNode(node);
     };
 
-    // ---------------------------------------------------------------------------
-    // SLICE — background drawn from the very top of each page so the top
-    // padding strip on pages 2+ shows the resume's own background, not white.
-    // ---------------------------------------------------------------------------
     const sliceCanvasIntoPages = (
       fgCanvas: HTMLCanvasElement,
       bgCanvas: HTMLCanvasElement,
@@ -323,13 +298,11 @@ const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
         pageCanvas.height = pageHeightPx;
         const ctx = pageCanvas.getContext("2d")!;
 
-        // Base white fill (overdrawn by the background layer).
         ctx.fillStyle = "#ffffff";
         ctx.fillRect(0, 0, pageWidthPx, pageHeightPx);
 
         const sourceY = breaksPx[i];
 
-        // 1) BACKGROUND layer — draw from the very top of the page.
         const bgSourceStart = Math.max(0, sourceY - topPad);
         const bgSourceHeight = Math.max(
           0,
@@ -350,8 +323,6 @@ const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
           );
         }
 
-        // Extend the last visible row downward if the background canvas
-        // doesn't reach the bottom (resume shorter than the paper).
         if (bgSourceHeight < pageHeightPx && bgCanvas.height > 0) {
           const stripY = bgSourceStart + bgSourceHeight - 1;
           if (stripY >= 0 && bgSourceHeight > 0) {
@@ -369,7 +340,6 @@ const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
           }
         }
 
-        // 2) REAL TEXT layer — drawn at topPad offset, clipped to this page's slice.
         const fgSourceHeight = Math.max(
           0,
           Math.min(breaksPx[i + 1] - breaksPx[i], fgCanvas.height - sourceY),
@@ -467,6 +437,11 @@ const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
           document.body.removeChild(link);
           setTimeout(() => URL.revokeObjectURL(link.href), 2000);
         });
+
+        void logActivity(
+          "resume_downloaded",
+          `Downloaded "${baseName}" as PNG (${blobs.length} page${blobs.length > 1 ? "s" : ""})`,
+        );
       } catch (error) {
         console.error("Error downloading PNG:", error);
         alert("Failed to download resume as PNG. Please try again.");
@@ -489,6 +464,8 @@ const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
         link.click();
         document.body.removeChild(link);
         URL.revokeObjectURL(link.href);
+
+        void logActivity("resume_downloaded", `Downloaded "${baseName}.pdf"`);
       } catch (error) {
         console.error("Error downloading PDF:", error);
         alert("Failed to download resume as PDF. Please try again.");
@@ -650,7 +627,6 @@ const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
 
     return (
       <div className={`pp-root ${isFullscreen ? "fullscreen" : ""}`}>
-        {/* Toolbar */}
         <div className={`pp-toolbar ${isMinimal ? "pp-toolbar-minimal" : ""}`}>
           <div className="flex items-center gap-3">
             {!isMinimal && (
@@ -700,7 +676,6 @@ const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
           </div>
 
           <div className="flex items-center gap-2 relative">
-            {/* Download Button */}
             <div className="dropdown-container relative">
               <button
                 onClick={handleDownload}
@@ -757,7 +732,6 @@ const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
               )}
             </div>
 
-            {/* Share Button */}
             <div className="dropdown-container relative">
               <button
                 onClick={handleShare}
@@ -872,7 +846,6 @@ const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
               )}
             </div>
 
-            {/* Fullscreen */}
             <button
               onClick={handleFullscreen}
               className={`inline-flex items-center justify-center p-2 text-[#64748B] dark:text-[#94A3B8] hover:text-[#0F172A] dark:hover:text-white hover:bg-[#F1F5F9] dark:hover:bg-[#1E293B] rounded-lg transition-all duration-200 border border-[#E2E8F0] dark:border-[#334155] hover:border-[#8B5CF6] dark:hover:border-[#8B5CF6] group ${isMinimal ? "border-transparent hover:border-[#E2E8F0] dark:hover:border-[#334155]" : ""}`}
@@ -887,7 +860,6 @@ const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
           </div>
         </div>
 
-        {/* Viewport */}
         <div
           className={`pp-viewport ${pageCount > 1 ? "pp-viewport-multi" : ""} ${isMinimal ? "pp-viewport-minimal" : ""}`}
           ref={containerRef}
@@ -935,10 +907,6 @@ const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
                         minHeight: isMinimal ? "1123px" : "auto",
                       }}
                     >
-                      {/* Layer 1 — background/layout only (text invisible).
-                          Starts from the very top of the page so the top
-                          padding strip on pages 2+ shows the resume's
-                          own background, not white. */}
                       <div
                         className="pp-page-window-mask"
                         style={{
@@ -965,8 +933,6 @@ const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
                         </div>
                       </div>
 
-                      {/* Layer 2 — the real, readable text. Clipped to exactly
-                          this page's slice, drawn on top of Layer 1. */}
                       <div
                         className="pp-page-window-mask"
                         style={{
@@ -1005,7 +971,6 @@ const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
           </div>
         </div>
 
-        {/* Hidden measure host */}
         <div className="pp-measure-host" aria-hidden="true">
           <div
             ref={measureOnlyRef}
@@ -1021,7 +986,6 @@ const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
           </div>
         </div>
 
-        {/* Hidden full-content capture host */}
         <div className="pp-measure-host" aria-hidden="true">
           <div
             ref={fullContentRef}
@@ -1041,7 +1005,6 @@ const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
           </div>
         </div>
 
-        {/* Hidden bg-only capture host */}
         <div className="pp-measure-host" aria-hidden="true">
           <div
             ref={bgOnlyContentRef}
@@ -1304,4 +1267,3 @@ const PreviewPanel = forwardRef<PreviewPanelHandle, PreviewPanelProps>(
 );
 
 export default PreviewPanel;
-
