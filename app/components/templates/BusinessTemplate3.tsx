@@ -45,19 +45,19 @@ export default function BusinessLetterheadTemplate({ content, theme }: TemplateP
       <div className="body data-resume-root">
         {aboutText && (
           <div className="section data-resume-root">
-            <div className="sectionHead data-resume-root"><span className="bar" />Professional Summary</div>
+            <div className="sectionHead data-resume-root">Professional Summary</div>
             <p className="aboutText">{aboutText}</p>
           </div>
         )}
 
         {experienceSection && experienceSection.items.length > 0 && (
           <div className="section data-resume-root">
-            <div className="sectionHead data-resume-root"><span className="bar" />{experienceSection.title || 'Work Experience'}</div>
+            <div className="sectionHead data-resume-root">{experienceSection.title || 'Work Experience'}</div>
             {experienceSection.items.map((job, i) => (
               <div className="job data-resume-root" key={i}>
                 <div className="jobTop data-resume-root">
                   <span className="jobTitle">{job.role || "Position"}</span>
-                  <span className="jobDate">{job.start} â€“ {job.end || "Present"}</span>
+                  <span className="jobDate">{job.start} – {job.end || "Present"}</span>
                 </div>
                 <div className="jobSub data-resume-root">{job.company}{job.location ? `, ${job.location}` : ""}</div>
                 {job.bullets && job.bullets.length > 0 && <div className="jobDesc data-resume-root">{job.bullets}</div>}
@@ -68,7 +68,7 @@ export default function BusinessLetterheadTemplate({ content, theme }: TemplateP
 
         {ratedSkillsSection && ratedSkillsSection.items.length > 0 && (
           <div className="section data-resume-root">
-            <div className="sectionHead data-resume-root"><span className="bar" />{ratedSkillsSection.title || 'Core Skills'}</div>
+            <div className="sectionHead data-resume-root">{ratedSkillsSection.title || 'Core Skills'}</div>
             <div className="pillRow data-resume-root">
               {ratedSkillsSection.items.map((skill, i) => (
                 <span className="pill" key={i}>{skill.name}</span>
@@ -80,12 +80,12 @@ export default function BusinessLetterheadTemplate({ content, theme }: TemplateP
         <div className="footerGrid data-resume-root">
           {educationSection && educationSection.items.length > 0 && (
             <div className="section data-resume-root">
-              <div className="sectionHead data-resume-root"><span className="bar" />{educationSection.title || 'Education'}</div>
+              <div className="sectionHead data-resume-root">{educationSection.title || 'Education'}</div>
               {educationSection.items.map((edu, i) => (
                 <div className="eduItem data-resume-root" key={i}>
                   <div className="eduTop data-resume-root">
                     <span className="eduSchool">{edu.school}</span>
-                    <span className="eduDate">{edu.start} â€“ {edu.end}</span>
+                    <span className="eduDate">{edu.start} – {edu.end}</span>
                   </div>
                   <div className="eduDegree data-resume-root">{edu.degree}</div>
                 </div>
@@ -95,7 +95,7 @@ export default function BusinessLetterheadTemplate({ content, theme }: TemplateP
 
           {referencesSection && referencesSection.items.length > 0 && (
             <div className="section data-resume-root">
-              <div className="sectionHead data-resume-root"><span className="bar" />{referencesSection.title || 'References'}</div>
+              <div className="sectionHead data-resume-root">{referencesSection.title || 'References'}</div>
               {referencesSection.items.map((ref, i) => (
                 <div className="refItem data-resume-root" key={i}>
                   <span className="refName">{ref.name}</span>
@@ -174,22 +174,14 @@ export default function BusinessLetterheadTemplate({ content, theme }: TemplateP
         }
 
         .sectionHead {
-          display: flex;
-          align-items: center;
-          gap: 8px;
           font-size: 13px;
           font-weight: 800;
           letter-spacing: 1px;
           text-transform: uppercase;
           color: ${t.primaryColor || "#26344B"};
           margin-bottom: 12px;
-        }
-
-        .bar {
-          width: 4px;
-          height: 14px;
-          background: ${t.accentColor || "#8C1F28"};
-          display: inline-block;
+          padding-bottom: 6px;
+          border-bottom: 1px solid #e0ded6;
         }
 
         .aboutText {
@@ -197,12 +189,10 @@ export default function BusinessLetterheadTemplate({ content, theme }: TemplateP
           line-height: 1.8;
           color: #4a4a4a;
           margin: 0;
-          padding-left: 12px;
         }
 
         .job {
           margin-bottom: 16px;
-          padding-left: 12px;
         }
 
         .jobTop {
@@ -238,18 +228,24 @@ export default function BusinessLetterheadTemplate({ content, theme }: TemplateP
         .pillRow {
           display: flex;
           flex-wrap: wrap;
-          gap: 8px;
-          padding-left: 12px;
+          gap: 6px 18px;
         }
 
         .pill {
-          font-size: 11px;
+          font-size: 11.5px;
           font-weight: 600;
-          padding: 5px 12px;
-          border-radius: 3px;
-          background: #f1f1ee;
-          border: 1px solid #e0ded6;
           color: ${t.primaryColor || "#26344B"};
+          position: relative;
+          padding-left: 12px;
+        }
+
+        .pill::before {
+          content: "•";
+          position: absolute;
+          left: 0;
+          top: 0;
+          color: ${t.accentColor || "#8C1F28"};
+          font-weight: 800;
         }
 
         .footerGrid {
@@ -260,7 +256,6 @@ export default function BusinessLetterheadTemplate({ content, theme }: TemplateP
 
         .eduItem {
           margin-bottom: 12px;
-          padding-left: 12px;
         }
 
         .eduTop {
@@ -289,7 +284,6 @@ export default function BusinessLetterheadTemplate({ content, theme }: TemplateP
           display: flex;
           flex-direction: column;
           margin-bottom: 12px;
-          padding-left: 12px;
         }
 
         .refName {
@@ -314,5 +308,3 @@ export default function BusinessLetterheadTemplate({ content, theme }: TemplateP
     </div>
   );
 }
-
-

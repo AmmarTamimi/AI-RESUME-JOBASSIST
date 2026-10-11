@@ -55,9 +55,6 @@ interface JobPosting {
   source: string;
 }
 
-// Read the user's location from the resume:
-// 1. personalInfo.location (preferred)
-// 2. any section item with label "location" / "city" / "address"
 function extractResumeLocation(resume: Resume | null | undefined): string {
   if (!resume?.content) return "";
 
@@ -286,7 +283,6 @@ export default function JobsPage() {
       const newJobs: JobPosting[] = data.jobs || [];
       setJobs(newJobs);
 
-      // Log each unique job we haven't logged before
       const seen = readSeenJobs();
       newJobs.forEach((job) => {
         if (!seen.has(job.id)) {
@@ -307,18 +303,30 @@ export default function JobsPage() {
     }
   };
 
+  // ----------------------------------------------------------------
+  // Save the company's official logo URL (from the job board API)
+  // into the activity meta, so the Dashboard can show the exact same
+  // logo instead of having to guess.
+  // ----------------------------------------------------------------
   const handleApply = (job: JobPosting) => {
     void logActivity(
       "application_sent",
       `Applied to ${job.title} at ${job.company}`,
-      { jobId: job.id, applyUrl: job.applyUrl, source: job.source },
+      {
+        jobId: job.id,
+        role: job.title,
+        company: job.company,
+        location: job.location,
+        applyUrl: job.applyUrl,
+        companyLogo: job.companyLogo,
+        source: job.source,
+      },
     );
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F8FAFC] via-white to-[#F1F5F9] dark:from-[#0F172A] dark:via-[#1E293B] dark:to-[#0F172A] p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
-        {/* Back Button */}
         <motion.button
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -333,7 +341,6 @@ export default function JobsPage() {
           <span>{hasResume ? "Back to resume" : "Back"}</span>
         </motion.button>
 
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -352,7 +359,6 @@ export default function JobsPage() {
           </p>
         </motion.div>
 
-        {/* Search & Filters */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -445,9 +451,7 @@ export default function JobsPage() {
           </div>
         </motion.div>
 
-        {/* Results Layout */}
         <div className="flex gap-6">
-          {/* Left Column */}
           <div className="flex-1 min-w-0">
             <AnimatePresence mode="wait">
               {hasSearched && !isLoading && filteredJobs.length === 0 && (
@@ -546,7 +550,6 @@ export default function JobsPage() {
             )}
           </div>
 
-          {/* Right Column */}
           <div className="w-[45%] hidden lg:block">
             <div className="sticky top-4">
               {selectedJob ? (

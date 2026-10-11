@@ -14,8 +14,11 @@ import {
   Sparkles,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { getResumeById } from "@/app/lib/supabase/resume";
+// import { getResumeById } from "../../../app/lib/supabase/resume";
 import { logActivity } from "@/app/lib/activityStore";
+// import { getResumeById } from "../../../../lib/supabase/resume";
+import { getResumeById } from "@/app/lib/supabase/resume";
+
 
 const containerVariants = {
   hidden: { opacity: 0 },

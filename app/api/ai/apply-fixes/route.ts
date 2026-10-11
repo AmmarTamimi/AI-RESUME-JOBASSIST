@@ -7,7 +7,7 @@ import { buildChanges, type RawFix } from "@/app/lib/resumeFixes";
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-const MODEL = process.env.GEMINI_MODEL ?? "gemini-2.5-flash";
+const MODEL = process.env.GEMINI_MODEL ?? "gemini-3.5-flash";
 
 const openai = new OpenAI({
   apiKey: process.env.GEMINI_API_KEY,

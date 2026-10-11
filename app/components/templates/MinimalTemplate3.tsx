@@ -1,541 +1,3 @@
-// "use client";
-
-// import React from "react";
-// import type {
-//   TemplateProps,
-//   Section,
-//   EducationItem,
-//   ExperienceItem,
-//   RatedSkillItem,
-// } from "../../types/Content";
-
-// /* ============================================================
-//    HELPERS
-// ============================================================ */
-
-// function isSectionType<T extends Section["type"]>(
-//   section: Section,
-//   type: T
-// ): section is Extract<Section, { type: T }> {
-//   return section.type === type;
-// }
-
-// function findSection<T extends Section["type"]>(sections: Section[], type: T) {
-//   return sections.find((section) => isSectionType(section, type));
-// }
-
-// /** Renders "2005 â€“ 2010" as a stacked 3-line date badge: start / â€” / end */
-// function DateBadge({ start, end }: { start?: string; end?: string }) {
-//   if (!start && !end) return null;
-//   return (
-//     <div className="dateBadge data-resume-root">
-//       <span>{start || ""}</span>
-//       <span className="dateDash">â€”</span>
-//       <span>{end || "Present"}</span>
-//     </div>
-//   );
-// }
-
-// /* ============================================================
-//    MAIN TEMPLATE
-//    Matches the Figma export exactly:
-//    - Header: circular photo (left) + name/title, contact block (right)
-//    - Full-width divider
-//    - Two-column body below the divider, separated by a vertical rule:
-//        LEFT col  (232px): Profile, Education, Key Skills (2 sub-columns)
-//        RIGHT col (232px): Employment
-// ============================================================ */
-
-// export default function MinimalTemplate3({ content, theme }: TemplateProps) {
-//   const { personalInfo, sections } = content;
-
-//   const education = findSection(sections, "education");
-//   const experience = findSection(sections, "experience");
-//   const skills = findSection(sections, "skills");
-//   const ratedSkills = findSection(sections, "ratedSkills");
-//   const contact = findSection(sections, "custom");
-
-//   const name = personalInfo.fullName?.trim() || "Barry Lucero";
-//   const title = personalInfo.title?.trim() || "Web-Designer";
-
-//   const textColor = theme.textColor || "#212121";
-
-//   // Merge flat skills + rated skills into one list of names, then split
-//   // into two even columns ("Professional" / "Personal" per the design).
-//   const allSkillNames: string[] = [
-//     ...(skills?.items || []),
-//     ...((ratedSkills?.items as RatedSkillItem[] | undefined)?.map((s) => s.name) || []),
-//   ];
-//   const skillsMid = Math.ceil(allSkillNames.length / 2);
-//   const skillsColA = allSkillNames.slice(0, skillsMid);
-//   const skillsColB = allSkillNames.slice(skillsMid);
-
-//   const contactLines: string[] = [
-//     personalInfo.location,
-//     personalInfo.email,
-//     personalInfo.website,
-//     personalInfo.phone,
-//     ...(contact?.items?.map((item) => String(item.description || "")) || []),
-//   ].filter(Boolean) as string[];
-
-//   return (
-//     <div
-//       className="figmaResume data-resume-root"
-//       style={{
-//         width: 595,
-//         minHeight: 842,
-//         backgroundColor: "#ffffff",
-//       }}
-//     >
-//       {/* ===== HEADER: photo + name/title (left) â€” contact block (right) ===== */}
-//       <header className="header">
-//        {personalInfo.photoUrl &&  <div className="avatar data-resume-root">
-//          <img src={personalInfo.photoUrl} alt={name} className="avatarImg" />
-         
-//         </div>}
-
-//         <div className="nameBlock data-resume-root">
-//           <div className="name data-resume-root">{name}</div>
-//           <div className="profession data-resume-root">{title}</div>
-//         </div>
-
-//         {contactLines.length > 0 && (
-//           <div className="contactBlock data-resume-root">
-//             {contactLines.map((line, i) => (
-//               <div className="contactLine data-resume-root" key={i}>
-//                 {line}
-//               </div>
-//             ))}
-//           </div>
-//         )}
-//       </header>
-
-//       {/* ===== DIVIDER ===== */}
-//       <div className="headerDivider data-resume-root" />
-
-//       {/* ===== BODY: two columns separated by a vertical rule ===== */}
-//       <div className="columns data-resume-root">
-//         {/* -------- LEFT COLUMN -------- */}
-//         <div className="col colLeft data-resume-root">
-//           {personalInfo.summary && (
-//             <section className="block">
-//               <div className="blockLabel data-resume-root">Profile</div>
-//               <p className="bodyText">{personalInfo.summary}</p>
-//             </section>
-//           )}
-
-//           {education && education.items.length > 0 && (
-//             <section className="block">
-//               <div className="blockLabel data-resume-root">{education.title || "Education"}</div>
-//               <div className="items data-resume-root">
-//                 {education.items.map((edu: EducationItem, index) => (
-//                   <div className="item data-resume-root" key={index}>
-//                     <DateBadge start={edu.start} end={edu.end} />
-//                     <div className="itemMain data-resume-root">
-//                       <div className="itemTitle data-resume-root">{edu.school}</div>
-//                       <p className="bodyText itemBody">
-//                         {edu.degree}
-//                         {edu.location ? ` â€” ${edu.location}` : ""}
-//                       </p>
-//                     </div>
-//                   </div>
-//                 ))}
-//               </div>
-//             </section>
-//           )}
-
-//           {(skillsColA.length > 0 || skillsColB.length > 0) && (
-//             <section className="block">
-//               <div className="blockLabel data-resume-root">Key Skills</div>
-//               <div className="skillsRow data-resume-root">
-//                 <div className="skillsCol data-resume-root">
-//                   <div className="skillsColHeader data-resume-root">Professional</div>
-//                   {skillsColA.map((s, i) => (
-//                     <div className="skillItem data-resume-root" key={i}>
-//                       {s}
-//                     </div>
-//                   ))}
-//                 </div>
-//                 <div className="skillsCol data-resume-root">
-//                   <div className="skillsColHeader data-resume-root">Personal</div>
-//                   {skillsColB.map((s, i) => (
-//                     <div className="skillItem data-resume-root" key={i}>
-//                       {s}
-//                     </div>
-//                   ))}
-//                 </div>
-//               </div>
-//             </section>
-//           )}
-//         </div>
-
-//         {/* -------- VERTICAL DIVIDER -------- */}
-//         <div className="colDivider data-resume-root" />
-
-//         {/* -------- RIGHT COLUMN -------- */}
-//         <div className="col colRight data-resume-root">
-//           {experience && experience.items.length > 0 && (
-//             <section className="block">
-//               <div className="blockLabel data-resume-root">{experience.title || "Employment"}</div>
-//               <div className="items data-resume-root">
-//                 {experience.items.map((job: ExperienceItem, index) => (
-//                   <div className="item data-resume-root" key={index}>
-//                     <DateBadge start={job.start} end={job.end} />
-//                     <div className="itemMain data-resume-root">
-//                       <div className="itemTitle data-resume-root">
-//                         {job.role}
-//                         {job.company ? ` at ${job.company}` : ""}
-//                       </div>
-//                       {job.bullets?.length > 0 && (
-//                         <p className="bodyText itemBody">{job.bullets.join(" ")}</p>
-//                       )}
-//                     </div>
-//                   </div>
-//                 ))}
-//               </div>
-//             </section>
-//           )}
-//         </div>
-//       </div>
-
-//       <style jsx>{`
-//         /* =====================================================
-//            PAGE
-//         ====================================================== */
-//         .figmaResume {
-//           position: relative;
-//           width: 595px;
-//           min-height: 842px;
-//           background: #ffffff;
-//           color: ${textColor};
-//           font-family: ${theme.bodyFont || "Hind"}, sans-serif;
-//           box-sizing: border-box;
-//           overflow: hidden;
-//           padding: 0;
-//           margin: 0;
-//         }
-
-//         .figmaResume *,
-//         .figmaResume *::before,
-//         .figmaResume *::after {
-//           box-sizing: border-box;
-//         }
-
-//         /* =====================================================
-//            HEADER â€” avatar + name/title left, contact block right
-//            (matches SVG: avatar 40,40 98x98; name/title start xâ‰ˆ159;
-//            contact block xâ‰ˆ362; divider at y=158, full width 40-555)
-//         ====================================================== */
-//         .header {
-//           display: flex;
-//           align-items: center;
-//           gap: 20px;
-//           padding: 40px 40px 0 40px;
-//         }
-
-//         .avatar {
-//           flex: 0 0 auto;
-//           width: 98px;
-//           height: 98px;
-//           border-radius: 50%;
-//           overflow: hidden;
-//           background: #eeeeee;
-//         }
-
-//         .avatarImg {
-//           width: 100%;
-//           height: 100%;
-//           object-fit: cover;
-//           display: block;
-//         }
-
-//         .avatarPlaceholder {
-//           width: 100%;
-//           height: 100%;
-//           background: #ececec;
-//         }
-
-//         .nameBlock {
-//           display: flex;
-//           flex-direction: column;
-//         }
-
-//         .name {
-//           font-family: ${theme.headingFont || "'IBM Plex Sans'"}, sans-serif;
-//           font-size: 24px;
-//           line-height: 25px;
-//           font-weight: 700;
-//           color: ${textColor};
-//           letter-spacing: 0.5px;
-//         }
-
-//         .profession {
-//           margin-top: 12px;
-//           font-family: ${theme.bodyFont || "Hind"}, sans-serif;
-//           font-size: 11px;
-//           line-height: 12px;
-//           font-weight: 400;
-//           color: ${textColor};
-//           opacity: 0.6;
-//         }
-
-//         .contactBlock {
-//           margin-left: auto;
-//           display: flex;
-//           flex-direction: column;
-//           gap: 2px;
-//           text-align: left;
-//         }
-
-//         .contactLine {
-//           font-family: ${theme.bodyFont || "Hind"}, sans-serif;
-//           font-size: 11px;
-//           line-height: 19px;
-//           font-weight: 400;
-//           color: ${textColor};
-//           opacity: 0.6;
-//           white-space: nowrap;
-//         }
-
-//         /* =====================================================
-//            DIVIDER (full width, y=158 in the Figma file)
-//         ====================================================== */
-//         .headerDivider {
-//           margin: 20px 40px 0 40px;
-//           height: 1px;
-//           background: ${textColor};
-//           opacity: 0.1;
-//         }
-
-//         /* =====================================================
-//            TWO-COLUMN BODY (content starts 27px below the divider,
-//            columns 232px each, 51px gap with a vertical rule in the
-//            middle â€” matches x=40..272 and x=323..555)
-//         ====================================================== */
-//         .columns {
-//           display: grid;
-//           grid-template-columns: 232px 51px 232px;
-//           margin: 27px 40px 40px 40px;
-//         }
-
-//         .col {
-//           min-width: 0;
-//         }
-
-//         .colDivider {
-//           justify-self: center;
-//           width: 1px;
-//           align-self: stretch;
-//           min-height: 600px;
-//           background: ${textColor};
-//           opacity: 0.1;
-//         }
-
-//         /* =====================================================
-//            SECTION BLOCK (label stacked ABOVE its content â€” not
-//            side-by-side like a sidebar-label layout)
-//         ====================================================== */
-//         .block {
-//           margin-top: 32px;
-//         }
-
-//         .block:first-child {
-//           margin-top: 0;
-//         }
-
-//         .blockLabel {
-//           font-family: ${theme.headingFont || "'IBM Plex Sans'"}, sans-serif;
-//           font-size: 13px;
-//           line-height: 15px;
-//           font-weight: 700;
-//           letter-spacing: 0.2px;
-//           color: ${textColor};
-//           margin-bottom: 16px;
-//         }
-
-//         .bodyText {
-//           margin: 0;
-//           font-family: ${theme.bodyFont || "Hind"}, sans-serif;
-//           font-size: 11px;
-//           line-height: 19px;
-//           font-weight: 400;
-//           letter-spacing: -0.2px;
-//           color: ${textColor};
-//           opacity: 0.6;
-//         }
-
-//         /* =====================================================
-//            ITEMS (education / experience) â€” a small stacked date
-//            badge sits to the left, title + body sit to the right.
-//            Matches: date column ~36-40px wide, main content indented.
-//         ====================================================== */
-//         .items {
-//           display: flex;
-//           flex-direction: column;
-//         }
-
-//         .item {
-//           position: relative;
-//           padding-left: 42px;
-//           margin-bottom: 18px;
-//         }
-
-//         .item:last-child {
-//           margin-bottom: 0;
-//         }
-
-//         .dateBadge {
-//           position: absolute;
-//           left: 0;
-//           top: 0;
-//           width: 36px;
-//           display: flex;
-//           flex-direction: column;
-//           font-family: ${theme.bodyFont || "Hind"}, sans-serif;
-//           font-size: 10px;
-//           line-height: 14px;
-//           font-weight: 400;
-//           color: ${textColor};
-//           opacity: 0.5;
-//         }
-
-//         .dateDash {
-//           opacity: 0.7;
-//         }
-
-//         .itemTitle {
-//           font-family: ${theme.headingFont || "'IBM Plex Sans'"}, sans-serif;
-//           font-size: 11px;
-//           line-height: 14px;
-//           font-weight: 700;
-//           color: ${textColor};
-//         }
-
-//         .itemBody {
-//           margin-top: 8px;
-//         }
-
-//         /* =====================================================
-//            KEY SKILLS â€” two sub-columns, no bullets
-//         ====================================================== */
-//         .skillsRow {
-//           display: grid;
-//           grid-template-columns: 1fr 1fr;
-//           column-gap: 16px;
-//         }
-
-//         .skillsColHeader {
-//           font-family: ${theme.headingFont || "'IBM Plex Sans'"}, sans-serif;
-//           font-size: 11px;
-//           line-height: 14px;
-//           font-weight: 700;
-//           color: ${textColor};
-//           margin-bottom: 8px;
-//         }
-
-//         .skillItem {
-//           font-family: ${theme.bodyFont || "Hind"}, sans-serif;
-//           font-size: 11px;
-//           line-height: 19px;
-//           font-weight: 400;
-//           letter-spacing: -0.2px;
-//           color: ${textColor};
-//           opacity: 0.6;
-//         }
-
-//         /* =====================================================
-//            PRINT
-//         ====================================================== */
-//         @media print {
-//           .figmaResume {
-//             width: 595px;
-//             height: 842px;
-//             min-height: 842px;
-//             overflow: hidden;
-//           }
-//         }
-
-//         @media (max-width: 650px) {
-//           .figmaResume {
-//             width: 100%;
-//             min-height: auto;
-//             padding: 20px;
-//           }
-//           .header {
-//             flex-wrap: wrap;
-//             padding: 0;
-//           }
-//           .contactBlock {
-//             margin-left: 0;
-//             width: 100%;
-//           }
-//           .headerDivider {
-//             margin: 20px 0 0 0;
-//           }
-//           .columns {
-//             grid-template-columns: 1fr;
-//             margin: 20px 0 0 0;
-//           }
-//           .colDivider {
-//             display: none;
-//           }
-//           .col {
-//             width: 100%;
-//           }
-//         }
-//       `}</style>
-//     </div>
-//   );
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 "use client";
 
 import React from "react";
@@ -566,24 +28,19 @@ function findSection<T extends Section["type"]>(sections: Section[], type: T) {
   return sections.find((section) => isSectionType(section, type));
 }
 
-// Type guards
 const isCustomItem = (item: any): item is CustomItem => {
-  return item && typeof item === 'object' && 'label' in item;
+  return item && typeof item === "object" && "label" in item;
 };
 
 const isLanguageItem = (item: any): item is LanguageItem => {
-  return item && typeof item === 'object' && 'name' in item;
+  return item && typeof item === "object" && "name" in item;
 };
 
 const isAchievementItem = (item: any): item is AchievementItem => {
-  return item && typeof item === 'object' && 'title' in item;
+  return item && typeof item === "object" && "title" in item;
 };
 
-const isRatedSkillItem = (item: any): item is RatedSkillItem => {
-  return item && typeof item === 'object' && 'name' in item && 'level' in item;
-};
-
-/** Renders "2005 – 2010" as a stacked 3-line date badge: start / — / end */
+/** Stacked date badge: start / — / end (kept for education + experience) */
 function DateBadge({ start, end }: { start?: string; end?: string }) {
   if (!start && !end) return null;
   return (
@@ -595,8 +52,15 @@ function DateBadge({ start, end }: { start?: string; end?: string }) {
   );
 }
 
+/** Inline date format used for references and other simple rows */
+function formatDate(start?: string, end?: string) {
+  if (start && end) return `${start} — ${end}`;
+  if (start) return `${start} — Present`;
+  return end || "";
+}
+
 /* ============================================================
-   MAIN TEMPLATE - FULL PAGE NO SCROLL
+   MAIN TEMPLATE — full page, no scroll
 ============================================================ */
 
 export default function MinimalTemplate3({ content, theme }: TemplateProps) {
@@ -608,39 +72,53 @@ export default function MinimalTemplate3({ content, theme }: TemplateProps) {
   const ratedSkills = findSection(sections, "ratedSkills");
   const contact = findSection(sections, "custom");
   const references = findSection(sections, "references");
-  const languages = findSection(sections, "languages") || sections.find((s) => s.id === "languages");
+  const languages =
+    findSection(sections, "languages") ||
+    sections.find((s) => s.id === "languages");
   const achievements = findSection(sections, "achievements");
   const otherCustomSections = sections.filter(
-    (s) => s.type === "custom" && s.id !== "contact"
+    (s) => s.type === "custom" && s.id !== "contact",
   );
 
-  const name = personalInfo.fullName?.trim() || "Barry Lucero";
-  const title = personalInfo.title?.trim() || "Web-Designer";
+  const name = personalInfo.fullName?.trim() || "Your Name";
+  const title = personalInfo.title?.trim() || "";
 
   const textColor = theme.textColor || "#212121";
   const accentColor = theme.accentColor || "#212121";
 
-  // Merge flat skills + rated skills into one list of names
+  // ---- SKILLS: merge flat + rated, split into two columns
   const allSkillNames: string[] = [
     ...(skills?.items || []),
-    ...((ratedSkills?.items as RatedSkillItem[] | undefined)?.map((s) => s.name) || []),
+    ...((ratedSkills?.items as RatedSkillItem[] | undefined)?.map(
+      (s) => s.name,
+    ) || []),
   ];
   const skillsMid = Math.ceil(allSkillNames.length / 2);
   const skillsColA = allSkillNames.slice(0, skillsMid);
   const skillsColB = allSkillNames.slice(skillsMid);
 
-  const contactLines: string[] = [
+  // ---- CONTACT: prefer the contact section, fall back to personalInfo.
+  //      Never render both — that's what caused the duplicate lines.
+  const contactFromSection: string[] = (contact?.items || [])
+    .map((item) => {
+      if (isCustomItem(item)) {
+        return String(item.description || "").trim();
+      }
+      return "";
+    })
+    .filter(Boolean);
+
+  const contactFromPersonal: string[] = [
     personalInfo.location,
     personalInfo.email,
     personalInfo.website,
     personalInfo.phone,
-    ...(contact?.items?.map((item) => {
-      if (isCustomItem(item)) {
-        return String(item.description || "");
-      }
-      return "";
-    }) || []),
-  ].filter(Boolean) as string[];
+  ]
+    .map((v) => (v ? String(v).trim() : ""))
+    .filter(Boolean);
+
+  const contactLines: string[] =
+    contactFromSection.length > 0 ? contactFromSection : contactFromPersonal;
 
   return (
     <div className="figmaResume">
@@ -654,7 +132,7 @@ export default function MinimalTemplate3({ content, theme }: TemplateProps) {
 
         <div className="nameBlock">
           <div className="name">{name}</div>
-          <div className="profession">{title}</div>
+          {title && <div className="profession">{title}</div>}
         </div>
 
         {contactLines.length > 0 && (
@@ -684,7 +162,9 @@ export default function MinimalTemplate3({ content, theme }: TemplateProps) {
 
           {education && education.items.length > 0 && (
             <section className="block">
-              <div className="blockLabel">{education.title || "Education"}</div>
+              <div className="blockLabel">
+                {education.title || "Education"}
+              </div>
               <div className="items">
                 {education.items.map((edu: EducationItem, index) => (
                   <div className="item" key={index}>
@@ -704,7 +184,9 @@ export default function MinimalTemplate3({ content, theme }: TemplateProps) {
 
           {achievements && achievements.items.length > 0 && (
             <section className="block">
-              <div className="blockLabel">{achievements.title || "Achievements"}</div>
+              <div className="blockLabel">
+                {achievements.title || "Achievements"}
+              </div>
               <div className="items">
                 {achievements.items.map((item, index) => {
                   if (isAchievementItem(item)) {
@@ -713,13 +195,15 @@ export default function MinimalTemplate3({ content, theme }: TemplateProps) {
                         <div className="itemMain">
                           <div className="itemTitle">{item.title}</div>
                           {item.description && (
-                            <p className="bodyText itemBody">{item.description}</p>
+                            <p className="bodyText itemBody">
+                              {item.description}
+                            </p>
                           )}
                         </div>
                       </div>
                     );
                   }
-                  if (typeof item === 'string') {
+                  if (typeof item === "string") {
                     return (
                       <div className="item" key={index}>
                         <div className="itemMain">
@@ -775,7 +259,9 @@ export default function MinimalTemplate3({ content, theme }: TemplateProps) {
                         <div className="itemMain">
                           <div className="itemTitle">
                             {item.name}
-                            {item.level && <span className="langLevel"> — {item.level}</span>}
+                            {item.level && (
+                              <span className="langLevel"> — {item.level}</span>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -793,17 +279,31 @@ export default function MinimalTemplate3({ content, theme }: TemplateProps) {
             </section>
           )}
 
+          {/* REFERENCES — now aligned to the same grid as Education
+              (date badge column + main content), even when there is
+              no date; the badge column stays reserved for alignment */}
           {references && references.items.length > 0 && (
             <section className="block">
-              <div className="blockLabel">{references.title || "References"}</div>
+              <div className="blockLabel">
+                {references.title || "References"}
+              </div>
               <div className="items">
                 {references.items.map((ref: ReferenceItem, index) => (
                   <div className="item" key={index}>
+                    <DateBadge start={undefined} end={undefined} />
                     <div className="itemMain">
                       <div className="itemTitle">{ref.name}</div>
-                      {ref.address && <p className="bodyText itemBody">{ref.address}</p>}
-                      {ref.phone && <p className="bodyText itemBody">Tel: {ref.phone}</p>}
-                      {ref.email && <p className="bodyText itemBody">{ref.email}</p>}
+                      {ref.address && (
+                        <p className="bodyText itemBody">{ref.address}</p>
+                      )}
+                      {ref.phone && (
+                        <p className="bodyText itemBody">
+                          Tel: {ref.phone}
+                        </p>
+                      )}
+                      {ref.email && (
+                        <p className="bodyText itemBody">{ref.email}</p>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -820,15 +320,19 @@ export default function MinimalTemplate3({ content, theme }: TemplateProps) {
                     return (
                       <div className="item" key={index}>
                         <div className="itemMain">
-                          {item.label && <div className="itemTitle">{item.label}</div>}
+                          {item.label && (
+                            <div className="itemTitle">{item.label}</div>
+                          )}
                           {item.description && (
-                            <p className="bodyText itemBody">{item.description}</p>
+                            <p className="bodyText itemBody">
+                              {item.description}
+                            </p>
                           )}
                         </div>
                       </div>
                     );
                   }
-                  if (typeof item === 'string') {
+                  if (typeof item === "string") {
                     return (
                       <div className="item" key={index}>
                         <div className="itemMain">
@@ -851,7 +355,9 @@ export default function MinimalTemplate3({ content, theme }: TemplateProps) {
         <div className="col colRight">
           {experience && experience.items.length > 0 && (
             <section className="block">
-              <div className="blockLabel">{experience.title || "Employment"}</div>
+              <div className="blockLabel">
+                {experience.title || "Employment"}
+              </div>
               <div className="items">
                 {experience.items.map((job: ExperienceItem, index) => (
                   <div className="item" key={index}>
@@ -861,8 +367,10 @@ export default function MinimalTemplate3({ content, theme }: TemplateProps) {
                         {job.role}
                         {job.company ? ` at ${job.company}` : ""}
                       </div>
-                      {job.bullets?.length > 0 && (
-                        <p className="bodyText itemBody">{job.bullets.join(" ")}</p>
+                      {job.bullets && job.bullets.length > 0 && (
+                        <p className="bodyText itemBody">
+                          {job.bullets.join(" ")}
+                        </p>
                       )}
                     </div>
                   </div>
@@ -875,19 +383,19 @@ export default function MinimalTemplate3({ content, theme }: TemplateProps) {
 
       <style jsx>{`
         /* =====================================================
-           FULL PAGE RESUME - NO SCROLLBAR
+           PAGE — fills the A4 canvas
         ====================================================== */
         .figmaResume {
           width: 100%;
           height: 100%;
-          max-height: 100%;
+          min-height: 1123px;
           background: #ffffff;
           color: ${textColor};
           font-family: ${theme.bodyFont || "Hind"}, sans-serif;
           box-sizing: border-box;
           display: flex;
           flex-direction: column;
-          padding: 32px 40px;
+          padding: 48px 52px;
           overflow: hidden;
           position: relative;
         }
@@ -902,15 +410,15 @@ export default function MinimalTemplate3({ content, theme }: TemplateProps) {
         .header {
           display: flex;
           align-items: center;
-          gap: 20px;
-          padding-bottom: 16px;
+          gap: 24px;
+          padding-bottom: 22px;
           flex-shrink: 0;
         }
 
         .avatar {
           flex: 0 0 auto;
-          width: 80px;
-          height: 80px;
+          width: 96px;
+          height: 96px;
           border-radius: 50%;
           overflow: hidden;
           background: #eeeeee;
@@ -933,7 +441,7 @@ export default function MinimalTemplate3({ content, theme }: TemplateProps) {
 
         .name {
           font-family: ${theme.headingFont || "'IBM Plex Sans'"}, sans-serif;
-          font-size: 26px;
+          font-size: 30px;
           line-height: 1.1;
           font-weight: 700;
           color: ${textColor};
@@ -941,30 +449,30 @@ export default function MinimalTemplate3({ content, theme }: TemplateProps) {
         }
 
         .profession {
-          margin-top: 4px;
+          margin-top: 6px;
           font-family: ${theme.bodyFont || "Hind"}, sans-serif;
-          font-size: 12px;
-          line-height: 1.3;
+          font-size: 13px;
+          line-height: 1.35;
           font-weight: 400;
           color: ${textColor};
-          opacity: 0.6;
+          opacity: 0.65;
         }
 
         .contactBlock {
           display: flex;
           flex-direction: column;
-          gap: 2px;
+          gap: 3px;
           text-align: right;
           flex-shrink: 0;
         }
 
         .contactLine {
           font-family: ${theme.bodyFont || "Hind"}, sans-serif;
-          font-size: 11px;
-          line-height: 1.4;
+          font-size: 12px;
+          line-height: 1.5;
           font-weight: 400;
           color: ${textColor};
-          opacity: 0.6;
+          opacity: 0.65;
           white-space: nowrap;
         }
 
@@ -973,8 +481,8 @@ export default function MinimalTemplate3({ content, theme }: TemplateProps) {
           width: 100%;
           height: 1px;
           background: ${textColor};
-          opacity: 0.1;
-          margin-bottom: 20px;
+          opacity: 0.12;
+          margin-bottom: 26px;
           flex-shrink: 0;
         }
 
@@ -985,34 +493,33 @@ export default function MinimalTemplate3({ content, theme }: TemplateProps) {
           gap: 0;
           flex: 1;
           min-height: 0;
-          overflow: hidden;
         }
 
         .col {
-          padding: 0 16px;
-          overflow: hidden;
+          padding: 0 22px;
+          min-width: 0;
         }
 
         .colLeft {
           padding-left: 0;
-          padding-right: 16px;
+          padding-right: 22px;
         }
 
         .colRight {
-          padding-left: 16px;
+          padding-left: 22px;
           padding-right: 0;
         }
 
         .colDivider {
           width: 1px;
           background: ${textColor};
-          opacity: 0.1;
+          opacity: 0.12;
           height: 100%;
         }
 
         /* ===== SECTION BLOCK ===== */
         .block {
-          margin-top: 16px;
+          margin-top: 26px;
         }
 
         .block:first-child {
@@ -1021,66 +528,75 @@ export default function MinimalTemplate3({ content, theme }: TemplateProps) {
 
         .blockLabel {
           font-family: ${theme.headingFont || "'IBM Plex Sans'"}, sans-serif;
-          font-size: 12px;
+          font-size: 13px;
           line-height: 1.2;
           font-weight: 700;
-          letter-spacing: 0.5px;
+          letter-spacing: 0.6px;
           color: ${textColor};
-          margin-bottom: 10px;
+          margin-bottom: 14px;
           text-transform: uppercase;
         }
 
         .bodyText {
           margin: 0;
           font-family: ${theme.bodyFont || "Hind"}, sans-serif;
-          font-size: 11px;
-          line-height: 1.6;
+          font-size: 12px;
+          line-height: 1.7;
           font-weight: 400;
           color: ${textColor};
-          opacity: 0.7;
+          opacity: 0.72;
         }
 
-        /* ===== ITEMS ===== */
+        /* ===== ITEMS =====
+           .dateBadge is 38px wide; .item has 46px left padding so
+           education, experience, and references all line up on the
+           same vertical grid. */
         .items {
           display: flex;
           flex-direction: column;
-          gap: 10px;
+          gap: 14px;
         }
 
         .item {
           position: relative;
-          padding-left: 40px;
+          padding-left: 46px;
         }
 
         .dateBadge {
           position: absolute;
           left: 0;
           top: 0;
-          width: 34px;
+          width: 38px;
           display: flex;
           flex-direction: column;
           font-family: ${theme.bodyFont || "Hind"}, sans-serif;
-          font-size: 10px;
-          line-height: 1.3;
+          font-size: 10.5px;
+          line-height: 1.4;
           font-weight: 400;
           color: ${textColor};
-          opacity: 0.5;
+          opacity: 0.55;
+          text-align: left;
         }
 
         .dateDash {
           opacity: 0.7;
         }
 
+        .itemMain {
+          min-width: 0;
+        }
+
         .itemTitle {
           font-family: ${theme.headingFont || "'IBM Plex Sans'"}, sans-serif;
-          font-size: 12px;
-          line-height: 1.3;
+          font-size: 12.5px;
+          line-height: 1.35;
           font-weight: 700;
           color: ${textColor};
+          overflow-wrap: anywhere;
         }
 
         .itemBody {
-          margin-top: 3px;
+          margin-top: 4px;
         }
 
         .langLevel {
@@ -1093,41 +609,42 @@ export default function MinimalTemplate3({ content, theme }: TemplateProps) {
         .skillsRow {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 16px;
+          gap: 20px;
         }
 
         .skillsColHeader {
           font-family: ${theme.headingFont || "'IBM Plex Sans'"}, sans-serif;
-          font-size: 10px;
+          font-size: 10.5px;
           line-height: 1.2;
           font-weight: 700;
           color: ${textColor};
-          margin-bottom: 4px;
+          margin-bottom: 6px;
           text-transform: uppercase;
-          letter-spacing: 0.3px;
+          letter-spacing: 0.4px;
           opacity: 0.6;
         }
 
         .skillItem {
           font-family: ${theme.bodyFont || "Hind"}, sans-serif;
-          font-size: 11px;
-          line-height: 1.6;
+          font-size: 12px;
+          line-height: 1.75;
           font-weight: 400;
           color: ${textColor};
-          opacity: 0.7;
+          opacity: 0.72;
         }
 
         /* ===== RESPONSIVE ===== */
         @media (max-width: 768px) {
           .figmaResume {
-            padding: 20px;
+            padding: 24px 20px;
+            min-height: auto;
             overflow-y: auto;
           }
 
           .header {
             flex-direction: column;
             align-items: flex-start;
-            gap: 12px;
+            gap: 14px;
           }
 
           .contactBlock {
@@ -1142,7 +659,6 @@ export default function MinimalTemplate3({ content, theme }: TemplateProps) {
           .columns {
             grid-template-columns: 1fr;
             gap: 0;
-            overflow-y: auto;
           }
 
           .colDivider {
@@ -1154,7 +670,7 @@ export default function MinimalTemplate3({ content, theme }: TemplateProps) {
           }
 
           .colRight {
-            margin-top: 20px;
+            margin-top: 24px;
           }
 
           .skillsRow {
@@ -1164,13 +680,10 @@ export default function MinimalTemplate3({ content, theme }: TemplateProps) {
 
         @media print {
           .figmaResume {
-            padding: 32px 40px;
+            padding: 48px 52px;
             overflow: hidden;
             height: 100%;
-          }
-
-          .colDivider {
-            height: 100%;
+            min-height: 297mm;
           }
         }
       `}</style>

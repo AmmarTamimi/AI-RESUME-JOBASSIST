@@ -141,7 +141,6 @@ export default function ModernTemplate2({ content, theme }: TemplateProps) {
   );
   const referencesSection = sections.find((s) => s.type === "references");
 
-  // Type guards
   const isCustomItem = (item: any): item is CustomItem => {
     return item && typeof item === "object" && "label" in item;
   };
@@ -160,15 +159,11 @@ export default function ModernTemplate2({ content, theme }: TemplateProps) {
   const contactItems = contactSection?.items || [];
 
   const educationSection = sections.find((s) => s.type === "education");
-
   const experienceSection = sections.find((s) => s.type === "experience");
-
   const ratedSkillsSection = sections.find((s) => s.type === "ratedSkills");
 
   const name = personalInfo.fullName?.trim() || "Your Name";
-
   const nameParts = name.split(/\s+/);
-
   const firstName = nameParts.slice(0, -1).join(" ");
   const lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : "";
 
@@ -187,7 +182,6 @@ export default function ModernTemplate2({ content, theme }: TemplateProps) {
       | "extracurricularActivities",
   ) => {
     if (!education || typeof education !== "object") return "";
-
     return String((education as Record<string, unknown>)[key] || "");
   };
 
@@ -213,12 +207,10 @@ export default function ModernTemplate2({ content, theme }: TemplateProps) {
           {personalInfo.photoUrl && (
             <div className="profileArea data-resume-root">
               <div className="profileImage data-resume-root">
-                {personalInfo.photoUrl && (
-                  <img
-                    src={personalInfo.photoUrl}
-                    alt={personalInfo.fullName || "Profile"}
-                  />
-                )}
+                <img
+                  src={personalInfo.photoUrl}
+                  alt={personalInfo.fullName || "Profile"}
+                />
               </div>
             </div>
           )}
@@ -227,7 +219,6 @@ export default function ModernTemplate2({ content, theme }: TemplateProps) {
           {personalInfo.summary && (
             <section className="leftSection summarySection">
               <SectionHeading title="SUMMARY" />
-
               <p className="summaryText">{personalInfo.summary}</p>
             </section>
           )}
@@ -239,13 +230,10 @@ export default function ModernTemplate2({ content, theme }: TemplateProps) {
 
               {educationSection.items.map((edu, index) => {
                 const honors = getOptionalEducationValue(edu, "honors");
-
                 const coursework =
                   getOptionalEducationValue(edu, "coursework") ||
                   getOptionalEducationValue(edu, "relevantCoursework");
-
                 const awards = getOptionalEducationValue(edu, "awards");
-
                 const activities =
                   getOptionalEducationValue(edu, "activities") ||
                   getOptionalEducationValue(edu, "extracurricularActivities");
@@ -310,7 +298,6 @@ export default function ModernTemplate2({ content, theme }: TemplateProps) {
                   <div className="skillItem data-resume-root" key={index}>
                     <div className="skillTop data-resume-root">
                       <span className="skillName">{skill.name}</span>
-
                       <span className="skillPercentage">{skill.level}%</span>
                     </div>
 
@@ -351,23 +338,11 @@ export default function ModernTemplate2({ content, theme }: TemplateProps) {
                   }
 
                   const label = String(item.label || "").toLowerCase();
-
                   const description = String(item.description || "");
-
-                  let icon = Icon.pin;
-
-                  if (label === "phone") {
-                    icon = Icon.phone;
-                  } else if (label === "email") {
-                    icon = Icon.mail;
-                  } else if (label === "web" || label === "website") {
-                    icon = Icon.globe;
-                  }
 
                   return (
                     <div className="contactRow data-resume-root" key={index}>
                       <span className="contactLabel">{label}</span>
-
                       <span className="contactValue">{description}</span>
                     </div>
                   );
@@ -445,6 +420,7 @@ export default function ModernTemplate2({ content, theme }: TemplateProps) {
               </div>
             </section>
           )}
+
           {referencesSection && referencesSection.items.length > 0 && (
             <section className="rightSection">
               <SectionHeading title={referencesSection.title || "REFERENCES"} />
@@ -467,7 +443,7 @@ export default function ModernTemplate2({ content, theme }: TemplateProps) {
             </section>
           )}
 
-          {/* SKILLS (Tags) - Updated styling */}
+          {/* SKILLS (Tags) */}
           {skillsSection && skillsSection.items.length > 0 && (
             <section className="rightSection">
               <SectionHeading
@@ -483,7 +459,7 @@ export default function ModernTemplate2({ content, theme }: TemplateProps) {
             </section>
           )}
 
-          {/* LANGUAGES - Updated styling */}
+          {/* LANGUAGES */}
           {languagesSection && languagesSection.items.length > 0 && (
             <section className="rightSection">
               <SectionHeading title={languagesSection.title || "LANGUAGES"} />
@@ -509,7 +485,7 @@ export default function ModernTemplate2({ content, theme }: TemplateProps) {
             </section>
           )}
 
-          {/* ACHIEVEMENTS - Updated styling */}
+          {/* ACHIEVEMENTS */}
           {achievementsSection && achievementsSection.items.length > 0 && (
             <section className="rightSection">
               <SectionHeading
@@ -557,7 +533,7 @@ export default function ModernTemplate2({ content, theme }: TemplateProps) {
             </section>
           )}
 
-          {/* OTHER CUSTOM SECTIONS - Updated styling */}
+          {/* OTHER CUSTOM SECTIONS */}
           {otherCustomSections.map((section) => (
             <section key={section.id} className="rightSection">
               <SectionHeading title={section.title || "Custom"} />
@@ -590,10 +566,6 @@ export default function ModernTemplate2({ content, theme }: TemplateProps) {
       </div>
 
       <style jsx>{`
-        /* =========================================================
-          ROOT
-        ========================================================== */
-
         .digital-marketing-template {
           width: 100%;
           min-height: 100%;
@@ -609,10 +581,6 @@ export default function ModernTemplate2({ content, theme }: TemplateProps) {
         .digital-marketing-template *::after {
           box-sizing: border-box;
         }
-
-        /* =========================================================
-          HEADER
-        ========================================================== */
 
         .topHeader {
           width: 100%;
@@ -647,10 +615,6 @@ export default function ModernTemplate2({ content, theme }: TemplateProps) {
           opacity: 0.9;
         }
 
-        /* =========================================================
-          BODY
-        ========================================================== */
-
         .resumeBody {
           display: grid;
           grid-template-columns: minmax(0, 46%) 1px minmax(0, 54%);
@@ -672,10 +636,6 @@ export default function ModernTemplate2({ content, theme }: TemplateProps) {
           background: #e3e7e8;
           min-height: 100%;
         }
-
-        /* =========================================================
-          PROFILE
-        ========================================================== */
 
         .profileArea {
           width: 100%;
@@ -709,10 +669,6 @@ export default function ModernTemplate2({ content, theme }: TemplateProps) {
           display: block;
           object-fit: cover;
         }
-
-        /* =========================================================
-          SECTION HEADING
-        ========================================================== */
 
         .leftSection,
         .rightSection {
@@ -776,9 +732,6 @@ export default function ModernTemplate2({ content, theme }: TemplateProps) {
         .rightColumn .sectionHeading::after {
           display: none;
         }
-        /* =========================================================
-  REFERENCES - Consistent with template theme
-========================================================= */
 
         .referencesList {
           display: flex;
@@ -807,10 +760,6 @@ export default function ModernTemplate2({ content, theme }: TemplateProps) {
           line-height: 1.4;
         }
 
-        /* =========================================================
-          SUMMARY
-        ========================================================== */
-
         .summaryText {
           margin: 0;
           padding-right: 8px;
@@ -820,10 +769,6 @@ export default function ModernTemplate2({ content, theme }: TemplateProps) {
           color: #4d4d4d;
           font-weight: 400;
         }
-
-        /* =========================================================
-          EDUCATION
-        ========================================================== */
 
         .educationSection {
           text-align: right;
@@ -871,7 +816,7 @@ export default function ModernTemplate2({ content, theme }: TemplateProps) {
         }
 
         /* =========================================================
-          SKILLS (Rated)
+           SKILLS (Rated) — names now wrap fully, no ellipsis
         ========================================================== */
 
         .skillsList {
@@ -886,21 +831,22 @@ export default function ModernTemplate2({ content, theme }: TemplateProps) {
         }
 
         .skillTop {
-          display: grid;
-          grid-template-columns: minmax(0, 1fr) 32px;
-          align-items: center;
-          gap: 7px;
+          display: flex;
+          justify-content: space-between;
+          align-items: baseline;
+          gap: 8px;
           margin-bottom: 5px;
         }
 
         .skillName {
           text-align: right;
           font-size: 10.5px;
-          line-height: 1.2;
+          line-height: 1.3;
           color: #555555;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
+          flex: 1;
+          min-width: 0;
+          overflow-wrap: anywhere;
+          word-break: break-word;
         }
 
         .skillPercentage {
@@ -908,12 +854,13 @@ export default function ModernTemplate2({ content, theme }: TemplateProps) {
           color: ${primaryColor};
           font-size: 10px;
           font-weight: 700;
+          flex-shrink: 0;
+          white-space: nowrap;
         }
 
         .skillBar {
-          width: calc(100% - 39px);
+          width: 100%;
           height: 4px;
-          margin-left: 0;
           background: #e0e3e4;
           position: relative;
           overflow: hidden;
@@ -924,10 +871,6 @@ export default function ModernTemplate2({ content, theme }: TemplateProps) {
           background: ${primaryColor};
           transition: width 0.3s ease;
         }
-
-        /* =========================================================
-          CONTACT
-        ========================================================== */
 
         .contactSection {
           margin-top: 4px;
@@ -958,10 +901,6 @@ export default function ModernTemplate2({ content, theme }: TemplateProps) {
           color: #555555;
           overflow-wrap: anywhere;
         }
-
-        /* =========================================================
-          EXPERIENCE
-        ========================================================== */
 
         .experienceList {
           display: flex;
@@ -1022,10 +961,6 @@ export default function ModernTemplate2({ content, theme }: TemplateProps) {
           font-size: 7px;
         }
 
-        /* =========================================================
-          SKILLS TAGS - Updated consistent styling
-        ========================================================== */
-
         .skillsTags {
           display: flex;
           flex-wrap: wrap;
@@ -1043,10 +978,6 @@ export default function ModernTemplate2({ content, theme }: TemplateProps) {
           text-transform: uppercase;
           border-radius: 2px;
         }
-
-        /* =========================================================
-          LANGUAGES - Updated consistent styling
-        ========================================================== */
 
         .languagesList {
           display: flex;
@@ -1074,10 +1005,6 @@ export default function ModernTemplate2({ content, theme }: TemplateProps) {
           font-size: 10px;
         }
 
-        /* =========================================================
-          ACHIEVEMENTS - Updated consistent styling
-        ========================================================== */
-
         .achievementsList {
           display: flex;
           flex-direction: column;
@@ -1103,6 +1030,7 @@ export default function ModernTemplate2({ content, theme }: TemplateProps) {
           line-height: 1.4;
           margin-top: 2px;
         }
+
         .achievementDate {
           font-size: 9.5px;
           color: #777777;
@@ -1110,6 +1038,7 @@ export default function ModernTemplate2({ content, theme }: TemplateProps) {
           white-space: nowrap;
           flex-shrink: 0;
         }
+
         .achievementHeader {
           display: flex;
           justify-content: space-between;
@@ -1117,10 +1046,6 @@ export default function ModernTemplate2({ content, theme }: TemplateProps) {
           gap: 10px;
           flex-wrap: wrap;
         }
-
-        /* =========================================================
-          CUSTOM ITEMS - Updated consistent styling
-        ========================================================== */
 
         .customItemsList {
           display: flex;
@@ -1143,10 +1068,6 @@ export default function ModernTemplate2({ content, theme }: TemplateProps) {
         .customDescription {
           color: #555555;
         }
-
-        /* =========================================================
-          RESPONSIVE
-        ========================================================== */
 
         @media (max-width: 700px) {
           .topHeader {
@@ -1228,10 +1149,6 @@ export default function ModernTemplate2({ content, theme }: TemplateProps) {
           }
         }
 
-        /* =========================================================
-          PRINT
-        ========================================================== */
-
         @media print {
           .digital-marketing-template {
             width: 210mm;
@@ -1258,10 +1175,6 @@ export default function ModernTemplate2({ content, theme }: TemplateProps) {
   );
 }
 
-/* ===============================================================
-  SECTION HEADING COMPONENT
-================================================================ */
-
 function SectionHeading({ title }: { title: string }) {
   return (
     <div className="sectionHeading data-resume-root">
@@ -1270,20 +1183,9 @@ function SectionHeading({ title }: { title: string }) {
   );
 }
 
-/* ===============================================================
-  DATE FORMATTER
-================================================================ */
-
 function formatDateRange(start?: string, end?: string) {
   if (!start && !end) return "";
-
-  if (start && !end) {
-    return `${start} - Present`;
-  }
-
-  if (!start && end) {
-    return end;
-  }
-
+  if (start && !end) return `${start} - Present`;
+  if (!start && end) return end;
   return `${start} - ${end}`;
 }

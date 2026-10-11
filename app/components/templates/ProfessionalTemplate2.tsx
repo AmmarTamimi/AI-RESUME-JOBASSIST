@@ -240,7 +240,6 @@ export default function BoldTemplate({ content, theme }: TemplateProps) {
           margin-bottom: 16px;
         }
 
-        /* Section titles — purple text, no pill */
         .tag {
           display: inline-block;
           background: transparent;
@@ -262,19 +261,6 @@ export default function BoldTemplate({ content, theme }: TemplateProps) {
 
         .job {
           margin-bottom: 20px;
-          position: relative;
-          padding-left: 18px;
-        }
-
-        .job::before {
-          content: "";
-          position: absolute;
-          left: 0;
-          top: 5px;
-          width: 8px;
-          height: 8px;
-          background: ${t.accentColor || "#CFE85C"};
-          border-radius: 2px;
         }
 
         .jobTop {

@@ -13,17 +13,33 @@ export default function ATSTwoToneTemplate({ content, theme }: TemplateProps) {
   const aboutText = personalInfo.summary;
 
   const contactItems = contactSection?.items || [];
-  const contactStrings: string[] = contactItems.length > 0
-    ? contactItems
-        .map((item) => (typeof item === "object" && item !== null && "description" in item ? String(item.description) : ""))
-        .filter(Boolean)
-    : [personalInfo.phone, personalInfo.email, personalInfo.location, personalInfo.website].filter(Boolean) as string[];
+  const contactStrings: string[] =
+    contactItems.length > 0
+      ? contactItems
+          .map((item) =>
+            typeof item === "object" &&
+            item !== null &&
+            "description" in item
+              ? String(item.description)
+              : "",
+          )
+          .filter(Boolean)
+      : ([
+          personalInfo.phone,
+          personalInfo.email,
+          personalInfo.location,
+          personalInfo.website,
+        ].filter(Boolean) as string[]);
 
   return (
     <div className="atst-template data-resume-root">
       <div className="name data-resume-root">{personalInfo.fullName}</div>
-      <div className="title data-resume-root">{personalInfo.title || "Professional"}</div>
-      <div className="contactLine data-resume-root">{contactStrings.join("   |   ")}</div>
+      <div className="title data-resume-root">
+        {personalInfo.title || "Professional"}
+      </div>
+      <div className="contactLine data-resume-root">
+        {contactStrings.join("   |   ")}
+      </div>
 
       {aboutText && (
         <div className="section data-resume-root">
@@ -34,17 +50,26 @@ export default function ATSTwoToneTemplate({ content, theme }: TemplateProps) {
 
       {experienceSection && experienceSection.items.length > 0 && (
         <div className="section data-resume-root">
-          <div className="sectionTitle data-resume-root">{experienceSection.title || 'Professional Experience'}</div>
+          <div className="sectionTitle data-resume-root">
+            {experienceSection.title || "Professional Experience"}
+          </div>
           {experienceSection.items.map((job, i) => (
             <div className="entry data-resume-root" key={i}>
               <div className="entryRow data-resume-root">
                 <span className="entryRole">{job.role || "Position"}</span>
-                <span className="entryDate">{job.start} â€“ {job.end || "Present"}</span>
+                <span className="entryDate">
+                  {job.start} – {job.end || "Present"}
+                </span>
               </div>
-              <div className="entryCompany data-resume-root">{job.company}{job.location ? `, ${job.location}` : ""}</div>
+              <div className="entryCompany data-resume-root">
+                {job.company}
+                {job.location ? `, ${job.location}` : ""}
+              </div>
               {job.bullets && job.bullets.length > 0 && (
                 <ul className="bullets">
-                  {job.bullets.map((b, bi) => <li key={bi}>{b}</li>)}
+                  {job.bullets.map((b, bi) => (
+                    <li key={bi}>{b}</li>
+                  ))}
                 </ul>
               )}
             </div>
@@ -54,14 +79,20 @@ export default function ATSTwoToneTemplate({ content, theme }: TemplateProps) {
 
       {educationSection && educationSection.items.length > 0 && (
         <div className="section data-resume-root">
-          <div className="sectionTitle data-resume-root">{educationSection.title || 'Education'}</div>
+          <div className="sectionTitle data-resume-root">
+            {educationSection.title || "Education"}
+          </div>
           {educationSection.items.map((edu, i) => (
             <div className="entry data-resume-root" key={i}>
               <div className="entryRow data-resume-root">
                 <span className="entryRole">{edu.school}</span>
-                <span className="entryDate">{edu.start} â€“ {edu.end}</span>
+                <span className="entryDate">
+                  {edu.start} – {edu.end}
+                </span>
               </div>
-              <div className="entryCompany data-resume-root">{edu.degree}</div>
+              <div className="entryCompany data-resume-root">
+                {edu.degree}
+              </div>
             </div>
           ))}
         </div>
@@ -69,18 +100,26 @@ export default function ATSTwoToneTemplate({ content, theme }: TemplateProps) {
 
       {ratedSkillsSection && ratedSkillsSection.items.length > 0 && (
         <div className="section data-resume-root">
-          <div className="sectionTitle data-resume-root">{ratedSkillsSection.title || 'Skills'}</div>
-          <p className="bodyText">{ratedSkillsSection.items.map((s) => s.name).join(", ")}</p>
+          <div className="sectionTitle data-resume-root">
+            {ratedSkillsSection.title || "Skills"}
+          </div>
+          <p className="bodyText">
+            {ratedSkillsSection.items.map((s) => s.name).join(", ")}
+          </p>
         </div>
       )}
 
       {referencesSection && referencesSection.items.length > 0 && (
         <div className="section data-resume-root">
-          <div className="sectionTitle data-resume-root">{referencesSection.title || 'References'}</div>
+          <div className="sectionTitle data-resume-root">
+            {referencesSection.title || "References"}
+          </div>
           {referencesSection.items.map((ref, i) => (
             <div className="entry data-resume-root" key={i}>
               <div className="entryRole data-resume-root">{ref.name}</div>
-              <div className="entryCompany data-resume-root">{[ref.phone, ref.email].filter(Boolean).join("  Â·  ")}</div>
+              <div className="entryCompany data-resume-root">
+                {[ref.phone, ref.email].filter(Boolean).join("  ·  ")}
+              </div>
             </div>
           ))}
         </div>
@@ -178,11 +217,11 @@ export default function ATSTwoToneTemplate({ content, theme }: TemplateProps) {
         }
 
         @media print {
-          .atst-template { box-shadow: none; }
+          .atst-template {
+            box-shadow: none;
+          }
         }
       `}</style>
     </div>
   );
 }
-
-
